@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Geist_Mono } from "next/font/google";
-import "./globals.css";
+import { Footer } from "@/components/layout/footer";
+import { Navbar } from "@/components/layout/navbar";
 import AppProviders from "@/src/components/providers/AppProviders";
+import "./globals.css";
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -9,15 +11,20 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Home Service",
-  description: "Home service application",
+  title: "HomeServices | บริการดูแลบ้านโดยมืออาชีพ",
+  description:
+    "บริการซ่อมเครื่องใช้ไฟฟ้า ล้างแอร์ และทำความสะอาดบ้านโดยช่างมืออาชีพ",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="th" className={`${geistMono.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col font-sans">
-        <AppProviders>{children}</AppProviders>
+        <AppProviders>
+          <Navbar />
+          {children}
+          <Footer />
+        </AppProviders>
       </body>
     </html>
   );
