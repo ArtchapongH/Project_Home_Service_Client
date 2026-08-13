@@ -2,7 +2,6 @@
 
 import type { ReactNode } from "react";
 import { ThemeProvider } from "@mui/material/styles";
-import CssBaseline from "@mui/material/CssBaseline";
 import { muiTheme } from "@/src/theme/muiTheme";
 
 export default function AppProviders({
@@ -11,9 +10,6 @@ export default function AppProviders({
   children: ReactNode;
 }) {
   return (
-    <ThemeProvider theme={muiTheme}>
-      <CssBaseline />
-      {children}
-    </ThemeProvider>
+    <ThemeProvider theme={muiTheme}>{children}</ThemeProvider>
   );
 }
