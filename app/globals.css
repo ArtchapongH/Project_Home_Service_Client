@@ -49,6 +49,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-utility-bg: var(--utility-bg);
   --font-sans: "Prompt", sans-serif;
   --font-mono: var(--font-geist-mono);
 }
