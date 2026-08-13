@@ -12,21 +12,22 @@
   --gray-500: #7b8497;
   --gray-700: #3d4555;
   --utility-white: #fff;
+  --utility-bg: #f5f7fb;
+  --background: #ffffff;
+  --foreground: #171b24;
   --page-width: 1140px;
 }
 
-<<<<<<< HEAD
 * {
   box-sizing: border-box;
-=======
-/* set up project font to be "prompt" */
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-utility-bg: var(--utility-bg);
   --font-sans: "Prompt", sans-serif;
   --font-mono: var(--font-geist-mono);
->>>>>>> dev
 }
 
 html {
