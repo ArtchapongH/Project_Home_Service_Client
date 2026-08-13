@@ -10,13 +10,14 @@ export function Navbar() {
         </Link>
         <nav aria-label="เมนูหลัก">
           <Link href="/services">บริการของเรา</Link>
+          <Link href="/profile">Profile</Link>
         </nav>
         <div className="navbar-actions">
           <Link href="/login" className="button button-outline">
             เข้าสู่ระบบ
           </Link>
           <Link href="/register" className="button button-primary">
-            สมัครสมาชิก
+            ลงทะเบียน
           </Link>
         </div>
       </div>

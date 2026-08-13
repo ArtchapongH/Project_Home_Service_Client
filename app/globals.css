@@ -57,6 +57,8 @@ a {
 
 .navbar nav {
   justify-self: start;
+  display: flex;
+  gap: 24px;
   margin-left: -300px;
   font-size: 14px;
   font-weight: 600;
@@ -330,10 +332,37 @@ a {
 
 .footer-main {
   display: grid;
-  grid-template-columns: 1.05fr 1.8fr 1fr;
+  grid-template-columns: 1.2fr 1.8fr 1fr;
   align-items: center;
   gap: 36px;
   min-height: 122px;
+}
+
+.footer-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.footer-social ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  margin-left: 40px;
+  list-style: none;
+}
+
+.footer-social a {
+  display: flex;
+  color: #336df2;
+}
+
+.footer-social svg {
+  width: 24px;
+  height: 24px;
 }
 
 .company-details strong {
@@ -373,6 +402,98 @@ a {
 .footer-bottom-inner div {
   display: flex;
   gap: 30px;
+}
+
+.footer-contact-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.footer-email-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.profile-page {
+  padding: 48px 0 80px;
+  background: var(--gray-100);
+  min-height: calc(100vh - 72px);
+}
+
+.profile-page h1 {
+  margin: 0 0 8px;
+  color: var(--blue-700);
+  font-size: 32px;
+}
+
+.profile-page > .page-container > p {
+  margin: 0 0 28px;
+  color: var(--gray-500);
+}
+
+.profile-form {
+  display: grid;
+  gap: 24px;
+  max-width: 640px;
+  padding: 28px;
+  border-radius: 12px;
+  background: var(--utility-white);
+  box-shadow: 0 8px 24px rgb(23 51 109 / 6%);
+}
+
+.profile-form fieldset {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+.profile-form legend {
+  margin-bottom: 8px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.profile-form label {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.profile-form input,
+.profile-form textarea {
+  width: 100%;
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.profile-form input:read-only {
+  background: var(--gray-100);
+  color: var(--gray-500);
+}
+
+.profile-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.profile-status {
+  margin: 0;
+  font-size: 14px;
+}
+
+.profile-status.is-error {
+  color: #d7263d;
+}
+
+.profile-status.is-success {
+  color: var(--blue-700);
 }
 
 @media (max-width: 800px) {
@@ -510,6 +631,10 @@ a {
   .footer-main .logo-link,
   .footer address {
     margin-inline: auto;
+  }
+
+  .footer-brand {
+    align-items: center;
   }
 
   .footer-bottom-inner {
