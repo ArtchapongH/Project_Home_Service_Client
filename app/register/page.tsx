@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import RegisterForm from "@/src/components/login/RegisterForm";
+import RegisterForm from "@/components/login/RegisterForm";
 
 export const metadata: Metadata = {
   title: "ลงทะเบียน",
