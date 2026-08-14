@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from 'react';
 import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
-import AlertConfirmation from '../../../components/AlertConfirmation';
+import AlertConfirmation from '@/components/AlertConfirmation';
 import { Category } from '@/types/category';
 import Link from 'next/link';
 import Image from 'next/image';

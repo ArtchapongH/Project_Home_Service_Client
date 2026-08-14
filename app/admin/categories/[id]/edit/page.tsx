@@ -4,7 +4,7 @@ import React, { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import DeleteOutlineIcon from '@mui/icons-material/Delete';
-import AlertConfirmation from '../../../../../components/AlertConfirmation';
+import AlertConfirmation from '@/components/AlertConfirmation';
 import { Category } from '@/types/category';
 
 interface EditCategoryPageProps {
