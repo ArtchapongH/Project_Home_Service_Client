@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { AlertCircle, X } from 'lucide-react';
 
@@ -19,12 +19,6 @@ export default function AlertConfirmation({
   onClose,
   onDelete,
 }: DeleteConfirmationModalProps) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -39,7 +33,7 @@ export default function AlertConfirmation({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  if (!isOpen || !mounted) return null;
+  if (!isOpen || typeof document === 'undefined') return null;
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
@@ -63,7 +57,7 @@ export default function AlertConfirmation({
         <h2 className="mb-2 text-xl font-bold text-gray-900">ยืนยันการลบรายการ?</h2>
 
         <p className="mb-6 text-sm leading-relaxed text-gray-500">
-          คุณต้องการลบรายการ '{itemName}' <br />
+          คุณต้องการลบรายการ &lsquo;{itemName}&rsquo; <br />
           ใช่หรือไม่
         </p>
 

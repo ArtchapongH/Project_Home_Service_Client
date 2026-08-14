@@ -43,7 +43,10 @@ export const ServiceProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [searchQuery]);
 
   useEffect(() => {
-    fetchServices(searchQuery);
+    const timer = window.setTimeout(() => {
+      void fetchServices(searchQuery);
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [searchQuery, fetchServices]);
 
   const getService = async (id: string): Promise<ServiceItem | null> => {

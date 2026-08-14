@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, use } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   Box,
@@ -168,8 +169,8 @@ export default function AdminServiceDetailPage({
             </Typography>
             <Box sx={{ maxWidth: 440, width: "100%" }}>
               {service.imageUrl ? (
-                <Box sx={{ width: "100%", height: 180, borderRadius: "8px", overflow: "hidden", border: "1px solid #E5E7EB" }}>
-                  <img src={service.imageUrl} alt={service.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <Box sx={{ position: "relative", width: "100%", height: 180, borderRadius: "8px", overflow: "hidden", border: "1px solid #E5E7EB" }}>
+                  <Image src={service.imageUrl} alt={service.name} fill sizes="440px" unoptimized style={{ objectFit: "cover" }} />
                 </Box>
               ) : (
                 <Box
