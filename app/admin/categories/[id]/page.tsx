@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import { Category } from '@/types/category';
+import AdminSidebar from '@/components/adminSidebar';
+import { getCategory } from '@/src/lib/categoryApi';
 
 interface CategoryDetailPageProps {
   params: Promise<{ id: string }>;
@@ -18,34 +20,33 @@ export default function CategoryDetailPage({ params }: CategoryDetailPageProps) 
 
   const [categoryData, setCategoryData] = useState<Category | null>(null);
   const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchCategory = async () => {
       try {
         setLoading(true);
-        // TODO: เปลี่ยนเป็นเรียก API จริง เช่น:
-        // const res = await axios.get(`/api/categories/${categoryId}`);
-        // setCategoryData(res.data);
-
-        // Mockup ข้อมูลตัวอย่างตามภาพ
-        const mockData: Category = {
-          id: Number(categoryId),
-          name: 'บริการห้องครัว',
-          createdAt: '12/02/2022 10:30PM',
-          updatedAt: '12/02/2022 10:30PM',
-        };
-
-        setCategoryData(mockData);
+        setErrorMessage('');
+        const data = await getCategory(categoryId, controller.signal);
+        setCategoryData(data);
       } catch (error) {
+        if (controller.signal.aborted) return;
         console.error('Failed to fetch category details:', error);
+        setErrorMessage('ไม่สามารถโหลดรายละเอียดหมวดหมู่ได้');
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
 
     if (categoryId) {
       fetchCategory();
     }
+
+    return () => controller.abort();
   }, [categoryId]);
 
   if (loading) {
@@ -56,8 +57,18 @@ export default function CategoryDetailPage({ params }: CategoryDetailPageProps) 
     );
   }
 
+  if (errorMessage || !categoryData) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#F3F4F6] text-red-500">
+        {errorMessage || 'ไม่พบข้อมูลหมวดหมู่'}
+      </div>
+    );
+  }
+
   return (
-    <div className="flex min-h-screen flex-col bg-[#F3F4F6] text-gray-700 w-full">
+    <div className="flex min-h-screen w-full bg-[#F3F4F6] text-gray-700">
+      <AdminSidebar />
+      <div className="flex min-w-0 flex-1 flex-col w-full">
       {/* ==================== 1. Header Bar ==================== */}
       <header className="border-b border-gray-200 bg-white px-8 py-4">
         <div className="flex items-center justify-between">
@@ -116,6 +127,7 @@ export default function CategoryDetailPage({ params }: CategoryDetailPageProps) 
           </div>
         </div>
       </main>
+      </div>
     </div>
   );
 }

@@ -1,25 +1,49 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
 import AlertConfirmation from '@/components/AlertConfirmation';
 import { Category } from '@/types/category';
 import Link from 'next/link';
 import Image from 'next/image';
+import AdminSidebar from '@/components/adminSidebar';
+import { deleteCategory, getCategories } from '@/src/lib/categoryApi';
 
 export default function CategoryPage() {
-  const [categories, setCategories] = useState<Category[]>([
-    { id: 1, name: 'บริการทั่วไป', createdAt: '12/02/2022 10:30PM', updatedAt: '12/02/2022 10:30PM' },
-    { id: 2, name: 'บริการห้องครัว', createdAt: '12/02/2022 10:30PM', updatedAt: '12/02/2022 10:30PM' },
-    { id: 3, name: 'บริการห้องน้ำ', createdAt: '12/02/2022 10:30PM', updatedAt: '12/02/2022 10:30PM' },
-  ]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [loading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [draggedCategoryId, setDraggedCategoryId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const fetchCategories = async () => {
+      try {
+        setLoading(true);
+        setErrorMessage('');
+        const data = await getCategories(controller.signal);
+        setCategories(data);
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        console.error('Failed to fetch categories:', error);
+        setErrorMessage('ไม่สามารถโหลดข้อมูลหมวดหมู่ได้');
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchCategories();
+
+    return () => controller.abort();
+  }, []);
 
   const filteredCategories = useMemo(() => {
     const keyword = searchTerm.trim().toLowerCase();
@@ -43,14 +67,14 @@ export default function CategoryPage() {
 
     try {
       setIsDeleting(true);
-
-      // await axios.delete(`/api/categories/${selectedCategory.id}`);
-
+      setErrorMessage('');
+      await deleteCategory(selectedCategory.id);
       setCategories((prev) => prev.filter((item) => item.id !== selectedCategory.id));
       setIsModalOpen(false);
       setSelectedCategory(null);
     } catch (error) {
       console.error('Failed to delete category:', error);
+      setErrorMessage('ไม่สามารถลบหมวดหมู่ได้');
     } finally {
       setIsDeleting(false);
     }
@@ -78,8 +102,10 @@ export default function CategoryPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#F3F4F6] text-gray-700 w-full">
-      {/* <Sidebar /> */}
+    <div className="flex min-h-screen w-full bg-[#F3F4F6] text-gray-700">
+      <AdminSidebar />
+      <div className="flex min-w-0 flex-1 flex-col w-full">
+
       {/* ==================== 1. Top Header Bar ==================== */}
       <header className="bg-white border-b border-gray-200 px-10 py-4">
         <div className="mb-6 flex items-center justify-between">
@@ -123,7 +149,7 @@ export default function CategoryPage() {
                 <th className="px-6 py-3.5 font-normal">สร้างเมื่อ</th>
                 <th className="px-6 py-3.5 font-normal">แก้ไขล่าสุด</th>
                 <th className="pr-10 py-3.5 text-right font-normal">
-                  <div className="ml-auto w-[72px] text-center">Action</div>
+                  <div className="ml-auto w-18 text-center">Action</div>
                 </th>
               </tr>
             </thead>
@@ -132,6 +158,12 @@ export default function CategoryPage() {
                 <tr>
                   <td colSpan={5} className="py-8 text-center text-gray-400">
                     กำลังโหลดข้อมูล...
+                  </td>
+                </tr>
+              ) : errorMessage ? (
+                <tr>
+                  <td colSpan={5} className="py-8 text-center text-red-500">
+                    {errorMessage}
                   </td>
                 </tr>
               ) : filteredCategories.length === 0 ? (
@@ -222,6 +254,7 @@ export default function CategoryPage() {
           onClose={handleCloseDeleteModal}
           onDelete={handleConfirmDelete}
         />
+    </div>
     </div>
   );
 }
