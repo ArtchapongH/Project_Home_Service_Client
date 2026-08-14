@@ -28,10 +28,11 @@ export function Footer() {
             <HomeServicesLogo />
           </Link>
           <nav aria-label="โซเชียลมีเดีย">
-            <ul className="ml-0 flex flex-wrap gap-3 p-0 min-[801px]:ml-10">
+            <ul className="ml-0 flex flex-wrap gap-3 p-0 min-[801px]:ml-5">
               {socialLinks.map(({ href, label, Icon }) => (
                 <li key={label}>
-                  <a className="flex text-[#336df2] [&_svg]:size-6"
+                  <a
+                    className="flex text-[#336df2] [&_svg]:size-6"
                     href={href}
                     aria-label={label}
                     rel="noreferrer"
@@ -46,21 +47,35 @@ export function Footer() {
         </div>
 
         <div>
-          <strong className="mb-[7px] block text-sm">บริษัท โฮมเซอร์วิส จำกัด</strong>
+          <strong className="mb-[7px] block text-sm">
+            บริษัท โฮมเซอร์วิส จำกัด
+          </strong>
           <p className="m-0 text-[11px] leading-[1.7] text-[#667085]">
             452 ซอยสุขุมวิท 79 แขวงพระโขนงเหนือ เขตวัฒนา กรุงเทพมหานคร 10260
           </p>
         </div>
         <address className="mx-auto flex flex-col gap-[5px] text-[11px] leading-[1.7] text-[#667085] not-italic min-[801px]:mx-0">
           <a href="tel:0805406357" className="inline-flex items-center gap-2">
-            <Image className="h-4 w-auto" src={TelephoneIcon} alt="" width={12} height={16} />
+            <Image
+              className="h-4 w-auto"
+              src={TelephoneIcon}
+              alt=""
+              width={12}
+              height={16}
+            />
             080-540-6357
           </a>
           <a
             href="mailto:contact@homeservices.co"
             className="inline-flex items-center gap-2"
           >
-            <Image className="h-4 w-auto" src={EmailIcon} alt="" width={12} height={16} />
+            <Image
+              className="h-4 w-auto"
+              src={EmailIcon}
+              alt=""
+              width={12}
+              height={16}
+            />
             contact@homeservices.co
           </a>
         </address>
