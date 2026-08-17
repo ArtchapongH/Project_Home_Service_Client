@@ -20,38 +20,17 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - **UI Component Library**: Material UI (MUI v9) + `@mui/icons-material`
 - **Theme**: MUI Custom Theme (`src/theme/muiTheme.ts`)
 - **CSS Styling**: Tailwind CSS v4 (`@tailwindcss/postcss`) + MUI `sx` prop
-- **HTTP Client**: Axios Client (`src/services/apiClient.ts`) connecting to Express Backend
-- **Environment Config**: `.env` (พร้อมไฟล์แม่แบบ `.env.example`)
+- **Data Fetching**: Axios / Fetch API Client connecting to Express Backend
 - **Backend & Database Context**: Express API Server + Supabase (PostgreSQL, Auth, Storage)
 
 ---
 
-## 2. Environment Variables & Configuration
-
-ไฟล์การตั้งค่า Environment ถูกเก็บไว้ใน [`.env`](file:///e:/TechUp/finalProject/Project_Home_Service_Client/.env) (โดยมีตัวอย่างใน [`.env.example`](file:///e:/TechUp/finalProject/Project_Home_Service_Client/.env.example)):
-
-```env
-# Express Backend Base URL
-NEXT_PUBLIC_API_BASE_URL=http://localhost:3001
-
-# Development User ID for Header Testing
-NEXT_PUBLIC_DEV_USER_ID=dev-user-001
-```
-
-> **Rule for Agents**: 
-> - ต้องอ่านค่า Base URL ผ่าน `process.env.NEXT_PUBLIC_API_BASE_URL` เสมอ ห้าม Hardcode URL ลงในตัวโค้ด
-> - ไฟล์ `.env` และ `.env.local` ถูกดักจับโดย `.gitignore` ไม่ให้ Commit ขึ้น Remote Repository
-
----
-
-## 3. Directory Structure Conventions
+## 2. Directory Structure Conventions
 
 โครงสร้างซอร์สโค้ดหลักจะถูกจัดให้อยู่ในโฟลเดอร์ `src/` เพื่อความเป็นระเบียบและสม่ำเสมอ:
 
 ```
 Project_Home_Service_Client/
-├── .env                      # Environment Variables Config
-├── .env.example              # Template Environment Variables
 ├── app/                      # Next.js App Router (Pages, Layouts, API routes)
 │   ├── layout.tsx            # Root Layout
 │   ├── page.tsx              # Home Page
@@ -65,11 +44,8 @@ Project_Home_Service_Client/
 │   │   ├── providers/        # App Provider wrappers (MUI ThemeProvider, Context Providers)
 │   │   └── common/           # Shared UI atomic components
 │   ├── contexts/             # React Context Providers for Global State (e.g. ServiceContext)
-│   ├── services/             # API Service Layer & Axios instance
-│   │   ├── apiClient.ts      # Centralized Axios Client (with Interceptors)
-│   │   ├── profile.service.ts# User Profile API Service
-│   │   └── serviceApi.ts     # Admin Services API
-│   ├── types/                # TypeScript Interfaces & Types (e.g. user.ts, service.ts)
+│   ├── services/             # API Service Layer & Axios endpoints (e.g. serviceApi.ts)
+│   ├── types/                # TypeScript Interfaces & Types (e.g. service.ts)
 │   ├── theme/                # MUI Theme tokens & configuration (muiTheme.ts)
 │   ├── hooks/                # Custom React Hooks
 │   ├── utils/                # Helper functions & Utilities
@@ -82,7 +58,7 @@ Project_Home_Service_Client/
 
 ---
 
-## 4. Styling Guidelines (MUI + Tailwind CSS)
+## 3. Styling Guidelines (MUI + Tailwind CSS)
 
 โครงการนี้ใช้เทคโนโลยี Styling ร่วมกันระหว่าง **Material UI** และ **Tailwind CSS**:
 
@@ -97,21 +73,23 @@ Project_Home_Service_Client/
 
 ---
 
-## 5. API & Service Layer Pattern
+## 4. API & Service Layer Pattern
 
-1. **Centralized Axios Client (`apiClient.ts`)**
-   - การสื่อสารกับ Backend ทั้งหมดต้องยิงผ่าน `apiClient` จาก `src/services/apiClient.ts`
-   - `apiClient` ทำหน้าที่แนบ Header `x-user-id`, `Content-Type: application/json` และจัดการ Error Response กลางให้อัตโนมัติ
-
-2. **Separation of Concerns & Type Safety**
+1. **Separation of Concerns**
    - ห้ามเขียน `axios` หรือ `fetch` Directives ลงใน UI Component โดยตรง
-   - ให้แยก API logic ทั้งหมดไว้ในไฟล์ `.ts` ในโฟลเดอร์ `src/services/` (เช่น `profile.service.ts`, `serviceApi.ts`)
-   - อินเทอร์เฟซของ Request DTO และ Response Data ต้องนิยามไว้ใน `src/types/` (เช่น `src/types/user.ts`, `src/types/service.ts`)
+   - ให้แยก API logic ทั้งหมดไว้ที่ `src/services/` (เช่น `src/services/serviceApi.ts`, `src/services/auth.service.ts`)
+
+2. **Type Safety**
+   - อินเทอร์เฟซของ Request DTO และ Response Data ต้องนิยามไว้ใน `src/types/` (เช่น `src/types/service.ts`)
    - ฟังก์ชันใน Service จะต้องคืนค่าเป็น `Promise<T>` ที่ระบุประเภทข้อมูลชัดเจนเสมอ ห้ามใช้ `any`
+
+3. **Fallback & Error Handling**
+   - จัดการ `try...catch` และแสดง Error Log ที่อ่านเข้าใจง่าย
+   - รองรับกรณีระบบกำลังเชื่อมต่อ Backend API หรือต้องการ Mock Data ระหว่างทดสอบ
 
 ---
 
-## 6. State Management & Form Handling
+## 5. State Management & Form Handling
 
 1. **Global State**:
    - ใช้ **React Context API** สำหรับ State ที่ต้องแชร์ข้ามหลายหน้า/คอมโพเนนต์ (เช่น User Auth State, Service List Context) 
@@ -123,7 +101,7 @@ Project_Home_Service_Client/
 
 ---
 
-## 7. Coding Conventions & Best Practices
+## 6. Coding Conventions & Best Practices
 
 1. **Client vs Server Components**:
    - ใส่ `"use client";` ที่บรรทัดแรกของไฟล์เสมอ สำหรับคอมโพเนนต์ที่มี Interaction, State (`useState`), Effects (`useEffect`), หรือ MUI Dynamic Handlers
@@ -132,12 +110,12 @@ Project_Home_Service_Client/
    - ใช้ Explicit Return Types สำหรับ Async Functions และ Handler Types
 3. **Naming Conventions**:
    - Component Files: `PascalCase.tsx` (เช่น `ServiceForm.tsx`)
-   - Services & Utilities: `camelCase.ts` หรือ `name.service.ts` (เช่น `profile.service.ts`, `apiClient.ts`)
-   - Types & Interfaces: `PascalCase` (เช่น `UserProfile`, `ServiceItem`, `CreateServiceInput`)
+   - Services & Utilities: `camelCase.ts` หรือ `name.service.ts` (เช่น `serviceApi.ts`)
+   - Types & Interfaces: `PascalCase` (เช่น `ServiceItem`, `CreateServiceInput`)
 
 ---
 
-## 8. Useful Commands
+## 7. Useful Commands
 
 - `npm run dev` — เริ่มต้นพัฒนาใน Local Development Server (`localhost:3000`)
 - `npm run build` — ตรวจสอบและ Build Production Bundle
