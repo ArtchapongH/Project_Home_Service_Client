@@ -6,6 +6,7 @@ const CATEGORY_ENDPOINT = '/api/admin/categories';
 type CategoryDto = {
   category_id: number | string;
   name: string;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
 };
@@ -14,6 +15,22 @@ type ApiResponse<T> = {
   success: boolean;
   data: T;
 };
+
+type CategoryApiError = {
+  code?: string;
+  message?: string;
+};
+
+export function isInactiveCategoryError(
+  error: unknown,
+): error is CategoryApiError {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    error.code === 'CATEGORY_INACTIVE'
+  );
+}
 
 function formatDate(value: string) {
   const date = new Date(value);
@@ -50,7 +67,9 @@ export async function getCategories(signal?: AbortSignal) {
     { signal },
   );
 
-  return response.data.data.map(toCategory);
+  return response.data.data
+    .filter((category) => category.is_active)
+    .map(toCategory);
 }
 
 export async function getCategory(id: string, signal?: AbortSignal) {
