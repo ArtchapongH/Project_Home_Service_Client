@@ -2,12 +2,11 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import houseIcon from "@/src/assets/icons/house 1.png";
-import categoryIcon from "@/src/assets/icons/category.png";
-import serviceIcon from "@/src/assets/icons/service.png";
-import promotionIcon from "@/src/assets/icons/promotion.png";
-import logoutIcon from "@/src/assets/icons/logout.png";
-import { supabase } from "@/src/lib/supabaseClient";
+import houseIcon from "@/assets/icons/house 1.png";
+import categoryIcon from "@/assets/icons/category.png";
+import serviceIcon from "@/assets/icons/service.png";
+import promotionIcon from "@/assets/icons/promotion.png";
+import logoutIcon from "@/assets/icons/logout.png";
 import axios from "axios";
 
 type ActiveKey = "category" | "service" | "promotion" | "logout";

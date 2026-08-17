@@ -6,8 +6,8 @@ import { ServiceCard } from "./service-card";
 import {
   getApiErrorMessage,
   getPublicServices,
-} from "@/src/services/publicServiceApi";
-import type { PublicService } from "@/src/types/public-service";
+} from "@/services/publicServiceApi";
+import type { PublicService } from "@/types/public-service";
 
 export function ServicesSection() {
   const [services, setServices] = useState<PublicService[]>([]);

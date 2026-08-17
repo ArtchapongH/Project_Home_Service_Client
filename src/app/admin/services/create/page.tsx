@@ -2,9 +2,9 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { ServiceForm } from "../../../../src/components/admin/ServiceForm";
-import { useServiceContext } from "../../../../src/contexts/ServiceContext";
-import { CreateServiceInput } from "../../../../src/types/service";
+import { ServiceForm } from "@/components/admin/ServiceForm";
+import { useServiceContext } from "@/contexts/ServiceContext";
+import { CreateServiceInput } from "@/types/service";
 
 export default function AdminCreateServicePage() {
   const router = useRouter();

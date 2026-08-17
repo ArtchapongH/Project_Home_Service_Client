@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import type { ReactNode } from "react";
-import houseIcon from "@/src/assets/icons/house 1.png";
+import houseIcon from "@/assets/icons/house 1.png";
 
 export const metadata: Metadata = {
   title: "เข้าสู่ระบบแอดมิน",

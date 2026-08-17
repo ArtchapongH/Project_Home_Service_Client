@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { ServiceProvider } from "../../../src/contexts/ServiceContext";
+import { ServiceProvider } from "@/contexts/ServiceContext";
 
 export default function AdminServicesLayout({
   children,

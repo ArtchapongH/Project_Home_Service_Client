@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { PublicService } from "@/src/types/public-service";
+import type { PublicService } from "@/types/public-service";
 
 function formatPrice(minPrice: number, maxPrice: number): string {
   const format = (value: number) => value.toLocaleString("th-TH", {

@@ -3,12 +3,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
-import AlertConfirmation from '@/components/AlertConfirmation';
+import AlertConfirmation from '@/components/admin/AlertConfirmation';
 import { Category } from '@/types/category';
 import Link from 'next/link';
 import Image from 'next/image';
-import AdminSidebar from '@/components/adminSidebar';
-import { deleteCategory, getCategories } from '@/src/lib/categoryApi';
+import AdminSidebar from '@/components/admin/AdminSidebar';
+import { deleteCategory, getCategories } from '@/lib/categoryApi';
 
 export default function CategoryPage() {
   const [categories, setCategories] = useState<Category[]>([]);

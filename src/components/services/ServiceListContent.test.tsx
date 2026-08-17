@@ -4,9 +4,9 @@ import { ServiceListContent } from "./ServiceListContent";
 import {
   getPublicCategories,
   getPublicServices,
-} from "@/src/services/publicServiceApi";
+} from "@/services/publicServiceApi";
 
-vi.mock("@/src/services/publicServiceApi", () => ({
+vi.mock("@/services/publicServiceApi", () => ({
   getPublicCategories: vi.fn(),
   getPublicServices: vi.fn(),
   getApiErrorMessage: () => "โหลดรายการบริการไม่สำเร็จ",

@@ -1,9 +1,9 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ServicesSection } from "./services-section";
-import { getPublicServices } from "@/src/services/publicServiceApi";
+import { getPublicServices } from "@/services/publicServiceApi";
 
-vi.mock("@/src/services/publicServiceApi", () => ({
+vi.mock("@/services/publicServiceApi", () => ({
   getPublicServices: vi.fn(),
   getApiErrorMessage: () => "โหลดข้อมูลไม่สำเร็จ",
 }));

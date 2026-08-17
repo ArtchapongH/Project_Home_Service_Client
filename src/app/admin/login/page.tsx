@@ -1,22 +1,25 @@
-import React from 'react';
-import { useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+"use client";
+
+import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
+import apiClient from "@/services/apiClient";
 
 const LoginPage = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const navigate = useNavigate();
+    const router = useRouter();
 
-    async function handleSubmit(){
+    async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+
         try{
-            const response = await axios.post("http://localhost:3000/auth/login", {
+            await apiClient.post("/auth/login", {
                 email: email,
                 password: password
             });
             alert("Login successful");
-            navigate("/admin/services");
-        }catch(error){
+            router.push("/admin/services");
+        } catch {
             alert("Login failed");
         }
     }
@@ -33,6 +36,8 @@ const LoginPage = () => {
             <input
                 id="email"
                 type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
                 className="h-11 w-full rounded-md border border-[#d8dde7] px-3 text-base text-[#222] outline-none transition focus:border-[#2d63f6]"
             />
             </div>
@@ -44,6 +49,8 @@ const LoginPage = () => {
             <input
                 id="password"
                 type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
                 className="h-11 w-full rounded-md border border-[#d8dde7] px-3 text-base text-[#222] outline-none transition focus:border-[#2d63f6]"
             />
             </div>

@@ -24,8 +24,8 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
 import ImageOutlinedIcon from "@mui/icons-material/ImageOutlined";
-import { useServiceContext } from "../../../../src/contexts/ServiceContext";
-import { ServiceItem } from "../../../../src/types/service";
+import { useServiceContext } from "@/contexts/ServiceContext";
+import { ServiceItem } from "@/types/service";
 
 function getCategoryChipColor(category: string): { bg: string; color: string } {
   switch (category) {

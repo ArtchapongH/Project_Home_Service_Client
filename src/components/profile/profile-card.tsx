@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getMyProfile } from "@/src/services/profile.service";
-import type { UserProfile } from "@/src/types/user";
+import { getMyProfile } from "@/services/profile.service";
+import type { UserProfile } from "@/types/user";
 
 export function ProfileCard() {
   const [profile, setProfile] = useState<UserProfile | null>(null);

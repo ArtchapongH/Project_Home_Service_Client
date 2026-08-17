@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import AdminSidebar from '@/components/adminSidebar';
-import { createCategory } from '@/src/lib/categoryApi';
+import AdminSidebar from '@/components/admin/AdminSidebar';
+import { createCategory } from '@/lib/categoryApi';
 
 export default function CreateCategoryPage() {
   const router = useRouter();

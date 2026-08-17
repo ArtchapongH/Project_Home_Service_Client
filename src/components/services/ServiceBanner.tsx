@@ -18,7 +18,7 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import ClearIcon from "@mui/icons-material/Clear";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import type { PublicCategory, PublicServiceSort } from "@/src/types/public-service";
+import type { PublicCategory, PublicServiceSort } from "@/types/public-service";
 
 interface ServiceBannerProps {
   categories: PublicCategory[];

@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { ThemeProvider } from "@mui/material/styles";
-import { muiTheme } from "@/src/theme/muiTheme";
+import { muiTheme } from "@/theme/muiTheme";
 
 export default function AppProviders({
   children,

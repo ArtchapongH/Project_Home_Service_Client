@@ -10,9 +10,9 @@ import {
   CircularProgress,
 } from "@mui/material";
 import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
-import { ServiceForm } from "../../../../../src/components/admin/ServiceForm";
-import { useServiceContext } from "../../../../../src/contexts/ServiceContext";
-import { ServiceItem, UpdateServiceInput } from "../../../../../src/types/service";
+import { ServiceForm } from "@/components/admin/ServiceForm";
+import { useServiceContext } from "@/contexts/ServiceContext";
+import { ServiceItem, UpdateServiceInput } from "@/types/service";
 
 export default function AdminEditServicePage({
   params,

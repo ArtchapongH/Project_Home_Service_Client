@@ -10,12 +10,12 @@ import {
   getApiErrorMessage,
   getPublicCategories,
   getPublicServices,
-} from "@/src/services/publicServiceApi";
+} from "@/services/publicServiceApi";
 import type {
   PublicCategory,
   PublicService,
   PublicServiceSort,
-} from "@/src/types/public-service";
+} from "@/types/public-service";
 
 export function ServiceListContent() {
   const [services, setServices] = useState<PublicService[]>([]);

@@ -1,9 +1,9 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { ProfileCard } from "./profile-card";
-import { getMyProfile } from "@/src/services/profile.service";
+import { getMyProfile } from "@/services/profile.service";
 
-vi.mock("@/src/services/profile.service", () => ({ getMyProfile: vi.fn() }));
+vi.mock("@/services/profile.service", () => ({ getMyProfile: vi.fn() }));
 
 describe("ProfileCard", () => {
   it("renders profile fields without edit controls", async () => {

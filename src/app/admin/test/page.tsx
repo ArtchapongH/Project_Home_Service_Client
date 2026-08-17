@@ -1,5 +1,5 @@
 import React from "react";
-import AdminSidebar from "@/src/components/adminSidebar";
+import AdminSidebar from "@/components/admin/AdminSidebar";
 
 const TestPage = () => {
     return (

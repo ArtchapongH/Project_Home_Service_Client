@@ -5,8 +5,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import { Category } from '@/types/category';
-import AdminSidebar from '@/components/adminSidebar';
-import { getCategory } from '@/src/lib/categoryApi';
+import AdminSidebar from '@/components/admin/AdminSidebar';
+import { getCategory } from '@/lib/categoryApi';
 
 interface CategoryDetailPageProps {
   params: Promise<{ id: string }>;

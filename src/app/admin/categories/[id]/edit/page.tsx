@@ -4,14 +4,14 @@ import React, { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import DeleteOutlineIcon from '@mui/icons-material/Delete';
-import AlertConfirmation from '@/components/AlertConfirmation';
+import AlertConfirmation from '@/components/admin/AlertConfirmation';
 import { Category } from '@/types/category';
-import AdminSidebar from '@/components/adminSidebar';
+import AdminSidebar from '@/components/admin/AdminSidebar';
 import {
   deleteCategory,
   getCategory,
   updateCategory,
-} from '@/src/lib/categoryApi';
+} from '@/lib/categoryApi';
 
 interface EditCategoryPageProps {
   params: Promise<{ id: string }>;

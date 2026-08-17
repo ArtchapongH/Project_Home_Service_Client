@@ -11,7 +11,7 @@ import {
   Chip,
 } from "@mui/material";
 import SellOutlinedIcon from "@mui/icons-material/SellOutlined";
-import type { PublicService } from "@/src/types/public-service";
+import type { PublicService } from "@/types/public-service";
 
 interface ServiceCardProps {
   service: PublicService;
