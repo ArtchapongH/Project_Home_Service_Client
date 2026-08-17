@@ -3,7 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import houseIcon from "@/assets/icons/house 1.png";
 import categoryIcon from "@/assets/icons/category.png";
@@ -14,9 +14,9 @@ import logoutIcon from "@/assets/icons/logout.png";
 type ActiveKey = "category" | "service" | "promotion" | "logout";
 
 const AdminSidebar = () => {
-  const [activeItem, setActiveItem] = React.useState<ActiveKey>("category");
   const { logout } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
   const menuItems: {
     key: ActiveKey;
@@ -33,7 +33,7 @@ const AdminSidebar = () => {
     {
       key: "service",
       label: "บริการ",
-      href: "/admin/service",
+      href: "/admin/services",
       icon: serviceIcon,
     },
     {
@@ -44,13 +44,22 @@ const AdminSidebar = () => {
     },
   ];
 
+  const getActiveItem = (): ActiveKey | null => {
+    if (pathname.startsWith("/admin/categories")) return "category";
+    if (pathname.startsWith("/admin/services")) return "service";
+    if (pathname.startsWith("/admin/promotion")) return "promotion";
+    return null;
+  };
+
+  const currentActive = getActiveItem();
+
   const handleLogout = async () => {
     await logout();
     router.push("/admin/login");
   };
 
   return (
-    <aside className="flex h-screen w-72 flex-col bg-[#031b67] py-6 text-white">
+    <aside className="sticky top-0 flex h-screen w-72 shrink-0 flex-col bg-[#031b67] py-6 text-white">
       <div className="px-4">
         <Link
           href="/"
@@ -63,13 +72,12 @@ const AdminSidebar = () => {
 
       <nav className="mt-8 space-y-1">
         {menuItems.map((item) => {
-          const isActive = activeItem === item.key;
+          const isActive = currentActive === item.key;
 
           return (
             <Link
               key={item.key}
               href={item.href}
-              onClick={() => setActiveItem(item.key)}
               className={`flex h-12 items-center gap-3 px-6 transition-colors ${
                 isActive ? "bg-[#12358f]" : "hover:bg-[#0a2a7d]"
               }`}
@@ -84,13 +92,8 @@ const AdminSidebar = () => {
       <div className="mt-auto px-2">
         <button
           type="button"
-          onClick={() => {
-            setActiveItem("logout");
-            handleLogout();
-          }}
-          className={`flex h-12 w-full items-center gap-3 rounded-lg px-4 text-left transition-colors ${
-            activeItem === "logout" ? "bg-[#12358f]" : "hover:bg-[#0a2a7d]"
-          }`}
+          onClick={handleLogout}
+          className="flex h-12 w-full items-center gap-3 rounded-lg px-4 text-left transition-colors hover:bg-[#0a2a7d]"
         >
           <Image src={logoutIcon} alt="ออกจากระบบ" className="h-5 w-5" />
           <span className="text-lg">ออกจากระบบ</span>
