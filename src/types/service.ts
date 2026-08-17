@@ -18,22 +18,40 @@ export interface ServiceOption {
   unit: string;
 }
 
+export type ServiceCategory = "บริการทั้งหมด" | "บริการทั่วไป" | "บริการห้องครัว" | "บริการห้องน้ำ" | string;
+
 export interface ServiceItem {
   id: string;
   service_id?: number | string;
+  slug?: string;
   name: string;
   service_name?: string;
   categoryId?: number;
   category_id?: number;
   category: string; // Category Name
-  imageUrl: string;
+  imageUrl?: string;
   image_url?: string;
-  serviceOptions: ServiceOption[];
+  image?: string;
+  price?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  isRecommended?: boolean;
+  popularityScore?: number;
+  serviceOptions?: ServiceOption[];
   service_options?: ServiceOption[];
-  createdAt: string;
+  createdAt?: string;
   created_at?: string;
-  updatedAt: string;
+  updatedAt?: string;
   updated_at?: string;
+}
+
+export type SortOption = "recommended" | "popular" | "asc" | "desc";
+
+export interface ServiceFilterState {
+  searchQuery: string;
+  category: string;
+  priceRange: [number, number];
+  sortBy: SortOption;
 }
 
 export interface CreateServiceInput {

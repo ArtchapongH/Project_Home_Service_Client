@@ -6,6 +6,12 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import DeleteOutlineIcon from '@mui/icons-material/Delete';
 import AlertConfirmation from '@/components/AlertConfirmation';
 import { Category } from '@/types/category';
+import AdminSidebar from '@/components/adminSidebar';
+import {
+  deleteCategory,
+  getCategory,
+  updateCategory,
+} from '@/src/lib/categoryApi';
 
 interface EditCategoryPageProps {
   params: Promise<{ id: string }>;
@@ -21,40 +27,38 @@ export default function EditCategoryPage({ params }: EditCategoryPageProps) {
   const [categoryData, setCategoryData] = useState<Category | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   
   // State สำหรับ Modal ยืนยันการลบ
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // ดึงข้อมูลหมวดหมู่มาแสดง (Mockup หรือ API)
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchCategory = async () => {
       try {
         setLoading(true);
-        // TODO: เปลี่ยนเป็นเรียก API จริง เช่น:
-        // const res = await axios.get(`/api/categories/${categoryId}`);
-        // const data = res.data;
-
-        // Mockup ข้อมูลตัวอย่างตามภาพ
-        const mockData: Category = {
-          id: Number(categoryId),
-          name: 'บริการห้องครัว',
-          createdAt: '12/02/2022 10:30PM',
-          updatedAt: '12/02/2022 10:30PM',
-        };
-
-        setCategoryData(mockData);
-        setCategoryName(mockData.name);
+        setErrorMessage('');
+        const data = await getCategory(categoryId, controller.signal);
+        setCategoryData(data);
+        setCategoryName(data.name);
       } catch (error) {
+        if (controller.signal.aborted) return;
         console.error('Failed to fetch category:', error);
+        setErrorMessage('ไม่สามารถโหลดข้อมูลหมวดหมู่ได้');
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
 
     if (categoryId) {
       fetchCategory();
     }
+
+    return () => controller.abort();
   }, [categoryId]);
 
   const handleCancel = () => {
@@ -67,12 +71,13 @@ export default function EditCategoryPage({ params }: EditCategoryPageProps) {
 
     try {
       setIsSubmitting(true);
-      // TODO: เรียก API บันทึกการแก้ไข
-      // await axios.put(`/api/categories/${categoryId}`, { name: categoryName });
-
-      router.push('/categories'); // นำกลับไปยังหน้าหลัก
+      setErrorMessage('');
+      await updateCategory(categoryId, categoryName.trim());
+      router.push('/admin/categories');
+      router.refresh();
     } catch (error) {
       console.error('Failed to update category:', error);
+      setErrorMessage('ไม่สามารถแก้ไขหมวดหมู่ได้');
     } finally {
       setIsSubmitting(false);
     }
@@ -81,13 +86,14 @@ export default function EditCategoryPage({ params }: EditCategoryPageProps) {
   const handleConfirmDelete = async () => {
     try {
       setIsDeleting(true);
-      // TODO: เรียก API ลบข้อมูล
-      // await axios.delete(`/api/categories/${categoryId}`);
-
+      setErrorMessage('');
+      await deleteCategory(categoryId);
       setIsDeleteModalOpen(false);
-      router.push('/categories');
+      router.push('/admin/categories');
+      router.refresh();
     } catch (error) {
       console.error('Failed to delete category:', error);
+      setErrorMessage('ไม่สามารถลบหมวดหมู่ได้');
     } finally {
       setIsDeleting(false);
     }
@@ -101,8 +107,19 @@ export default function EditCategoryPage({ params }: EditCategoryPageProps) {
     );
   }
 
+  if (!categoryData) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#F3F4F6] text-red-500">
+        {errorMessage || 'ไม่พบข้อมูลหมวดหมู่'}
+      </div>
+    );
+  }
+
   return (
-    <div className="flex min-h-screen flex-col bg-[#F3F4F6] text-gray-700 w-full">
+    <div className="flex min-h-screen w-full bg-[#F3F4F6] text-gray-700">
+      <AdminSidebar />
+      <div className="flex min-w-0 flex-1 flex-col w-full">
+
       {/* ==================== 1. Header Bar ==================== */}
       <header className="border-b border-gray-200 bg-white px-8 py-4">
         <div className="flex items-center justify-between">
@@ -165,6 +182,9 @@ export default function EditCategoryPage({ params }: EditCategoryPageProps) {
                 className="w-96 rounded-lg border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-800 transition-colors focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
+            {errorMessage && (
+              <p className="mt-4 text-sm text-red-500">{errorMessage}</p>
+            )}
 
             <hr className="my-6 border-gray-100" />
 
@@ -203,6 +223,7 @@ export default function EditCategoryPage({ params }: EditCategoryPageProps) {
         onClose={() => setIsDeleteModalOpen(false)}
         onDelete={handleConfirmDelete}
       />
+    </div>
     </div>
   );
 }

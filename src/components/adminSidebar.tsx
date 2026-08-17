@@ -24,7 +24,7 @@ const AdminSidebar = () => {
         {
             key: "category",
             label: "หมวดหมู่",
-            href: "/admin/category",
+            href: "/admin/categories",
             icon: categoryIcon,
         },
         {

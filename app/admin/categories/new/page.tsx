@@ -2,11 +2,14 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import AdminSidebar from '@/components/adminSidebar';
+import { createCategory } from '@/src/lib/categoryApi';
 
 export default function CreateCategoryPage() {
   const router = useRouter();
   const [categoryName, setCategoryName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleCancel = () => {
     router.back();
@@ -18,19 +21,22 @@ export default function CreateCategoryPage() {
 
     try {
       setIsSubmitting(true);
-      // TODO: เรียก API สำหรับบันทึกข้อมูล เช่น:
-      // await axios.post('/api/categories', { name: categoryName });
-      
-      router.push('/categories'); // เปลี่ยน path ให้ตรงกับหน้าหลักของคุณ
+      setErrorMessage('');
+      await createCategory(categoryName.trim());
+      router.push('/admin/categories');
+      router.refresh();
     } catch (error) {
       console.error('Failed to create category:', error);
+      setErrorMessage('ไม่สามารถสร้างหมวดหมู่ได้');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#F3F4F6] text-gray-700 w-full">
+    <div className="flex min-h-screen w-full bg-[#F3F4F6] text-gray-700">
+      <AdminSidebar />
+      <div className="flex min-w-0 flex-1 flex-col w-full">
       {/* ==================== 1. Header Bar ==================== */}
       <header className="border-b border-gray-200 bg-white px-10 py-4">
         <div className="flex items-center justify-between">
@@ -79,9 +85,13 @@ export default function CreateCategoryPage() {
                 className="w-80 rounded-lg border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-800 transition-colors focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
+            {errorMessage && (
+              <p className="mt-4 text-sm text-red-500">{errorMessage}</p>
+            )}
           </form>
         </div>
       </main>
+      </div>
     </div>
   );
 }
