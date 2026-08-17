@@ -2,56 +2,28 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import {
-  Box,
-  Typography,
-  TextField,
-  Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  IconButton,
-  InputAdornment,
-  Chip,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
-} from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
+import Image from "next/image";
 import AddIcon from "@mui/icons-material/Add";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlined";
-import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
-import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
-import ClearIcon from "@mui/icons-material/Clear";
-import { useServiceContext } from "../../contexts/ServiceContext";
-import { ServiceItem } from "../../types/service";
+import SearchIcon from "@mui/icons-material/Search";
+import AlertConfirmation from "@/components/admin/AlertConfirmation";
+import { useServiceContext } from "@/contexts/ServiceContext";
+import { ServiceItem } from "@/types/service";
 
-function getCategoryChipColor(category: string): {
-  bg: string;
-  color: string;
-} {
+function getCategoryBadgeStyle(category: string): string {
   switch (category) {
     case "บริการห้องครัว":
-      return { bg: "#F4E6FF", color: "#6B11B5" };
+      return "bg-[#F4E6FF] text-[#6B11B5]";
     case "บริการห้องน้ำ":
-      return { bg: "#E5F9F6", color: "#009282" };
+      return "bg-[#E5F9F6] text-[#009282]";
     case "บริการห้องนอน":
-      return { bg: "#FFF0E6", color: "#B54708" };
+      return "bg-[#FFF0E6] text-[#B54708]";
     case "บริการทั่วไป":
     default:
-      return { bg: "#E7F0FF", color: "#0E49B5" };
+      return "bg-[#E7F0FF] text-[#0E49B5]";
   }
 }
 
 export const ServiceTable: React.FC = () => {
-  const router = useRouter();
   const {
     services,
     isLoading,
@@ -64,33 +36,7 @@ export const ServiceTable: React.FC = () => {
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [deleteTargetName, setDeleteTargetName] = useState<string>("");
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
-
-  const handleDragStart = (
-    e: React.DragEvent<HTMLTableRowElement>,
-    index: number
-  ) => {
-    setDraggedIndex(index);
-    e.dataTransfer.effectAllowed = "move";
-  };
-
-  const handleDragOver = (
-    e: React.DragEvent<HTMLTableRowElement>,
-    index: number
-  ) => {
-    e.preventDefault();
-    if (draggedIndex === null || draggedIndex === index) return;
-    const newItems = [...services];
-    const itemToMove = newItems[draggedIndex];
-    newItems.splice(draggedIndex, 1);
-    newItems.splice(index, 0, itemToMove);
-    setDraggedIndex(index);
-    reorderServicesList(newItems);
-  };
-
-  const handleDragEnd = () => {
-    setDraggedIndex(null);
-  };
+  const [draggedServiceId, setDraggedServiceId] = useState<string | number | null>(null);
 
   const confirmDelete = async () => {
     if (!deleteTargetId) return;
@@ -106,262 +52,187 @@ export const ServiceTable: React.FC = () => {
     }
   };
 
-  return (
-    <Box sx={{ width: "100%", minHeight: "100vh", bgcolor: "#F3F4F6", p: { xs: 2, md: 4 } }}>
-      <Box sx={{ maxWidth: 1200, mx: "auto" }}>
-        {/* Header Bar */}
-        <Paper
-          elevation={0}
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            p: 2,
-            mb: 3,
-            borderRadius: "8px",
-            border: "1px solid #E5E7EB",
-            bgcolor: "#FFFFFF",
-          }}
-        >
-          <Typography variant="h6" color="text.primary" sx={{ fontWeight: 700, fontSize: "1.25rem" }}>
-            บริการ
-          </Typography>
+  const handleDrop = (targetServiceId: string | number) => {
+    if (draggedServiceId === null || draggedServiceId === targetServiceId) {
+      setDraggedServiceId(null);
+      return;
+    }
 
-          <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-            <TextField
-              size="small"
+    const sourceIndex = services.findIndex((item) => item.id === draggedServiceId);
+    const targetIndex = services.findIndex((item) => item.id === targetServiceId);
+
+    if (sourceIndex === -1 || targetIndex === -1) {
+      setDraggedServiceId(null);
+      return;
+    }
+
+    const reordered = [...services];
+    const [moved] = reordered.splice(sourceIndex, 1);
+    reordered.splice(targetIndex, 0, moved);
+    reorderServicesList(reordered);
+    setDraggedServiceId(null);
+  };
+
+  return (
+    <div className="flex min-w-0 flex-1 flex-col w-full">
+      {/* ==================== 1. Top Header Bar ==================== */}
+      <header className="flex h-20 items-center justify-between border-b border-gray-200 bg-white px-10">
+        <h1 className="text-xl font-bold text-gray-900">บริการ</h1>
+
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <SearchIcon
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
+              fontSize="small"
+            />
+            <input
+              type="text"
               placeholder="ค้นหาบริการ..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              sx={{ width: 300 }}
-              slotProps={{
-                input: {
-                  sx: { borderRadius: "8px" },
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon fontSize="small" sx={{ color: "grey.400" }} />
-                    </InputAdornment>
-                  ),
-                  endAdornment: searchQuery ? (
-                    <InputAdornment position="end">
-                      <IconButton size="small" onClick={() => setSearchQuery("")}>
-                        <ClearIcon fontSize="small" />
-                      </IconButton>
-                    </InputAdornment>
-                  ) : null,
-                },
-              }}
+              className="w-80 rounded-lg border border-gray-200 bg-white py-2.5 pr-4 pl-10 text-sm placeholder:text-gray-400 focus:border-blue-500 focus:outline-none"
             />
+          </div>
 
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              component={Link}
-              href="/admin/services/create"
-              sx={{
-                textTransform: "none",
-                fontWeight: 600,
-                borderRadius: "8px",
-                px: 3,
-                py: 1,
-                bgcolor: "#3366FF",
-                "&:hover": { bgcolor: "#2557E0" },
-              }}
+          <Link href="/admin/services/create">
+            <button
+              type="button"
+              className="flex items-center gap-1.5 rounded-lg bg-[#3366FF] px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-600"
             >
-              เพิ่มบริการ +
-            </Button>
-          </Box>
-        </Paper>
+              <span>เพิ่มบริการ</span>
+              <AddIcon fontSize="small" />
+            </button>
+          </Link>
+        </div>
+      </header>
 
-        {/* Table Container */}
-        <Paper
-          elevation={0}
-          sx={{
-            borderRadius: "8px",
-            border: "1px solid #E5E7EB",
-            overflow: "hidden",
-            bgcolor: "#FFFFFF",
-          }}
-        >
-          {isLoading ? (
-            <Box sx={{ py: 10, textAlign: "center" }}>
-              <Typography color="text.secondary" variant="body2">
-                กำลังโหลดข้อมูลบริการ...
-              </Typography>
-            </Box>
-          ) : services.length === 0 ? (
-            <Box sx={{ py: 10, textAlign: "center" }}>
-              <Typography color="text.secondary" variant="body2" sx={{ mb: 2 }}>
-                {searchQuery
-                  ? `ไม่พบคำที่ค้นหา "${searchQuery}"`
-                  : "ยังไม่มีบริการในระบบ"}
-              </Typography>
-              {!searchQuery && (
-                <Button
-                  variant="contained"
-                  component={Link}
-                  href="/admin/services/create"
-                  startIcon={<AddIcon />}
-                  sx={{ borderRadius: "8px", bgcolor: "#3366FF" }}
-                >
-                  เพิ่มบริการใหม่
-                </Button>
-              )}
-            </Box>
-          ) : (
-            <TableContainer>
-              <Table sx={{ minWidth: 650 }}>
-                <TableHead>
-                  <TableRow sx={{ bgcolor: "#EFEFEF" }}>
-                    <TableCell sx={{ fontWeight: 600, color: "#64748B", width: 80 }} align="center">
-                      ลำดับ
-                    </TableCell>
-                    <TableCell sx={{ fontWeight: 600, color: "#64748B" }}>ชื่อบริการ</TableCell>
-                    <TableCell sx={{ fontWeight: 600, color: "#64748B" }}>หมวดหมู่</TableCell>
-                    <TableCell sx={{ fontWeight: 600, color: "#64748B" }}>สร้างเมื่อ</TableCell>
-                    <TableCell sx={{ fontWeight: 600, color: "#64748B" }}>แก้ไขล่าสุด</TableCell>
-                    <TableCell sx={{ fontWeight: 600, color: "#64748B", width: 120 }} align="center">
-                      Action
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {services.map((item: ServiceItem, index: number) => {
-                    const chipColor = getCategoryChipColor(item.category);
-                    return (
-                      <TableRow
-                        key={item.id}
-                        hover
-                        draggable
-                        onDragStart={(e) => handleDragStart(e, index)}
-                        onDragOver={(e) => handleDragOver(e, index)}
-                        onDragEnd={handleDragEnd}
-                        sx={{
-                          cursor: "pointer",
-                          opacity: draggedIndex === index ? 0.4 : 1,
-                          "&:last-child td": { borderBottom: 0 },
-                          transition: "background-color 0.15s ease",
-                        }}
-                        onClick={(e) => {
-                          const target = e.target as HTMLElement;
-                          if (!target.closest("button") && !target.closest("a")) {
-                            router.push(`/admin/services/${item.id}`);
-                          }
-                        }}
-                      >
-                        <TableCell align="center">
-                          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0.5 }}>
-                            <DragIndicatorIcon fontSize="small" sx={{ color: "grey.400", cursor: "grab" }} />
-                            <Typography variant="body2" sx={{ fontWeight: 600, color: "#374151" }}>
-                              {index + 1}
-                            </Typography>
-                          </Box>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2" sx={{ fontWeight: 500, color: "#1F2937" }}>
-                            {item.name}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={item.category}
-                            size="small"
-                            sx={{
-                              bgcolor: chipColor.bg,
-                              color: chipColor.color,
-                              fontWeight: 600,
-                              fontSize: "0.75rem",
-                              borderRadius: "8px",
-                              px: 0.5,
-                            }}
+      {/* ==================== 2. Main Content Table ==================== */}
+      <main className="m-8 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+        <table className="w-full text-left text-sm text-gray-600">
+          <thead className="border-b border-gray-200 bg-[#EFEFEF] text-gray-500">
+            <tr>
+              <th className="w-32 px-6 py-4 text-center font-normal text-xs text-gray-500">ลำดับ</th>
+              <th className="px-6 py-4 font-normal text-xs text-gray-500">ชื่อบริการ</th>
+              <th className="px-6 py-4 font-normal text-xs text-gray-500">หมวดหมู่</th>
+              <th className="px-6 py-4 font-normal text-xs text-gray-500">สร้างเมื่อ</th>
+              <th className="px-6 py-4 font-normal text-xs text-gray-500">แก้ไขล่าสุด</th>
+              <th className="w-28 px-6 py-4 text-center font-normal text-xs text-gray-500">Action</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {isLoading ? (
+              <tr>
+                <td colSpan={6} className="py-10 text-center text-gray-400">
+                  กำลังโหลดข้อมูล...
+                </td>
+              </tr>
+            ) : services.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="py-10 text-center text-gray-400">
+                  {searchQuery ? `ไม่พบคำที่ค้นหา "${searchQuery}"` : "ไม่พบข้อมูลบริการ"}
+                </td>
+              </tr>
+            ) : (
+              services.map((item: ServiceItem, index: number) => {
+                const chipStyle = getCategoryBadgeStyle(item.category);
+                return (
+                  <tr
+                    key={item.id}
+                    onDragOver={(event) => event.preventDefault()}
+                    onDrop={() => handleDrop(item.id)}
+                    className={`transition-colors hover:bg-gray-50/50 ${draggedServiceId === item.id ? "opacity-50" : ""}`}
+                  >
+                    <td className="px-6 py-5">
+                      <div className="relative flex items-center justify-center">
+                        <button
+                          type="button"
+                          draggable
+                          onDragStart={(event) => {
+                            setDraggedServiceId(item.id);
+                            event.dataTransfer.effectAllowed = "move";
+                            event.dataTransfer.setData("text/plain", String(item.id));
+                          }}
+                          onDragEnd={() => setDraggedServiceId(null)}
+                          className="absolute -left-5 top-1/2 -translate-y-1/2 cursor-grab touch-none text-gray-300 active:cursor-grabbing"
+                          title="ลากเพื่อสลับลำดับ"
+                          aria-label={`สลับลำดับ ${item.name}`}
+                        >
+                          <Image
+                            src="/dragvertical.svg"
+                            alt=""
+                            width={24}
+                            height={32}
+                            draggable={false}
+                            className="block"
                           />
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2" color="text.secondary">
-                            {item.createdAt}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2" color="text.secondary">
-                            {item.updatedAt}
-                          </Typography>
-                        </TableCell>
-                        <TableCell align="center">
-                          <Box sx={{ display: "flex", justifyContent: "center", gap: 0.5 }}>
-                            <IconButton
-                              size="small"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setDeleteTargetId(String(item.id));
-                                setDeleteTargetName(item.name);
-                              }}
-                              sx={{ color: "grey.500", "&:hover": { color: "error.main" } }}
-                            >
-                              <DeleteOutlineIcon fontSize="small" />
-                            </IconButton>
-                            <IconButton
-                              size="small"
-                              component={Link}
-                              href={`/admin/services/${item.id}/edit`}
-                              onClick={(e: React.MouseEvent) => e.stopPropagation()}
-                              sx={{ color: "#3366FF", "&:hover": { color: "#2557E0" } }}
-                            >
-                              <EditOutlinedIcon fontSize="small" />
-                            </IconButton>
-                          </Box>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          )}
-        </Paper>
-      </Box>
+                        </button>
+                        <span className="font-normal text-gray-800">{index + 1}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-5 font-medium text-gray-900">
+                      <Link
+                        href={`/admin/services/${item.id}`}
+                        className="block hover:text-blue-600"
+                      >
+                        {item.name}
+                      </Link>
+                    </td>
+                    <td className="px-6 py-5">
+                      <span className={`inline-flex items-center px-3 py-0.5 rounded-full text-xs font-medium ${chipStyle}`}>
+                        {item.category}
+                      </span>
+                    </td>
+                    <td className="px-6 py-5 text-gray-500">
+                      <Link href={`/admin/services/${item.id}`} className="block">
+                        {item.createdAt}
+                      </Link>
+                    </td>
+                    <td className="px-6 py-5 text-gray-500">
+                      <Link href={`/admin/services/${item.id}`} className="block">
+                        {item.updatedAt}
+                      </Link>
+                    </td>
+                    <td className="px-6 py-5 text-center">
+                      <div className="flex items-center justify-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setDeleteTargetId(String(item.id));
+                            setDeleteTargetName(item.name);
+                          }}
+                          className="flex h-8 w-8 items-center justify-center text-gray-400 hover:opacity-75 transition-opacity"
+                          title="ลบ"
+                        >
+                          <Image src="/delete.svg" alt="ลบ" width={20} height={20} className="block" />
+                        </button>
+                        <Link
+                          href={`/admin/services/${item.id}/edit`}
+                          className="flex h-8 w-8 items-center justify-center text-blue-600 hover:opacity-75 transition-opacity"
+                          title="แก้ไข"
+                        >
+                          <Image src="/edit.svg" alt="แก้ไข" width={18} height={18} className="block" />
+                        </Link>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </main>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog
-        open={!!deleteTargetId}
+      <AlertConfirmation
+        isOpen={!!deleteTargetId}
+        itemName={deleteTargetName}
+        loading={isDeleting}
         onClose={() => {
+          if (isDeleting) return;
           setDeleteTargetId(null);
           setDeleteTargetName("");
         }}
-        maxWidth="xs"
-        fullWidth
-        slotProps={{
-          paper: { sx: { borderRadius: "8px" } },
-        }}
-      >
-        <DialogTitle sx={{ fontWeight: 700 }}>ยืนยันการลบรายการ?</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            คุณต้องการลบบริการ &quot;<strong>{deleteTargetName}</strong>&quot; ใช่หรือไม่?
-            การกระทำนี้ไม่สามารถยกเลิกได้
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button
-            onClick={() => {
-              setDeleteTargetId(null);
-              setDeleteTargetName("");
-            }}
-            disabled={isDeleting}
-            sx={{ borderRadius: "8px" }}
-          >
-            ยกเลิก
-          </Button>
-          <Button
-            variant="contained"
-            color="error"
-            onClick={confirmDelete}
-            disabled={isDeleting}
-            sx={{ borderRadius: "8px" }}
-          >
-            {isDeleting ? "กำลังลบ..." : "ลบรายการ"}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
+        onDelete={confirmDelete}
+      />
+    </div>
   );
 };
