@@ -13,27 +13,39 @@ export const apiClient: AxiosInstance = axios.create({
   },
 });
 
-// Request Interceptor: Attach dev user header or auth tokens
+// Request Interceptor: แนบ Bearer Token จาก localStorage
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    if (typeof window !== "undefined") {
+      const token = window.localStorage.getItem("token");
+      if (token && config.headers) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    }
+
+    // หากไม่มี token และมี devUserId ให้ใส่ dev header (ถ้าเปิดใช้งาน)
     const devUserId = process.env.NEXT_PUBLIC_DEV_USER_ID;
-    if (devUserId && config.headers) {
+    if (devUserId && config.headers && !config.headers.Authorization) {
       config.headers["x-user-id"] = devUserId;
     }
+
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// Response Interceptor: Format errors consistently
+// Response Interceptor: จัดการ Error และล้าง Token เมื่อได้ 401 Unauthorized
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => response,
   (error) => {
     if (error.response) {
-      // Backend responded with non-2xx status code
+      if (error.response.status === 401 && typeof window !== "undefined") {
+        // ล้าง token หากเซสชันหมดอายุ
+        window.localStorage.removeItem("token");
+        window.localStorage.removeItem("user");
+      }
       return Promise.reject(error.response.data || error.response.statusText);
     } else if (error.request) {
-      // Request was sent but no response received (Network Error / Backend Down)
       return Promise.reject({
         message: "ไม่สามารถเชื่อมต่อกับ Backend Server ได้ (Network Error)",
         code: "NETWORK_ERROR",
