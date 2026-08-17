@@ -3,7 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import houseIcon from "@/assets/icons/house 1.png";
 import categoryIcon from "@/assets/icons/category.png";
@@ -14,9 +14,9 @@ import logoutIcon from "@/assets/icons/logout.png";
 type ActiveKey = "category" | "service" | "promotion" | "logout";
 
 const AdminSidebar = () => {
-  const [activeItem, setActiveItem] = React.useState<ActiveKey>("category");
   const { logout } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
   const menuItems: {
     key: ActiveKey;
@@ -33,7 +33,7 @@ const AdminSidebar = () => {
     {
       key: "service",
       label: "บริการ",
-      href: "/admin/service",
+      href: "/admin/services",
       icon: serviceIcon,
     },
     {
@@ -44,56 +44,61 @@ const AdminSidebar = () => {
     },
   ];
 
+  const getActiveItem = (): ActiveKey | null => {
+    if (pathname.startsWith("/admin/categories")) return "category";
+    if (pathname.startsWith("/admin/services")) return "service";
+    if (pathname.startsWith("/admin/promotion")) return "promotion";
+    return null;
+  };
+
+  const currentActive = getActiveItem();
+
   const handleLogout = async () => {
     await logout();
     router.push("/admin/login");
   };
 
   return (
-    <aside className="flex h-screen w-72 flex-col bg-[#031b67] py-6 text-white">
+    <aside className="sticky top-0 flex h-screen w-64 shrink-0 flex-col bg-[#001C54] py-6 text-white select-none">
       <div className="px-4">
         <Link
           href="/"
-          className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#eef3ff] px-4 font-semibold text-[#2d63f6]"
+          className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-white px-4 font-bold text-[#3366FF] shadow-sm transition-opacity hover:opacity-90"
         >
-          <Image src={houseIcon} alt="Home Services" className="h-5 w-5" />
-          <span>Home Services</span>
+          <Image src={houseIcon} alt="HomeServices" className="h-5 w-5 object-contain" />
+          <span className="text-base tracking-tight">HomeServices</span>
         </Link>
       </div>
 
-      <nav className="mt-8 space-y-1">
+      <nav className="mt-8 space-y-0.5">
         {menuItems.map((item) => {
-          const isActive = activeItem === item.key;
+          const isActive = currentActive === item.key;
 
           return (
             <Link
               key={item.key}
               href={item.href}
-              onClick={() => setActiveItem(item.key)}
-              className={`flex h-12 items-center gap-3 px-6 transition-colors ${
-                isActive ? "bg-[#12358f]" : "hover:bg-[#0a2a7d]"
+              className={`flex h-12 items-center gap-3.5 px-6 text-sm font-medium transition-colors ${
+                isActive
+                  ? "bg-[#022B8A] text-white"
+                  : "text-gray-300 hover:bg-[#022B8A]/60 hover:text-white"
               }`}
             >
-              <Image src={item.icon} alt={item.label} className="h-5 w-5" />
-              <span className="text-lg">{item.label}</span>
+              <Image src={item.icon} alt={item.label} className="h-5 w-5 object-contain opacity-90" />
+              <span>{item.label}</span>
             </Link>
           );
         })}
       </nav>
 
-      <div className="mt-auto px-2">
+      <div className="mt-auto">
         <button
           type="button"
-          onClick={() => {
-            setActiveItem("logout");
-            handleLogout();
-          }}
-          className={`flex h-12 w-full items-center gap-3 rounded-lg px-4 text-left transition-colors ${
-            activeItem === "logout" ? "bg-[#12358f]" : "hover:bg-[#0a2a7d]"
-          }`}
+          onClick={handleLogout}
+          className="flex h-12 w-full items-center gap-3.5 px-6 text-left text-sm font-medium text-gray-300 transition-colors hover:bg-[#022B8A]/60 hover:text-white"
         >
-          <Image src={logoutIcon} alt="ออกจากระบบ" className="h-5 w-5" />
-          <span className="text-lg">ออกจากระบบ</span>
+          <Image src={logoutIcon} alt="ออกจากระบบ" className="h-5 w-5 object-contain opacity-90" />
+          <span>ออกจากระบบ</span>
         </button>
       </div>
     </aside>

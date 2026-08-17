@@ -4,40 +4,21 @@ import React, { useEffect, useState, use } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import {
-  Box,
-  Typography,
-  Button,
-  Paper,
-  Chip,
-  Divider,
-  CircularProgress,
-  IconButton,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-} from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
-import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
-import ImageOutlinedIcon from "@mui/icons-material/ImageOutlined";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import { useServiceContext } from "@/contexts/ServiceContext";
 import { ServiceItem } from "@/types/service";
 
-function getCategoryChipColor(category: string): { bg: string; color: string } {
+function getCategoryBadgeStyle(category: string): string {
   switch (category) {
     case "บริการห้องครัว":
-      return { bg: "#F4E6FF", color: "#6B11B5" };
+      return "bg-[#F4E6FF] text-[#6B11B5]";
     case "บริการห้องน้ำ":
-      return { bg: "#E5F9F6", color: "#009282" };
+      return "bg-[#E5F9F6] text-[#009282]";
     case "บริการห้องนอน":
-      return { bg: "#FFF0E6", color: "#B54708" };
+      return "bg-[#FFF0E6] text-[#B54708]";
     case "บริการทั่วไป":
     default:
-      return { bg: "#E7F0FF", color: "#0E49B5" };
+      return "bg-[#E7F0FF] text-[#0E49B5]";
   }
 }
 
@@ -65,188 +46,150 @@ export default function AdminServiceDetailPage({
 
   if (loading) {
     return (
-      <Box sx={{ width: "100%", minHeight: "100vh", bgcolor: "#F3F4F6", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <Box sx={{ textAlign: "center" }}>
-          <CircularProgress size={36} sx={{ mb: 2, color: "#3366FF" }} />
-          <Typography variant="body2" color="text.secondary">
-            กำลังโหลดรายละเอียดบริการ...
-          </Typography>
-        </Box>
-      </Box>
+      <div className="flex min-h-screen items-center justify-center bg-[#F3F4F6] text-gray-500">
+        กำลังโหลดรายละเอียดบริการ...
+      </div>
     );
   }
 
   if (!service) {
     return (
-      <Box sx={{ width: "100%", minHeight: "100vh", bgcolor: "#F3F4F6", display: "flex", alignItems: "center", justifyContent: "center", p: 4 }}>
-        <Paper elevation={0} sx={{ p: 5, borderRadius: "8px", border: "1px solid #E5E7EB", maxWidth: 400, textAlign: "center", bgcolor: "#FFFFFF" }}>
-          <Box sx={{ width: 48, height: 48, bgcolor: "#FEF2F2", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", mx: "auto", mb: 2 }}>
-            <WarningAmberRoundedIcon sx={{ color: "#EF4444" }} />
-          </Box>
-          <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
-            ไม่พบข้อมูลบริการ
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            บริการที่คุณค้นหาอาจถูกลบหรือไม่มีอยู่ในระบบ
-          </Typography>
-          <Button variant="contained" onClick={() => router.push("/admin/services")} sx={{ borderRadius: "8px", bgcolor: "#3366FF" }}>
-            กลับสู่รายการบริการ
-          </Button>
-        </Paper>
-      </Box>
+      <div className="flex min-h-screen items-center justify-center bg-[#F3F4F6] text-red-500">
+        ไม่พบข้อมูลบริการ
+      </div>
     );
   }
 
-  const chipColor = getCategoryChipColor(service.category);
+  const chipStyle = getCategoryBadgeStyle(service.category);
   const optionsList = service.serviceOptions || [];
 
   return (
-    <Box sx={{ width: "100%", minHeight: "100vh", bgcolor: "#F3F4F6", p: { xs: 2, md: 4 } }}>
-      <Box sx={{ maxWidth: 960, mx: "auto" }}>
-        {/* Header Bar */}
-        <Paper
-          elevation={0}
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            p: 2,
-            mb: 3,
-            borderRadius: "8px",
-            border: "1px solid #E5E7EB",
-            bgcolor: "#FFFFFF",
-          }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-            <IconButton component={Link} href="/admin/services" sx={{ color: "grey.600" }}>
-              <ArrowBackIcon />
-            </IconButton>
-            <Box>
-              <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
-                บริการ
-              </Typography>
-              <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.2, color: "#1F2937" }}>
-                {service.name}
-              </Typography>
-            </Box>
-          </Box>
-
-          <Button
-            variant="contained"
-            startIcon={<EditOutlinedIcon />}
-            component={Link}
-            href={`/admin/services/${service.id}/edit`}
-            sx={{ borderRadius: "8px", px: 3, bgcolor: "#3366FF", "&:hover": { bgcolor: "#2557E0" } }}
+    <div className="flex min-w-0 flex-1 flex-col w-full">
+      {/* ==================== 1. Header Bar ==================== */}
+      <header className="flex h-20 items-center justify-between border-b border-gray-200 bg-white px-10">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="flex items-center justify-center text-gray-500 transition-colors hover:text-gray-800"
           >
-            แก้ไข
-          </Button>
-        </Paper>
+            <ChevronLeftIcon className="text-3xl" />
+          </button>
+          <div>
+            <p className="text-xs text-gray-400">บริการ</p>
+            <h1 className="text-xl font-bold text-gray-900">
+              {service.name}
+            </h1>
+          </div>
+        </div>
 
+        <div>
+          <Link href={`/admin/services/${service.id}/edit`}>
+            <button
+              type="button"
+              className="rounded-lg bg-[#3366FF] px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-600"
+            >
+              แก้ไข
+            </button>
+          </Link>
+        </div>
+      </header>
+
+      {/* ==================== 2. Main Content ==================== */}
+      <main className="m-8 space-y-6">
         {/* Detail Card */}
-        <Paper elevation={0} sx={{ borderRadius: "8px", border: "1px solid #E5E7EB", p: { xs: 3, md: 4 }, bgcolor: "#FFFFFF" }}>
-          {/* Main Info */}
-          <Box sx={{ display: "flex", alignItems: "center", mb: 3, gap: 2 }}>
-            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600, width: 140, flexShrink: 0 }}>
-              ชื่อบริการ
-            </Typography>
-            <Typography variant="body2" sx={{ fontWeight: 700, color: "#1F2937" }}>{service.name}</Typography>
-          </Box>
+        <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm space-y-6">
+          {/* ชื่อบริการ */}
+          <div className="flex items-center">
+            <span className="w-36 text-sm font-medium text-gray-700">ชื่อบริการ</span>
+            <span className="text-sm font-semibold text-gray-900">{service.name}</span>
+          </div>
 
-          <Box sx={{ display: "flex", alignItems: "center", mb: 3, gap: 2 }}>
-            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600, width: 140, flexShrink: 0 }}>
-              หมวดหมู่
-            </Typography>
-            <Chip
-              label={service.category}
-              size="small"
-              sx={{ bgcolor: chipColor.bg, color: chipColor.color, fontWeight: 600, borderRadius: "8px" }}
-            />
-          </Box>
+          <hr className="border-gray-100" />
 
-          <Box sx={{ display: "flex", alignItems: "flex-start", mb: 3, gap: 2 }}>
-            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600, width: 140, flexShrink: 0, pt: 1 }}>
-              รูปภาพ
-            </Typography>
-            <Box sx={{ maxWidth: 440, width: "100%" }}>
+          {/* หมวดหมู่ */}
+          <div className="flex items-center">
+            <span className="w-36 text-sm font-medium text-gray-700">หมวดหมู่</span>
+            <span className={`inline-flex items-center px-3 py-0.5 rounded-full text-xs font-medium ${chipStyle}`}>
+              {service.category}
+            </span>
+          </div>
+
+          <hr className="border-gray-100" />
+
+          {/* รูปภาพ */}
+          <div className="flex items-start">
+            <span className="w-36 pt-1 text-sm font-medium text-gray-700">รูปภาพ</span>
+            <div className="flex-1 max-w-lg">
               {service.imageUrl ? (
-                <Box sx={{ position: "relative", width: "100%", height: 180, borderRadius: "8px", overflow: "hidden", border: "1px solid #E5E7EB" }}>
-                  <Image src={service.imageUrl} alt={service.name} fill sizes="440px" unoptimized style={{ objectFit: "cover" }} />
-                </Box>
+                <div className="relative h-48 w-full overflow-hidden rounded-xl border border-gray-200">
+                  <Image
+                    src={service.imageUrl}
+                    alt={service.name}
+                    fill
+                    sizes="440px"
+                    unoptimized
+                    className="object-cover"
+                  />
+                </div>
               ) : (
-                <Box
-                  sx={{
-                    width: "100%", height: 180, bgcolor: "#F9FAFB", borderRadius: "8px", border: "1px solid #E5E7EB",
-                    display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-                  }}
-                >
-                  <ImageOutlinedIcon sx={{ fontSize: 32, color: "grey.300", mb: 1 }} />
-                  <Typography variant="caption" color="text.secondary">ไม่มีรูปภาพ</Typography>
-                </Box>
+                <div className="flex h-36 w-full items-center justify-center rounded-xl border border-gray-200 bg-gray-50 text-xs text-gray-400">
+                  ไม่มีรูปภาพ
+                </div>
               )}
-            </Box>
-          </Box>
+            </div>
+          </div>
 
-          <Divider sx={{ my: 4, borderColor: "#E5E7EB" }} />
+          <hr className="border-gray-100" />
 
-          {/* Sub-services Section */}
-          <Typography variant="body2" sx={{ fontWeight: 700, mb: 2, color: "#374151" }}>
-            รายการบริการย่อย
-          </Typography>
+          {/* วันที่สร้าง */}
+          <div className="flex items-center">
+            <span className="w-36 text-sm font-medium text-gray-700">สร้างเมื่อ</span>
+            <span className="text-sm text-gray-500">{service.createdAt}</span>
+          </div>
 
+          <hr className="border-gray-100" />
+
+          {/* วันที่แก้ไข */}
+          <div className="flex items-center">
+            <span className="w-36 text-sm font-medium text-gray-700">แก้ไขล่าสุด</span>
+            <span className="text-sm text-gray-500">{service.updatedAt}</span>
+          </div>
+        </div>
+
+        {/* Service Options Table Card */}
+        <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm space-y-4">
+          <h2 className="text-base font-bold text-gray-800">รายการบริการย่อย</h2>
           {optionsList.length > 0 ? (
-            <TableContainer sx={{ border: "1px solid #E5E7EB", borderRadius: "8px" }}>
-              <Table size="small">
-                <TableHead>
-                  <TableRow sx={{ bgcolor: "#EFEFEF" }}>
-                    <TableCell sx={{ fontWeight: 600, color: "#64748B" }}>ชื่อรายการ</TableCell>
-                    <TableCell sx={{ fontWeight: 600, color: "#64748B" }}>หน่วยบริการ</TableCell>
-                    <TableCell sx={{ fontWeight: 600, color: "#64748B" }}>ค่าบริการ / 1 หน่วย</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
+            <div className="overflow-hidden rounded-xl border border-gray-200">
+              <table className="w-full text-left text-sm text-gray-600">
+                <thead className="border-b border-gray-200 bg-[#EFEFEF] text-gray-500">
+                  <tr>
+                    <th className="px-6 py-3.5 font-normal text-xs text-gray-500">ชื่อรายการ</th>
+                    <th className="px-6 py-3.5 font-normal text-xs text-gray-500">หน่วยบริการ</th>
+                    <th className="px-6 py-3.5 font-normal text-xs text-gray-500 text-right">ค่าบริการ / 1 หน่วย</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
                   {optionsList.map((sub, idx) => (
-                    <TableRow key={sub.id || sub.option_id || idx} sx={{ "&:last-child td": { borderBottom: 0 } }}>
-                      <TableCell>
-                        <Typography variant="body2" sx={{ fontWeight: 600, color: "#1F2937" }}>
-                          {sub.name || sub.option_name}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" color="text.secondary">{sub.unit}</Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" sx={{ fontWeight: 600, color: "#1F2937" }}>
-                          {Number(sub.price).toFixed(2)} ฿
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
+                    <tr key={sub.id || sub.option_id || idx} className="hover:bg-gray-50/50">
+                      <td className="px-6 py-4 font-medium text-gray-900">
+                        {sub.name || sub.option_name}
+                      </td>
+                      <td className="px-6 py-4 text-gray-600">{sub.unit}</td>
+                      <td className="px-6 py-4 font-semibold text-gray-900 text-right">
+                        {Number(sub.price).toLocaleString("th-TH", { minimumFractionDigits: 2 })} ฿
+                      </td>
+                    </tr>
                   ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+                </tbody>
+              </table>
+            </div>
           ) : (
-            <Typography variant="body2" color="text.secondary">ไม่มีรายการบริการย่อย</Typography>
+            <p className="text-sm text-gray-400">ไม่มีรายการบริการย่อย</p>
           )}
-
-          <Divider sx={{ my: 4, borderColor: "#E5E7EB" }} />
-
-          {/* Timestamps */}
-          <Box sx={{ display: "flex", gap: 3, flexDirection: "column" }}>
-            <Box sx={{ display: "flex", gap: 4 }}>
-              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, width: 120 }}>
-                สร้างเมื่อ
-              </Typography>
-              <Typography variant="body2" sx={{ color: "#374151" }}>{service.createdAt}</Typography>
-            </Box>
-            <Box sx={{ display: "flex", gap: 4 }}>
-              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, width: 120 }}>
-                แก้ไขล่าสุด
-              </Typography>
-              <Typography variant="body2" sx={{ color: "#374151" }}>{service.updatedAt}</Typography>
-            </Box>
-          </Box>
-        </Paper>
-      </Box>
-    </Box>
+        </div>
+      </main>
+    </div>
   );
 }

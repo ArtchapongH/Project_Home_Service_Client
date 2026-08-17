@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import AdminSidebar from '@/components/admin/AdminSidebar';
 import { createCategory } from '@/lib/categoryApi';
 
 export default function CreateCategoryPage() {
@@ -34,37 +33,33 @@ export default function CreateCategoryPage() {
   };
 
   return (
-    <div className="flex min-h-screen w-full bg-[#F3F4F6] text-gray-700">
-      <AdminSidebar />
-      <div className="flex min-w-0 flex-1 flex-col w-full">
+    <div className="flex min-w-0 flex-1 flex-col w-full">
       {/* ==================== 1. Header Bar ==================== */}
-      <header className="border-b border-gray-200 bg-white px-10 py-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold text-gray-800">เพิ่มหมวดหมู่</h1>
+      <header className="flex h-20 items-center justify-between border-b border-gray-200 bg-white px-10">
+        <h1 className="text-xl font-bold text-gray-900">เพิ่มหมวดหมู่</h1>
 
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={handleCancel}
-              disabled={isSubmitting}
-              className="rounded-lg border border-[#3366FF] px-6 py-2 text-sm font-medium text-[#3366FF] transition-colors hover:bg-blue-50 disabled:opacity-50"
-            >
-              ยกเลิก
-            </button>
-            <button
-              type="submit"
-              form="create-category-form"
-              disabled={isSubmitting || !categoryName.trim()}
-              className="rounded-lg bg-[#3366FF] px-6 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-600 disabled:bg-blue-300"
-            >
-              {isSubmitting ? 'กำลังสร้าง...' : 'สร้าง'}
-            </button>
-          </div>
+        <div className="flex items-center gap-4">
+          <button
+            type="button"
+            onClick={handleCancel}
+            disabled={isSubmitting}
+            className="rounded-lg border border-[#3366FF] px-6 py-2.5 text-sm font-medium text-[#3366FF] transition-colors hover:bg-blue-50 disabled:opacity-50"
+          >
+            ยกเลิก
+          </button>
+          <button
+            type="submit"
+            form="create-category-form"
+            disabled={isSubmitting || !categoryName.trim()}
+            className="rounded-lg bg-[#3366FF] px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-600 disabled:bg-blue-300"
+          >
+            {isSubmitting ? 'กำลังสร้าง...' : 'สร้าง'}
+          </button>
         </div>
       </header>
 
       {/* ==================== 2. Main Form Content ==================== */}
-      <main className="p-10">
+      <main className="m-8">
         <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
           <form id="create-category-form" onSubmit={handleSubmit}>
             <div className="flex items-center">
@@ -74,7 +69,7 @@ export default function CreateCategoryPage() {
               >
                 ชื่อหมวดหมู่<span className="ml-0.5 text-red-500">*</span>
               </label>
-              
+
               <input
                 id="categoryName"
                 type="text"
@@ -82,7 +77,7 @@ export default function CreateCategoryPage() {
                 onChange={(e) => setCategoryName(e.target.value)}
                 placeholder=""
                 required
-                className="w-80 rounded-lg border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-800 transition-colors focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-96 rounded-lg border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-800 transition-colors focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
             {errorMessage && (
@@ -91,7 +86,6 @@ export default function CreateCategoryPage() {
           </form>
         </div>
       </main>
-      </div>
     </div>
   );
 }

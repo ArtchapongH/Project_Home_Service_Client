@@ -1,260 +1,229 @@
+import apiClient from "./apiClient";
+import { supabase } from "../lib/supabaseClient";
 import {
   ServiceItem,
   CreateServiceInput,
   UpdateServiceInput,
+  ServiceOption,
 } from "../types/service";
 
-const STORAGE_KEY = "home_services_admin_data_v1";
+const ADMIN_SERVICE_ENDPOINT = "/api/admin/services";
 
-const INITIAL_MOCK_SERVICES: ServiceItem[] = [
-  {
-    id: "serv-001",
-    name: "ล้างแอร์",
-    category: "บริการทั่วไป",
-    imageUrl:
-      "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=600&q=80",
-    serviceOptions: [
-      {
-        id: "sub-101",
-        option_id: "sub-101",
-        name: "9,000 - 18,000 BTU, แบบติดผนัง",
-        option_name: "9,000 - 18,000 BTU, แบบติดผนัง",
-        price: 500,
-        unit: "เครื่อง",
-      },
-      {
-        id: "sub-102",
-        option_id: "sub-102",
-        name: "18,001 - 24,000 BTU, แบบติดผนัง",
-        option_name: "18,001 - 24,000 BTU, แบบติดผนัง",
-        price: 600,
-        unit: "เครื่อง",
-      },
-      {
-        id: "sub-103",
-        option_id: "sub-103",
-        name: "24,001 - 30,000 BTU, แบบติดผนัง",
-        option_name: "24,001 - 30,000 BTU, แบบติดผนัง",
-        price: 800,
-        unit: "เครื่อง",
-      },
-    ],
-    createdAt: "15/01/2023 10:30 AM",
-    updatedAt: "15/01/2023 10:30 AM",
-  },
-  {
-    id: "serv-002",
-    name: "ทำความสะอาดทั่วไป",
-    category: "บริการทั่วไป",
-    imageUrl:
-      "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80",
-    serviceOptions: [
-      {
-        id: "sub-201",
-        option_id: "sub-201",
-        name: "ทำความสะอาดบ้าน/คอนโด ขนาด 40-60 ตร.ม.",
-        option_name: "ทำความสะอาดบ้าน/คอนโด ขนาด 40-60 ตร.ม.",
-        price: 550,
-        unit: "ครั้ง",
-      },
-      {
-        id: "sub-202",
-        option_id: "sub-202",
-        name: "ทำความสะอาดบ้าน/คอนโด ขนาด 61-100 ตร.ม.",
-        option_name: "ทำความสะอาดบ้าน/คอนโด ขนาด 61-100 ตร.ม.",
-        price: 850,
-        unit: "ครั้ง",
-      },
-    ],
-    createdAt: "14/01/2023 09:15 AM",
-    updatedAt: "14/01/2023 09:15 AM",
-  },
-  {
-    id: "serv-003",
-    name: "ล้างเครื่องซักผ้า",
-    category: "บริการทั่วไป",
-    imageUrl:
-      "https://images.unsplash.com/photo-1582735689369-4fe89db7114c?auto=format&fit=crop&w=600&q=80",
-    serviceOptions: [
-      {
-        id: "sub-301",
-        option_id: "sub-301",
-        name: "เครื่องซักผ้าฝาบน",
-        option_name: "เครื่องซักผ้าฝาบน",
-        price: 500,
-        unit: "เครื่อง",
-      },
-      {
-        id: "sub-302",
-        option_id: "sub-302",
-        name: "เครื่องซักผ้าฝาหน้า",
-        option_name: "เครื่องซักผ้าฝาหน้า",
-        price: 700,
-        unit: "เครื่อง",
-      },
-    ],
-    createdAt: "12/01/2023 02:40 PM",
-    updatedAt: "12/01/2023 02:40 PM",
-  },
-  {
-    id: "serv-004",
-    name: "ซ่อมเครื่องปรับอากาศ",
-    category: "บริการทั่วไป",
-    imageUrl:
-      "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=600&q=80",
-    serviceOptions: [
-      {
-        id: "sub-401",
-        option_id: "sub-401",
-        name: "เช็คระยะ / ตรวจเช็คอาการเสีย",
-        option_name: "เช็คระยะ / ตรวจเช็คอาการเสีย",
-        price: 300,
-        unit: "ครั้ง",
-      },
-      {
-        id: "sub-402",
-        option_id: "sub-402",
-        name: "เติมน้ำยาแอร์ R32 / R410A",
-        option_name: "เติมน้ำยาแอร์ R32 / R410A",
-        price: 450,
-        unit: "ปอนด์",
-      },
-    ],
-    createdAt: "10/01/2023 11:20 AM",
-    updatedAt: "10/01/2023 11:20 AM",
-  },
-];
+interface ApiServiceOptionDto {
+  id?: string;
+  option_id?: string | number;
+  service_id?: string | number;
+  name?: string;
+  option_name?: string;
+  price: number | string;
+  unit: string;
+}
 
-function getStoredServices(): ServiceItem[] {
-  if (typeof window === "undefined") return INITIAL_MOCK_SERVICES;
-  try {
-    const data = localStorage.getItem(STORAGE_KEY);
-    if (!data) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_MOCK_SERVICES));
-      return INITIAL_MOCK_SERVICES;
+interface ApiServiceDto {
+  id: string | number;
+  service_id?: string | number;
+  name?: string;
+  service_name?: string;
+  categoryId?: string | number;
+  category_id?: string | number;
+  category?: string;
+  category_name?: string;
+  imageUrl?: string;
+  image_url?: string;
+  isFeatured?: boolean;
+  is_featured?: boolean;
+  displayOrder?: number;
+  display_order?: number;
+  popularityScore?: number;
+  popularity_score?: number;
+  isActive?: boolean;
+  is_active?: boolean;
+  createdAt?: string;
+  created_at?: string;
+  updatedAt?: string;
+  updated_at?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  serviceOptions?: ApiServiceOptionDto[];
+  service_options?: ApiServiceOptionDto[];
+}
+
+interface ApiResponse<T> {
+  success: boolean;
+  message?: string;
+  data: T;
+}
+
+function formatDate(value?: string): string {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+
+  const datePart = new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(date);
+
+  const timePart = new Intl.DateTimeFormat("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  })
+    .format(date)
+    .replace(" ", "");
+
+  return `${datePart} ${timePart}`;
+}
+
+function toServiceOption(dto: ApiServiceOptionDto): ServiceOption {
+  return {
+    id: String(dto.id || dto.option_id || ""),
+    option_id: dto.option_id || dto.id,
+    service_id: dto.service_id,
+    name: dto.name || dto.option_name || "",
+    option_name: dto.option_name || dto.name || "",
+    price: Number(dto.price) || 0,
+    unit: dto.unit || "",
+  };
+}
+
+function toServiceItem(dto: ApiServiceDto): ServiceItem {
+  const options = (dto.serviceOptions || dto.service_options || []).map(toServiceOption);
+  return {
+    id: String(dto.id || dto.service_id),
+    service_id: dto.service_id || dto.id,
+    name: dto.name || dto.service_name || "",
+    service_name: dto.service_name || dto.name || "",
+    categoryId: Number(dto.categoryId || dto.category_id) || undefined,
+    category_id: Number(dto.category_id || dto.categoryId) || undefined,
+    category: dto.category || dto.category_name || "บริการทั่วไป",
+    imageUrl: dto.imageUrl || dto.image_url || "",
+    image_url: dto.image_url || dto.imageUrl || "",
+    minPrice: dto.minPrice !== undefined ? Number(dto.minPrice) : undefined,
+    maxPrice: dto.maxPrice !== undefined ? Number(dto.maxPrice) : undefined,
+    isRecommended: dto.isFeatured ?? dto.is_featured,
+    popularityScore: dto.popularityScore ?? dto.popularity_score,
+    serviceOptions: options,
+    service_options: options,
+    createdAt: formatDate(dto.createdAt || dto.created_at),
+    created_at: dto.created_at || dto.createdAt,
+    updatedAt: formatDate(dto.updatedAt || dto.updated_at),
+    updated_at: dto.updated_at || dto.updatedAt,
+  };
+}
+
+export async function uploadServiceImage(file: File): Promise<string> {
+  if (supabase) {
+    try {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `service-${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+      const filePath = `services/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("services")
+        .upload(filePath, file, { cacheControl: "3600", upsert: true });
+
+      if (!uploadError) {
+        const { data: publicUrlData } = supabase.storage
+          .from("services")
+          .getPublicUrl(filePath);
+        if (publicUrlData?.publicUrl) {
+          return publicUrlData.publicUrl;
+        }
+      }
+    } catch (e) {
+      console.warn("Supabase storage upload error, falling back to data URL:", e);
     }
-    const parsed: ServiceItem[] = JSON.parse(data);
-    return parsed.map((item) => ({
-      ...item,
-      serviceOptions: item.serviceOptions || [],
-    }));
-  } catch (e) {
-    console.error("Error reading services from localStorage:", e);
-    return INITIAL_MOCK_SERVICES;
   }
-}
 
-function saveStoredServices(services: ServiceItem[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(services));
-  } catch (e) {
-    console.error("Error saving services to localStorage:", e);
-  }
-}
-
-function formatCurrentDateTime(): string {
-  const now = new Date();
-  const day = String(now.getDate()).padStart(2, "0");
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const year = now.getFullYear();
-  let hours = now.getHours();
-  const minutes = String(now.getMinutes()).padStart(2, "0");
-  const ampm = hours >= 12 ? "PM" : "AM";
-  hours = hours % 12;
-  hours = hours ? hours : 12;
-  const hoursStr = String(hours).padStart(2, "0");
-  return `${day}/${month}/${year} ${hoursStr}:${minutes} ${ampm}`;
+  // Fallback to Data URL
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (err) => reject(err);
+    reader.readAsDataURL(file);
+  });
 }
 
 export const serviceApi = {
-  async getServices(searchQuery: string = ""): Promise<ServiceItem[]> {
-    const services = getStoredServices();
-    if (!searchQuery.trim()) return services;
-
-    const query = searchQuery.toLowerCase().trim();
-    return services.filter(
-      (s) =>
-        s.name.toLowerCase().includes(query) ||
-        s.category.toLowerCase().includes(query)
-    );
+  async getServices(searchQuery: string = "", signal?: AbortSignal): Promise<ServiceItem[]> {
+    const params: { search?: string } = {};
+    if (searchQuery.trim()) {
+      params.search = searchQuery.trim();
+    }
+    const response = await apiClient.get<ApiResponse<ApiServiceDto[]>>(ADMIN_SERVICE_ENDPOINT, {
+      params,
+      signal,
+    });
+    return (response.data.data || []).map(toServiceItem);
   },
 
-  async getServiceById(id: string): Promise<ServiceItem | null> {
-    const services = getStoredServices();
-    const service = services.find((s) => String(s.id) === String(id));
-    if (!service) return null;
-    return {
-      ...service,
-      serviceOptions: service.serviceOptions || [],
-    };
+  async getServiceById(id: string, signal?: AbortSignal): Promise<ServiceItem | null> {
+    try {
+      const response = await apiClient.get<ApiResponse<ApiServiceDto>>(
+        `${ADMIN_SERVICE_ENDPOINT}/${id}`,
+        { signal }
+      );
+      if (!response.data.data) return null;
+      return toServiceItem(response.data.data);
+    } catch (error) {
+      console.error(`Error fetching service with id ${id}:`, error);
+      return null;
+    }
   },
 
   async createService(input: CreateServiceInput): Promise<ServiceItem> {
-    const services = getStoredServices();
-    const formattedDate = formatCurrentDateTime();
-
-    const newService: ServiceItem = {
-      id: `serv-${Date.now()}`,
+    const payload = {
       name: input.name,
       category: input.category,
+      categoryId: input.category_id,
       imageUrl: input.imageUrl,
-      serviceOptions: input.serviceOptions.map((sub, idx) => ({
-        id: `sub-${Date.now()}-${idx}`,
-        option_id: `sub-${Date.now()}-${idx}`,
-        name: sub.name,
-        option_name: sub.name,
-        price: Number(sub.price) || 0,
-        unit: sub.unit,
+      serviceOptions: input.serviceOptions.map((opt) => ({
+        name: opt.name,
+        price: Number(opt.price) || 0,
+        unit: opt.unit,
       })),
-      createdAt: formattedDate,
-      updatedAt: formattedDate,
     };
 
-    const updatedList = [newService, ...services];
-    saveStoredServices(updatedList);
-    return newService;
+    const response = await apiClient.post<ApiResponse<ApiServiceDto>>(ADMIN_SERVICE_ENDPOINT, payload);
+    return toServiceItem(response.data.data);
   },
 
-  async updateService(
-    id: string,
-    input: UpdateServiceInput
-  ): Promise<ServiceItem | null> {
-    const services = getStoredServices();
-    const index = services.findIndex((s) => String(s.id) === String(id));
-    if (index === -1) return null;
-
-    const formattedDate = formatCurrentDateTime();
-
-    const updatedService: ServiceItem = {
-      ...services[index],
+  async updateService(id: string, input: UpdateServiceInput): Promise<ServiceItem | null> {
+    const payload = {
       name: input.name,
       category: input.category,
+      categoryId: input.category_id,
       imageUrl: input.imageUrl,
-      serviceOptions: input.serviceOptions.map((sub, idx) => ({
-        id: String(sub.id || sub.option_id || `sub-${Date.now()}-${idx}`),
-        option_id: sub.option_id || sub.id || `sub-${Date.now()}-${idx}`,
-        name: sub.name,
-        option_name: sub.name,
-        price: Number(sub.price) || 0,
-        unit: sub.unit,
+      serviceOptions: input.serviceOptions.map((opt) => ({
+        id: opt.id,
+        option_id: opt.option_id,
+        name: opt.name,
+        price: Number(opt.price) || 0,
+        unit: opt.unit,
       })),
-      updatedAt: formattedDate,
     };
 
-    services[index] = updatedService;
-    saveStoredServices(services);
-    return updatedService;
+    const response = await apiClient.put<ApiResponse<ApiServiceDto>>(
+      `${ADMIN_SERVICE_ENDPOINT}/${id}`,
+      payload
+    );
+    return toServiceItem(response.data.data);
   },
 
   async deleteService(id: string): Promise<boolean> {
-    const services = getStoredServices();
-    const filtered = services.filter((s) => String(s.id) !== String(id));
-    saveStoredServices(filtered);
+    await apiClient.delete(`${ADMIN_SERVICE_ENDPOINT}/${id}`);
     return true;
   },
 
   async reorderServices(newOrderServices: ServiceItem[]): Promise<void> {
-    saveStoredServices(newOrderServices);
+    const payload = {
+      items: newOrderServices.map((service, index) => ({
+        id: service.id,
+        displayOrder: index + 1,
+      })),
+    };
+    await apiClient.patch(`${ADMIN_SERVICE_ENDPOINT}/reorder`, payload);
   },
 };
