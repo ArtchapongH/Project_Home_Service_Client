@@ -18,29 +18,23 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import ClearIcon from "@mui/icons-material/Clear";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import { SortOption } from "@/types/service";
+import type { PublicCategory, PublicServiceSort } from "@/src/types/public-service";
 
 interface ServiceBannerProps {
+  categories: PublicCategory[];
   searchQuery: string;
   onSearchChange: (value: string) => void;
   category: string;
   onCategoryChange: (value: string) => void;
   priceRange: [number, number];
   onPriceRangeChange: (value: [number, number]) => void;
-  sortBy: SortOption;
-  onSortByChange: (value: SortOption) => void;
+  sortBy: PublicServiceSort;
+  onSortByChange: (value: PublicServiceSort) => void;
   onSearchSubmit: () => void;
   onClearSearch: () => void;
 }
 
-const CATEGORY_OPTIONS = [
-  { label: "บริการทั้งหมด", value: "all" },
-  { label: "บริการทั่วไป", value: "บริการทั่วไป" },
-  { label: "บริการห้องครัว", value: "บริการห้องครัว" },
-  { label: "บริการห้องน้ำ", value: "บริการห้องน้ำ" },
-];
-
-const SORT_OPTIONS: { label: string; value: SortOption }[] = [
+const SORT_OPTIONS: { label: string; value: PublicServiceSort }[] = [
   { label: "บริการแนะนำ", value: "recommended" },
   { label: "บริการยอดนิยม", value: "popular" },
   { label: "ตามตัวอักษร (Ascending)", value: "asc" },
@@ -48,6 +42,7 @@ const SORT_OPTIONS: { label: string; value: SortOption }[] = [
 ];
 
 export function ServiceBanner({
+  categories,
   searchQuery,
   onSearchChange,
   category,
@@ -59,6 +54,10 @@ export function ServiceBanner({
   onSearchSubmit,
   onClearSearch,
 }: ServiceBannerProps) {
+  const categoryOptions = [
+    { label: "บริการทั้งหมด", value: "all" },
+    ...categories.map((item) => ({ label: item.name, value: item.name })),
+  ];
   // Category Menu State
   const [categoryAnchorEl, setCategoryAnchorEl] = useState<null | HTMLElement>(null);
   const isCategoryOpen = Boolean(categoryAnchorEl);
@@ -78,7 +77,7 @@ export function ServiceBanner({
   };
 
   const currentCategoryLabel =
-    CATEGORY_OPTIONS.find((c) => c.value === category)?.label || "บริการทั้งหมด";
+    categoryOptions.find((c) => c.value === category)?.label || "บริการทั้งหมด";
 
   const currentSortLabel =
     SORT_OPTIONS.find((s) => s.value === sortBy)?.label || "บริการแนะนำ";
@@ -341,7 +340,7 @@ export function ServiceBanner({
                   },
                 }}
               >
-                {CATEGORY_OPTIONS.map((opt) => {
+                {categoryOptions.map((opt) => {
                   const isSelected = category === opt.value;
                   return (
                     <MenuItem
@@ -470,7 +469,7 @@ export function ServiceBanner({
                     }
                     valueLabelDisplay="auto"
                     min={0}
-                    max={2000}
+                    max={3000}
                     step={100}
                     marks={[
                       { value: 0 },
@@ -478,6 +477,7 @@ export function ServiceBanner({
                       { value: 1000 },
                       { value: 1500 },
                       { value: 2000 },
+                      { value: 3000 },
                     ]}
                     sx={{
                       color: "#3366FF",

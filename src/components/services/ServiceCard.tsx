@@ -11,10 +11,10 @@ import {
   Chip,
 } from "@mui/material";
 import SellOutlinedIcon from "@mui/icons-material/SellOutlined";
-import { ServiceItem } from "@/types/service";
+import type { PublicService } from "@/src/types/public-service";
 
 interface ServiceCardProps {
-  service: ServiceItem;
+  service: PublicService;
   onCategoryClick?: (category: string) => void;
 }
 
@@ -72,14 +72,11 @@ export function formatServicePrice(minPrice: number = 0, maxPrice?: number): str
 export function ServiceCard({ service, onCategoryClick }: ServiceCardProps) {
   const categoryStyle = getCategoryStyles(service.category);
   const formattedPrice =
-    service.price ||
-    formatServicePrice(service.minPrice || 0, service.maxPrice);
+    formatServicePrice(service.minPrice, service.maxPrice);
   const imageSrc =
-    service.image ||
     service.imageUrl ||
-    service.image_url ||
     "/images/landing/service-aircon.png";
-  const serviceLink = `/services/${service.slug || service.id}`;
+  const serviceLink = `/services/${service.id}`;
 
   return (
     <Card

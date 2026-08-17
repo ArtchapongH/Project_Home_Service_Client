@@ -2,6 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   Box,
@@ -278,6 +279,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                 <Box>
                   <Box
                     sx={{
+                      position: "relative",
                       width: "100%",
                       height: 180,
                       borderRadius: "8px",
@@ -286,7 +288,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                       mb: 1,
                     }}
                   >
-                    <img src={imageUrl} alt="preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    <Image src={imageUrl} alt="preview" fill sizes="440px" unoptimized style={{ objectFit: "cover" }} />
                   </Box>
                   <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <Typography variant="caption" color="text.secondary">
