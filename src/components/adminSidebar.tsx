@@ -7,6 +7,8 @@ import categoryIcon from "@/src/assets/icons/category.png";
 import serviceIcon from "@/src/assets/icons/service.png";
 import promotionIcon from "@/src/assets/icons/promotion.png";
 import logoutIcon from "@/src/assets/icons/logout.png";
+import { supabase } from "@/src/lib/supabaseClient";
+import axios from "axios";
 
 type ActiveKey = "category" | "service" | "promotion" | "logout";
 
@@ -38,6 +40,11 @@ const AdminSidebar = () => {
             icon: promotionIcon,
         },
     ];
+
+
+    const handleLogout = async () => {
+        await axios.post("/auth/logout");
+    };
 
     return (
         <aside className="flex h-screen w-72 flex-col bg-[#031b67] py-6 text-white">
@@ -72,16 +79,19 @@ const AdminSidebar = () => {
             </nav>
 
             <div className="mt-auto px-2">
-                <Link
-                    href="/admin/login"
-                    onClick={() => setActiveItem("logout")}
-                    className={`flex h-12 items-center gap-3 rounded-lg px-4 transition-colors ${
+                <button
+                    type="button"
+                    onClick={() => {
+                        setActiveItem("logout");
+                        handleLogout();
+                    }}
+                    className={`flex h-12 w-full items-center gap-3 rounded-lg px-4 text-left transition-colors ${
                         activeItem === "logout" ? "bg-[#12358f]" : "hover:bg-[#0a2a7d]"
                     }`}
                 >
                     <Image src={logoutIcon} alt="ออกจากระบบ" className="h-5 w-5" />
                     <span className="text-lg">ออกจากระบบ</span>
-                </Link>
+                </button>
             </div>
         </aside>
     );
