@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -19,6 +19,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  CircularProgress,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import CloudUploadOutlinedIcon from "@mui/icons-material/CloudUploadOutlined";
@@ -31,6 +32,8 @@ import {
   UpdateServiceInput,
   DEFAULT_CATEGORIES,
 } from "../../types/service";
+import { getCategories } from "../../lib/categoryApi";
+import { uploadServiceImage } from "../../services/serviceApi";
 
 interface ServiceFormProps {
   initialData?: ServiceItem;
@@ -55,11 +58,18 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [categoriesList, setCategoriesList] = useState<{ id: number; name: string }[]>(
+    DEFAULT_CATEGORIES.map((c) => ({ id: c.category_id, name: c.name }))
+  );
+  const [loadingCategories, setLoadingCategories] = useState(false);
+
   const [name, setName] = useState<string>(initialData?.name || "");
-  const [category, setCategory] = useState<string>(
-    initialData?.category || DEFAULT_CATEGORIES[0].name
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | string>(
+    initialData?.categoryId || initialData?.category_id || DEFAULT_CATEGORIES[0].category_id
   );
   const [imageUrl, setImageUrl] = useState<string>(initialData?.imageUrl || "");
+  const [isUploadingImage, setIsUploadingImage] = useState<boolean>(false);
+
   const [serviceOptions, setServiceOptions] = useState<ServiceOptionRow[]>(
     initialData?.serviceOptions?.length
       ? initialData.serviceOptions.map((sub) => ({
@@ -79,20 +89,57 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
   const [isDraggingImage, setIsDraggingImage] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  const handleImageFileChange = (file: File) => {
+  useEffect(() => {
+    let isMounted = true;
+    async function loadCats() {
+      setLoadingCategories(true);
+      try {
+        const cats = await getCategories();
+        if (isMounted && cats && cats.length > 0) {
+          setCategoriesList(cats.map((c) => ({ id: c.id, name: c.name })));
+          if (!initialData) {
+            setSelectedCategoryId(cats[0].id);
+          } else {
+            // Find matched category by id or name
+            const match = cats.find(
+              (c) =>
+                c.id === (initialData.categoryId || initialData.category_id) ||
+                c.name === initialData.category
+            );
+            if (match) {
+              setSelectedCategoryId(match.id);
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("Failed to fetch categories from API, using defaults:", err);
+      } finally {
+        if (isMounted) setLoadingCategories(false);
+      }
+    }
+    loadCats();
+    return () => {
+      isMounted = false;
+    };
+  }, [initialData]);
+
+  const handleImageFileChange = async (file: File) => {
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) {
       setErrors((prev) => ({ ...prev, imageUrl: "ขนาดไฟล์ต้องไม่เกิน 5MB" }));
       return;
     }
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      if (e.target?.result) {
-        setImageUrl(e.target.result as string);
-        setErrors((prev) => ({ ...prev, imageUrl: "" }));
-      }
-    };
-    reader.readAsDataURL(file);
+    setIsUploadingImage(true);
+    setErrors((prev) => ({ ...prev, imageUrl: "" }));
+    try {
+      const uploadedUrl = await uploadServiceImage(file);
+      setImageUrl(uploadedUrl);
+    } catch (err) {
+      console.error("Image upload failed:", err);
+      setErrors((prev) => ({ ...prev, imageUrl: "เกิดข้อผิดพลาดในการอัปโหลดรูปภาพ" }));
+    } finally {
+      setIsUploadingImage(false);
+    }
   };
 
   const handleAddOption = () => {
@@ -115,7 +162,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
   const validateForm = (): boolean => {
     const newErrors: { [key: string]: string } = {};
     if (!name.trim()) newErrors.name = "กรุณากรอกชื่อบริการ";
-    if (!category.trim()) newErrors.category = "กรุณาเลือกหมวดหมู่";
+    if (!selectedCategoryId) newErrors.category = "กรุณาเลือกหมวดหมู่";
     if (!imageUrl) newErrors.imageUrl = "กรุณาอัปโหลดรูปภาพบริการ";
     let optionError = false;
     serviceOptions.forEach((sub) => {
@@ -131,6 +178,12 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
     if (!validateForm()) return;
     setIsSubmitting(true);
     try {
+      const selectedCategoryObj = categoriesList.find(
+        (c) => String(c.id) === String(selectedCategoryId)
+      );
+      const categoryName = selectedCategoryObj?.name || "บริการทั่วไป";
+      const categoryIdNum = Number(selectedCategoryId) || undefined;
+
       const formattedOptions = serviceOptions.map((s) => ({
         id: s.id,
         option_id: s.id,
@@ -138,14 +191,21 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
         price: Number(s.price) || 0,
         unit: s.unit.trim(),
       }));
+
       await onSubmit({
         name: name.trim(),
-        category,
+        category: categoryName,
+        category_id: categoryIdNum,
         imageUrl,
         serviceOptions: formattedOptions,
       });
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Form submit error:", err);
+      const errMsg =
+        typeof err === "object" && err !== null && "message" in err
+          ? String((err as { message: unknown }).message)
+          : "เกิดข้อผิดพลาดในการบันทึกข้อมูล";
+      setErrors((prev) => ({ ...prev, submit: errMsg }));
     } finally {
       setIsSubmitting(false);
     }
@@ -203,7 +263,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
             <Button
               variant="contained"
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isUploadingImage}
               sx={{
                 borderRadius: "8px",
                 px: 4,
@@ -215,6 +275,24 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
             </Button>
           </Box>
         </Paper>
+
+        {/* Global Error Banner */}
+        {errors.submit && (
+          <Paper
+            elevation={0}
+            sx={{
+              p: 2,
+              mb: 3,
+              bgcolor: "#FEF2F2",
+              border: "1px solid #FCA5A5",
+              borderRadius: "8px",
+            }}
+          >
+            <Typography variant="body2" color="error">
+              {errors.submit}
+            </Typography>
+          </Paper>
+        )}
 
         {/* Form Card */}
         <Paper
@@ -256,13 +334,14 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
               size="small"
               select
               fullWidth
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              disabled={loadingCategories}
+              value={selectedCategoryId}
+              onChange={(e) => setSelectedCategoryId(Number(e.target.value) || e.target.value)}
               sx={{ maxWidth: 440 }}
               slotProps={{ input: { sx: { borderRadius: "8px" } } }}
             >
-              {DEFAULT_CATEGORIES.map((cat) => (
-                <MenuItem key={cat.category_id} value={cat.name}>
+              {categoriesList.map((cat) => (
+                <MenuItem key={cat.id} value={cat.id}>
                   {cat.name}
                 </MenuItem>
               ))}
@@ -275,7 +354,27 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
               รูปภาพ<span style={{ color: "#EF4444" }}>*</span>
             </Typography>
             <Box sx={{ maxWidth: 440, width: "100%" }}>
-              {imageUrl ? (
+              {isUploadingImage ? (
+                <Box
+                  sx={{
+                    width: "100%",
+                    height: 180,
+                    borderRadius: "8px",
+                    border: "1px dashed #3366FF",
+                    bgcolor: "#F0F5FF",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 1,
+                  }}
+                >
+                  <CircularProgress size={32} sx={{ color: "#3366FF" }} />
+                  <Typography variant="caption" color="text.secondary">
+                    กำลังอัปโหลดรูปภาพ...
+                  </Typography>
+                </Box>
+              ) : imageUrl ? (
                 <Box>
                   <Box
                     sx={{
