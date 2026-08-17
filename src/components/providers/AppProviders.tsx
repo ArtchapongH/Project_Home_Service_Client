@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { ThemeProvider } from "@mui/material/styles";
 import { muiTheme } from "@/theme/muiTheme";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 export default function AppProviders({
   children,
@@ -10,6 +11,8 @@ export default function AppProviders({
   children: ReactNode;
 }) {
   return (
-    <ThemeProvider theme={muiTheme}>{children}</ThemeProvider>
+    <AuthProvider>
+      <ThemeProvider theme={muiTheme}>{children}</ThemeProvider>
+    </AuthProvider>
   );
 }

@@ -1,10 +1,7 @@
-import axios from 'axios';
-
+import apiClient from '@/services/apiClient';
 import { Category } from '@/types/category';
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api';
-const CATEGORY_ENDPOINT = `${API_BASE_URL}/admin/categories`;
+const CATEGORY_ENDPOINT = '/api/admin/categories';
 
 type CategoryDto = {
   category_id: number | string;
@@ -48,7 +45,7 @@ function toCategory(category: CategoryDto): Category {
 }
 
 export async function getCategories(signal?: AbortSignal) {
-  const response = await axios.get<ApiResponse<CategoryDto[]>>(
+  const response = await apiClient.get<ApiResponse<CategoryDto[]>>(
     CATEGORY_ENDPOINT,
     { signal },
   );
@@ -57,7 +54,7 @@ export async function getCategories(signal?: AbortSignal) {
 }
 
 export async function getCategory(id: string, signal?: AbortSignal) {
-  const response = await axios.get<ApiResponse<CategoryDto>>(
+  const response = await apiClient.get<ApiResponse<CategoryDto>>(
     `${CATEGORY_ENDPOINT}/${id}`,
     { signal },
   );
@@ -66,13 +63,13 @@ export async function getCategory(id: string, signal?: AbortSignal) {
 }
 
 export async function createCategory(name: string) {
-  await axios.post(CATEGORY_ENDPOINT, { name });
+  await apiClient.post(CATEGORY_ENDPOINT, { name });
 }
 
 export async function updateCategory(id: string, name: string) {
-  await axios.patch(`${CATEGORY_ENDPOINT}/${id}`, { name });
+  await apiClient.patch(`${CATEGORY_ENDPOINT}/${id}`, { name });
 }
 
 export async function deleteCategory(id: number | string) {
-  await axios.delete(`${CATEGORY_ENDPOINT}/${id}`);
+  await apiClient.delete(`${CATEGORY_ENDPOINT}/${id}`);
 }
