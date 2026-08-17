@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import { Category } from '@/types/category';
-import AdminSidebar from '@/components/admin/AdminSidebar';
 import { getCategory } from '@/lib/categoryApi';
 
 interface CategoryDetailPageProps {
@@ -14,7 +13,6 @@ interface CategoryDetailPageProps {
 
 export default function CategoryDetailPage({ params }: CategoryDetailPageProps) {
   const router = useRouter();
-  // ใช้ React.use() สำหรับ unwrapping params ใน Next.js 15
   const resolvedParams = use(params);
   const categoryId = resolvedParams.id;
 
@@ -66,49 +64,45 @@ export default function CategoryDetailPage({ params }: CategoryDetailPageProps) 
   }
 
   return (
-    <div className="flex min-h-screen w-full bg-[#F3F4F6] text-gray-700">
-      <AdminSidebar />
-      <div className="flex min-w-0 flex-1 flex-col w-full">
+    <div className="flex min-w-0 flex-1 flex-col w-full">
       {/* ==================== 1. Header Bar ==================== */}
-      <header className="border-b border-gray-200 bg-white px-8 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+      <header className="flex h-20 items-center justify-between border-b border-gray-200 bg-white px-10">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="flex items-center justify-center text-gray-500 transition-colors hover:text-gray-800"
+          >
+            <ChevronLeftIcon className="text-3xl" />
+          </button>
+          <div>
+            <p className="text-xs text-gray-400">หมวดหมู่</p>
+            <h1 className="text-xl font-bold text-gray-900">
+              {categoryData?.name || 'รายละเอียดหมวดหมู่'}
+            </h1>
+          </div>
+        </div>
+
+        <div>
+          <Link href={`/admin/categories/${categoryId}/edit`}>
             <button
               type="button"
-              onClick={() => router.back()}
-              className="flex items-center justify-center text-gray-500 transition-colors hover:text-gray-800"
+              className="rounded-lg bg-[#3366FF] px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-600"
             >
-              <ChevronLeftIcon className="text-3xl" />
+              แก้ไข
             </button>
-            <div>
-              <p className="text-xs text-gray-400">หมวดหมู่</p>
-              <h1 className="text-xl font-bold text-gray-800">
-                {categoryData?.name || 'รายละเอียดหมวดหมู่'}
-              </h1>
-            </div>
-          </div>
-
-          <div>
-            <Link href={`/admin/categories/${categoryId}/edit`}>
-              <button
-                type="button"
-                className="rounded-lg bg-[#3366FF] px-6 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-600"
-              >
-                แก้ไข
-              </button>
-            </Link>
-          </div>
+          </Link>
         </div>
       </header>
 
       {/* ==================== 2. Main Content ==================== */}
-      <main className="p-8">
+      <main className="m-8">
         <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
           <div className="space-y-6 text-sm">
             {/* ชื่อหมวดหมู่ */}
             <div className="flex items-center">
               <span className="w-36 font-medium text-gray-700">ชื่อหมวดหมู่</span>
-              <span className="text-gray-900">{categoryData?.name}</span>
+              <span className="text-gray-900 font-medium">{categoryData?.name}</span>
             </div>
 
             <hr className="border-gray-100" />
@@ -116,18 +110,19 @@ export default function CategoryDetailPage({ params }: CategoryDetailPageProps) 
             {/* สร้างเมื่อ */}
             <div className="flex items-center">
               <span className="w-36 font-medium text-gray-700">สร้างเมื่อ</span>
-              <span className="text-gray-900">{categoryData?.createdAt}</span>
+              <span className="text-gray-500">{categoryData?.createdAt}</span>
             </div>
+
+            <hr className="border-gray-100" />
 
             {/* แก้ไขล่าสุด */}
             <div className="flex items-center">
               <span className="w-36 font-medium text-gray-700">แก้ไขล่าสุด</span>
-              <span className="text-gray-900">{categoryData?.updatedAt}</span>
+              <span className="text-gray-500">{categoryData?.updatedAt}</span>
             </div>
           </div>
         </div>
       </main>
-      </div>
     </div>
   );
 }

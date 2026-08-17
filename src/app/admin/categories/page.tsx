@@ -7,7 +7,6 @@ import AlertConfirmation from '@/components/admin/AlertConfirmation';
 import { Category } from '@/types/category';
 import Link from 'next/link';
 import Image from 'next/image';
-import AdminSidebar from '@/components/admin/AdminSidebar';
 import { deleteCategory, getCategories } from '@/lib/categoryApi';
 
 export default function CategoryPage() {
@@ -102,159 +101,152 @@ export default function CategoryPage() {
   };
 
   return (
-    <div className="flex min-h-screen w-full bg-[#F3F4F6] text-gray-700">
-      <AdminSidebar />
-      <div className="flex min-w-0 flex-1 flex-col w-full">
-
+    <div className="flex min-w-0 flex-1 flex-col w-full">
       {/* ==================== 1. Top Header Bar ==================== */}
-      <header className="bg-white border-b border-gray-200 px-10 py-4">
-        <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-800">หมวดหมู่</h1>
+      <header className="flex h-20 items-center justify-between border-b border-gray-200 bg-white px-10">
+        <h1 className="text-xl font-bold text-gray-900">หมวดหมู่</h1>
 
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <SearchIcon
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                fontSize="small"
-              />
-              <input
-                type="text"
-                placeholder="ค้นหาหมวดหมู่..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-72 rounded-lg border border-gray-200 bg-white py-2 pr-4 pl-10 text-sm focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none"
-              />
-            </div>
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <SearchIcon
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
+              fontSize="small"
+            />
+            <input
+              type="text"
+              placeholder="ค้นหาหมวดหมู่..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-80 rounded-lg border border-gray-200 bg-white py-2.5 pr-4 pl-10 text-sm placeholder:text-gray-400 focus:border-blue-500 focus:outline-none"
+            />
+          </div>
 
-            <Link href="/admin/categories/new">
+          <Link href="/admin/categories/new">
             <button
               type="button"
-              className="flex items-center gap-1.5 rounded-lg bg-[#3366FF] px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-600"
+              className="flex items-center gap-1.5 rounded-lg bg-[#3366FF] px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-600"
             >
               <span>เพิ่มหมวดหมู่</span>
               <AddIcon fontSize="small" />
             </button>
-            </Link>
-          </div>
+          </Link>
         </div>
-        </header>
+      </header>
 
-        {/* ==================== 2. Main Content ==================== */}
-        <main className="m-2.5 overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
-          <table className="w-full text-left text-sm text-gray-600">
-            <thead className="border-b border-gray-100 bg-[#EFEFEF]/60 text-gray-500">
+      {/* ==================== 2. Main Content Table ==================== */}
+      <main className="m-8 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+        <table className="w-full text-left text-sm text-gray-600">
+          <thead className="border-b border-gray-200 bg-[#EFEFEF] text-gray-500">
+            <tr>
+              <th className="w-32 px-6 py-4 text-center font-normal text-xs text-gray-500">ลำดับ</th>
+              <th className="px-6 py-4 font-normal text-xs text-gray-500">ชื่อหมวดหมู่</th>
+              <th className="px-6 py-4 font-normal text-xs text-gray-500">สร้างเมื่อ</th>
+              <th className="px-6 py-4 font-normal text-xs text-gray-500">แก้ไขล่าสุด</th>
+              <th className="w-28 px-6 py-4 text-center font-normal text-xs text-gray-500">Action</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {loading ? (
               <tr>
-                <th className="w-40 px-6 py-3.5 text-center font-normal">ลำดับ</th>
-                <th className="px-6 py-3.5 font-normal">ชื่อหมวดหมู่</th>
-                <th className="px-6 py-3.5 font-normal">สร้างเมื่อ</th>
-                <th className="px-6 py-3.5 font-normal">แก้ไขล่าสุด</th>
-                <th className="pr-10 py-3.5 text-right font-normal">
-                  <div className="ml-auto w-18 text-center">Action</div>
-                </th>
+                <td colSpan={5} className="py-10 text-center text-gray-400">
+                  กำลังโหลดข้อมูล...
+                </td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {loading ? (
-                <tr>
-                  <td colSpan={5} className="py-8 text-center text-gray-400">
-                    กำลังโหลดข้อมูล...
+            ) : errorMessage ? (
+              <tr>
+                <td colSpan={5} className="py-10 text-center text-red-500">
+                  {errorMessage}
+                </td>
+              </tr>
+            ) : filteredCategories.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="py-10 text-center text-gray-400">
+                  {searchTerm ? `ไม่พบคำที่ค้นหา "${searchTerm}"` : "ไม่พบข้อมูลหมวดหมู่"}
+                </td>
+              </tr>
+            ) : (
+              filteredCategories.map((row, index) => (
+                <tr
+                  key={row.id}
+                  onDragOver={(event) => event.preventDefault()}
+                  onDrop={() => handleDrop(row.id)}
+                  className={`transition-colors hover:bg-gray-50/50 ${draggedCategoryId === row.id ? "opacity-50" : ""}`}
+                >
+                  <td className="px-6 py-5">
+                    <div className="relative flex items-center justify-center">
+                      <button
+                        type="button"
+                        draggable
+                        onDragStart={(event) => {
+                          setDraggedCategoryId(row.id);
+                          event.dataTransfer.effectAllowed = "move";
+                          event.dataTransfer.setData("text/plain", String(row.id));
+                        }}
+                        onDragEnd={() => setDraggedCategoryId(null)}
+                        className="absolute -left-5 top-1/2 -translate-y-1/2 cursor-grab touch-none text-gray-300 active:cursor-grabbing"
+                        title="ลากเพื่อสลับลำดับ"
+                        aria-label={`สลับลำดับ ${row.name}`}
+                      >
+                        <Image
+                          src="/dragvertical.svg"
+                          alt=""
+                          width={24}
+                          height={32}
+                          draggable={false}
+                          className="block"
+                        />
+                      </button>
+                      <span className="font-normal text-gray-800">{index + 1}</span>
+                    </div>
                   </td>
-                </tr>
-              ) : errorMessage ? (
-                <tr>
-                  <td colSpan={5} className="py-8 text-center text-red-500">
-                    {errorMessage}
+                  <td className="px-6 py-5 font-medium text-gray-900">
+                    <Link href={`/admin/categories/${row.id}`} className="block hover:text-blue-600">
+                      {row.name}
+                    </Link>
                   </td>
-                </tr>
-              ) : filteredCategories.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="py-8 text-center text-gray-400">
-                    ไม่พบข้อมูลหมวดหมู่
+                  <td className="px-6 py-5 text-gray-500">
+                    <Link href={`/admin/categories/${row.id}`} className="block">
+                      {row.createdAt}
+                    </Link>
                   </td>
-                </tr>
-              ) : (
-                filteredCategories.map((row, index) => (
-                  <tr
-                    key={row.id}
-                    onDragOver={(event) => event.preventDefault()}
-                    onDrop={() => handleDrop(row.id)}
-                    className={draggedCategoryId === row.id ? 'opacity-50' : ''}
-                  >
-                    <td className="px-6 py-6">
-                      <div className="relative flex items-center justify-center">
-                        <button
-                          type="button"
-                          draggable
-                          onDragStart={(event) => {
-                            setDraggedCategoryId(row.id);
-                            event.dataTransfer.effectAllowed = 'move';
-                            event.dataTransfer.setData('text/plain', String(row.id));
-                          }}
-                          onDragEnd={() => setDraggedCategoryId(null)}
-                          className="absolute -left-6 top-1/2 -translate-y-1/2 cursor-grab touch-none text-gray-300 active:cursor-grabbing"
-                          title="ลากเพื่อสลับลำดับ"
-                          aria-label={`สลับลำดับ ${row.name}`}
-                        >
-                          <Image 
-                          src="/dragvertical.svg" 
-                          alt="" 
-                          width={56}
-                          height={80}
-                          draggable={false} 
-                          className="block"/>
-                        </button>
-                        <span className="font-normal text-gray-800">{index + 1}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-6">
-                      <Link href={`/admin/categories/${row.id}`} className="block">
-                        {row.name}
-                      </Link>
-                    </td>
-                    <td className="px-6 py-6">
-                      <Link href={`/admin/categories/${row.id}`} className="block">
-                        {row.createdAt}
-                      </Link>
-                    </td>
-                    <td className="px-6 py-6">
-                      <Link href={`/admin/categories/${row.id}`} className="block">
-                        {row.updatedAt}
-                      </Link>
-                    </td>
-                    <td className="py-6 pr-10">
-                    <div className="flex justify-end gap-2">
+                  <td className="px-6 py-5 text-gray-500">
+                    <Link href={`/admin/categories/${row.id}`} className="block">
+                      {row.updatedAt}
+                    </Link>
+                  </td>
+                  <td className="px-6 py-5 text-center">
+                    <div className="flex items-center justify-center gap-3">
                       <button
                         type="button"
                         onClick={() => handleOpenDeleteModal(row)}
-                        className="flex h-8 w-8 items-center justify-center"
+                        className="flex h-8 w-8 items-center justify-center text-gray-400 hover:opacity-75 transition-opacity"
                         title="ลบ"
                       >
-                        <Image src="/delete.svg" alt="ลบ" width={24} height={24} className="block"/>
+                        <Image src="/delete.svg" alt="ลบ" width={20} height={20} className="block" />
                       </button>
                       <Link
                         href={`/admin/categories/${row.id}/edit`}
-                        className="flex h-8 w-8 items-center justify-center"
+                        className="flex h-8 w-8 items-center justify-center text-blue-600 hover:opacity-75 transition-opacity"
                         title="แก้ไข"
                       >
-                        <Image src="/edit.svg" alt="แก้ไข" width={20} height={20} className="block"/>
-                        </Link>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </main>
+                        <Image src="/edit.svg" alt="แก้ไข" width={18} height={18} className="block" />
+                      </Link>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </main>
 
-        <AlertConfirmation
-          isOpen={isModalOpen}
-          itemName={selectedCategory?.name || ''}
-          loading={isDeleting}
-          onClose={handleCloseDeleteModal}
-          onDelete={handleConfirmDelete}
-        />
-    </div>
+      <AlertConfirmation
+        isOpen={isModalOpen}
+        itemName={selectedCategory?.name || ""}
+        loading={isDeleting}
+        onClose={handleCloseDeleteModal}
+        onDelete={handleConfirmDelete}
+      />
     </div>
   );
 }
