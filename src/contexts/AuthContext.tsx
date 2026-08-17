@@ -1,6 +1,13 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import {
+  createContext,
+  type ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import apiClient from "@/services/apiClient";
 
 export interface User {
@@ -24,6 +31,7 @@ interface AuthResult {
   success: boolean;
   user?: User;
   error?: string;
+  requiresEmailConfirmation?: boolean;
 }
 
 interface AuthContextType {
@@ -35,110 +43,127 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<AuthResult>;
   register: (data: RegisterData) => Promise<AuthResult>;
   logout: () => Promise<void>;
-  fetchCurrentUser: () => Promise<void>;
+  fetchCurrentUser: () => Promise<User | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+function getErrorMessage(error: unknown, fallback: string): string {
+  return typeof error === "object" && error !== null && "message" in error
+    ? String(error.message)
+    : fallback;
+}
+
+function getAccessToken(data: unknown): string | null {
+  if (typeof data !== "object" || data === null || !("session" in data)) {
+    return null;
+  }
+
+  const session = data.session;
+  if (typeof session !== "object" || session === null) {
+    return null;
+  }
+
+  const accessToken = "accessToken" in session ? session.accessToken : null;
+  return typeof accessToken === "string" && accessToken ? accessToken : null;
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // ดึงข้อมูลผู้ใช้ปัจจุบันเมื่อโหลดหน้าเว็บ
-  const fetchCurrentUser = async () => {
-    const savedToken = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const clearSession = useCallback(() => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setUser(null);
+    setToken(null);
+  }, []);
+
+  const fetchCurrentUser = useCallback(async (): Promise<User | null> => {
+    const savedToken = localStorage.getItem("token");
     if (!savedToken) {
       setUser(null);
       setToken(null);
       setIsLoading(false);
-      return;
+      return null;
     }
 
     try {
       setToken(savedToken);
-      const response = await apiClient.get("/user/me");
-      if (response.data?.data) {
-        setUser(response.data.data);
-        localStorage.setItem("user", JSON.stringify(response.data.data));
-      }
+      const response = await apiClient.get<{ data: User }>("/api/users/me");
+      const profile = response.data.data;
+      setUser(profile);
+      localStorage.setItem("user", JSON.stringify(profile));
+      return profile;
     } catch {
-      // Token หมดอายุหรือไม่ถูกต้อง
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      setUser(null);
-      setToken(null);
+      clearSession();
+      return null;
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [clearSession]);
 
   useEffect(() => {
-    fetchCurrentUser();
-  }, []);
+    const timeoutId = window.setTimeout(() => {
+      void fetchCurrentUser();
+    }, 0);
 
-  // ฟังก์ชัน Login
+    return () => window.clearTimeout(timeoutId);
+  }, [fetchCurrentUser]);
+
   const login = async (email: string, password: string): Promise<AuthResult> => {
     try {
       const response = await apiClient.post("/auth/login", { email, password });
-      const data = response.data?.data;
-      const accessToken = data?.session?.accessToken || data?.session?.access_token;
-      const userProfile = data?.user;
-
-      if (accessToken && userProfile) {
-        localStorage.setItem("token", accessToken);
-        localStorage.setItem("user", JSON.stringify(userProfile));
-        setToken(accessToken);
-        setUser(userProfile);
-        return { success: true, user: userProfile };
+      const accessToken = getAccessToken(response.data?.data);
+      if (!accessToken) {
+        return { success: false, error: "ไม่พบข้อมูล Token จากเซิร์ฟเวอร์" };
       }
 
-      return { success: false, error: "ไม่พบข้อมูล Token จากเซิร์ฟเวอร์" };
-    } catch (err: unknown) {
-      const errorMsg =
-        typeof err === "object" && err !== null && "message" in err
-          ? (err as { message: string }).message
-          : "อีเมลหรือรหัสผ่านไม่ถูกต้อง";
-      return { success: false, error: errorMsg };
+      localStorage.setItem("token", accessToken);
+      setToken(accessToken);
+      const profile = await fetchCurrentUser();
+
+      if (!profile) {
+        return { success: false, error: "ไม่สามารถโหลดข้อมูลผู้ใช้หลังเข้าสู่ระบบ" };
+      }
+
+      return { success: true, user: profile };
+    } catch (error: unknown) {
+      return { success: false, error: getErrorMessage(error, "อีเมลหรือรหัสผ่านไม่ถูกต้อง") };
     }
   };
 
-  // ฟังก์ชัน Register
   const register = async (data: RegisterData): Promise<AuthResult> => {
     try {
       const response = await apiClient.post("/auth/register", data);
-      const resData = response.data?.data;
-      const accessToken = resData?.session?.access_token || resData?.session?.accessToken;
-      const userProfile = resData?.user;
+      const responseData = response.data?.data;
+      const accessToken = getAccessToken(responseData);
+      const registeredUser = responseData?.user as User | undefined;
+      const requiresEmailConfirmation = Boolean(responseData?.requiresEmailConfirmation);
 
-      if (accessToken && userProfile) {
-        localStorage.setItem("token", accessToken);
-        localStorage.setItem("user", JSON.stringify(userProfile));
-        setToken(accessToken);
-        setUser(userProfile);
+      if (!accessToken) {
+        return { success: true, user: registeredUser, requiresEmailConfirmation };
       }
 
-      return { success: true, user: userProfile };
-    } catch (err: unknown) {
-      const errorMsg =
-        typeof err === "object" && err !== null && "message" in err
-          ? (err as { message: string }).message
-          : "เกิดข้อผิดพลาดในการลงทะเบียน";
-      return { success: false, error: errorMsg };
+      localStorage.setItem("token", accessToken);
+      setToken(accessToken);
+      const profile = await fetchCurrentUser();
+      return profile
+        ? { success: true, user: profile }
+        : { success: false, error: "ไม่สามารถโหลดข้อมูลผู้ใช้หลังลงทะเบียน" };
+    } catch (error: unknown) {
+      return { success: false, error: getErrorMessage(error, "เกิดข้อผิดพลาดในการลงทะเบียน") };
     }
   };
 
-  // ฟังก์ชัน Logout
   const logout = async () => {
     try {
       await apiClient.post("/auth/logout");
     } catch {
-      // Ignored
+      // The browser session is still cleared even when the server is unavailable.
     } finally {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      setUser(null);
-      setToken(null);
+      clearSession();
     }
   };
 
