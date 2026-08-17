@@ -48,9 +48,13 @@ export default function RegisterForm() {
     setIsLoading(false);
 
     if (result.success) {
-      setSuccessMessage("ลงทะเบียนสำเร็จ! กำลังนำคุณเข้าสู่ระบบ...");
+      setSuccessMessage(
+        result.requiresEmailConfirmation
+          ? "ลงทะเบียนสำเร็จ! กรุณายืนยันอีเมลก่อนเข้าสู่ระบบ"
+          : "ลงทะเบียนสำเร็จ! กำลังนำคุณเข้าสู่ระบบ...",
+      );
       setTimeout(() => {
-        router.push("/");
+        router.push(result.requiresEmailConfirmation ? "/login" : "/");
       }, 1500);
     } else {
       setErrorMessage(result.error || "เกิดข้อผิดพลาดในการลงทะเบียน");

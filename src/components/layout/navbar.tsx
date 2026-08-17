@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { HomeServicesLogo } from "./home-services-logo";
+import { UserAvatar } from "./UserAvatar";
 
 export function Navbar() {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
@@ -49,9 +50,17 @@ export function Navbar() {
             <div className="flex items-center gap-3">
               <Link
                 href="/profile"
-                className="text-sm font-medium text-gray-800 hover:text-blue-600"
+                className="flex min-w-0 items-center gap-2 text-sm font-medium text-gray-800 hover:text-blue-600"
+                aria-label="เปิดหน้าโปรไฟล์"
               >
-                สวัสดี, <span className="font-semibold text-blue-600">{user?.fullName || user?.email}</span>
+                <UserAvatar
+                  fullName={user?.fullName}
+                  email={user?.email}
+                  avatarUrl={user?.avatarUrl}
+                />
+                <span className="max-w-32 truncate font-semibold text-blue-600 sm:max-w-48">
+                  {user?.fullName || user?.email}
+                </span>
               </Link>
               <button
                 type="button"
