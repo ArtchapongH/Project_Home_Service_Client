@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 import apiClient from '@/services/apiClient';
 import { Category } from '@/types/category';
 
@@ -23,7 +25,11 @@ type CategoryApiError = {
 
 export function isInactiveCategoryError(
   error: unknown,
-): error is CategoryApiError {
+): boolean {
+  if (axios.isAxiosError<CategoryApiError>(error)) {
+    return error.response?.data?.code === 'CATEGORY_INACTIVE';
+  }
+
   return (
     typeof error === 'object' &&
     error !== null &&
