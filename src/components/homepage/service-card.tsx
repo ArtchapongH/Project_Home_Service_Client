@@ -1,13 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { PublicService } from "@/types/public-service";
 
-export type ServiceItem = {
-  slug: string;
-  category: string;
-  name: string;
-  price: string;
-  image: string;
-};
+function formatPrice(minPrice: number, maxPrice: number): string {
+  const format = (value: number) => value.toLocaleString("th-TH", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  return maxPrice > minPrice
+    ? `ค่าบริการประมาณ ${format(minPrice)} - ${format(maxPrice)} ฿`
+    : `ค่าบริการประมาณ ${format(minPrice)} ฿`;
+}
 
 export function ServiceCard({ service }: { service: ServiceItem }) {
   return (

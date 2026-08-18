@@ -1,29 +1,10 @@
 import Link from "next/link";
 import { ServiceCard } from "./service-card";
-
-const services = [
-  {
-    slug: "general-cleaning",
-    category: "บริการทั่วไป",
-    name: "ทำความสะอาดทั่วไป",
-    price: "ค่าบริการประมาณ 500.00 - 1,000.00 ฿",
-    image: "/images/landing/service-cleaning.png",
-  },
-  {
-    slug: "air-conditioner-cleaning",
-    category: "บริการทั่วไป",
-    name: "ล้างแอร์",
-    price: "ค่าบริการประมาณ 500.00 - 1,000.00 ฿",
-    image: "/images/landing/service-aircon.png",
-  },
-  {
-    slug: "washing-machine-repair",
-    category: "บริการทั่วไป",
-    name: "ซ่อมเครื่องซักผ้า",
-    price: "ค่าบริการประมาณ 500.00 ฿",
-    image: "/images/landing/service-washing-machine.png",
-  },
-];
+import {
+  getApiErrorMessage,
+  getPublicServices,
+} from "@/services/publicServiceApi";
+import type { PublicService } from "@/types/public-service";
 
 export function ServicesSection() {
   return (

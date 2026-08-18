@@ -31,13 +31,15 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ```
 Project_Home_Service_Client/
-├── app/                      # Next.js App Router (Pages, Layouts, API routes)
-│   ├── layout.tsx            # Root Layout
-│   ├── page.tsx              # Home Page
-│   ├── admin/                # Admin Panel Routes
-│   ├── login/                # Authentication Routes
-│   └── profile/              # User Profile Routes
+├── .env                      # Environment Variables Config
+├── .env.example              # Template Environment Variables
 ├── src/                      # Source Code Core Components & Logic
+│   ├── app/                  # Next.js App Router (Pages, Layouts, API routes)
+│   │   ├── layout.tsx        # Root Layout
+│   │   ├── page.tsx          # Home Page
+│   │   ├── admin/            # Admin Panel Routes
+│   │   ├── login/            # Authentication Routes
+│   │   └── profile/          # User Profile Routes
 │   ├── components/           # Reusable UI Components
 │   │   ├── admin/            # Admin-specific components (e.g. ServiceForm, ServiceTable)
 │   │   ├── layout/           # Shared Layout components (Navbar, Footer, Sidebar)
@@ -54,7 +56,8 @@ Project_Home_Service_Client/
 
 > **Rule for Agents**: 
 > - สับเปลี่ยนและย้าย UI Components ใหม่ทั้งหมดเข้าไว้ใน `src/components/` (หลีกเลี่ยงการสร้างโฟลเดอร์ `components/` ซ้ำซ้อนที่ Root)
-> - หน้ารับ Route ใน `app/` ควรทำหน้าที่รับ Parameters/Page level logic แล้วเรียกใช้ Components จาก `src/components/`
+> - หน้ารับ Route ใน `src/app/` ควรทำหน้าที่รับ Parameters/Page level logic แล้วเรียกใช้ Components จาก `src/components/`
+> - Import โค้ดภายใน `src/` ด้วย alias `@/...` เช่น `@/components/...` และไม่ใช้ `@/src/...`
 
 ---
 
