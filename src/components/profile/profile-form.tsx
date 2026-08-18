@@ -1,7 +1,7 @@
 "use client";
 
 import { type ChangeEvent, type FormEvent, useEffect, useState } from "react";
-import { getMyProfile, updateMyProfile } from "@/src/services/profile.service";
+import { getMyProfile, updateMyProfile } from "@/services/profile.service";
 
 const emptyForm = {
   fullName: "",
