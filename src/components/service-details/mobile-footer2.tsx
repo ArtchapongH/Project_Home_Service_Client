@@ -6,10 +6,31 @@ import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
 import KeyboardArrowUpRoundedIcon from "@mui/icons-material/KeyboardArrowUpRounded";
 import { useRouter } from "next/navigation";
+import { PaymentContext } from "@/app/service-details/layout";
 
 export default function MobileFooterTwo() {
+	const payment = React.useContext(PaymentContext);
 	const [summaryExpanded, setSummaryExpanded] = useState(true);
 	const router = useRouter();
+
+	if (!payment) {
+		throw new Error("MobileFooterTwo must be rendered inside PaymentProvider");
+	}
+
+	const { serviceDetail, serviceFormData, totAmount } = payment;
+	const selectedServices = serviceDetail.filter((service) => service.quantity !== 0);
+	const address = [
+		serviceFormData.address,
+		serviceFormData.district,
+		serviceFormData.subdistrict,
+		serviceFormData.province,
+	]
+		.filter(Boolean)
+		.join(" ");
+
+	const isFormComplete = Object.entries(serviceFormData)
+		.filter(([field]) => field !== "information")
+		.every(([, value]) => value.trim().length > 0);
 
 	function handleBack(): void {
 		router.push("/service-details/service");
@@ -31,28 +52,34 @@ export default function MobileFooterTwo() {
 					</button>
 				</div>
 			<div className={summaryExpanded ? "block" : "hidden"}>
-				<div className="mt-2 border-b border-gray-200 pb-3 text-[10px]">
-					<div className="flex items-start justify-between gap-2 text-gray-700">
-						<span>9,000 - 18,000 BTU, แบบติดผนัง</span>
-						<span className="shrink-0">2 เครื่อง</span>
-					</div>
+				<div className="mt-2 space-y-2 border-b border-gray-200 pb-3 text-[10px] text-gray-700">
+					{selectedServices.map((service, index) => (
+						<div key={`${service.serviceDetail}-${index}`} className="flex items-start justify-between gap-2">
+							<span>{service.serviceDetail}</span>
+							<span className="shrink-0">{service.quantity} {service.unit}</span>
+						</div>
+					))}
 				</div>
 				<div className="space-y-2 border-b border-gray-200 py-3 text-[10px]">
-					<SummaryRow label="วันที่" value="23 เม.ย. 2022" />
-					<SummaryRow label="เวลา" value="11:00 น." />
-					<SummaryRow label="สถานที่" value={<>444/4 คอนโดสุขสมัย แขวงดินแดง<br />จตุจักร กรุงเทพฯ</>} />
+					<SummaryRow label="วันที่" value={serviceFormData.serviceDate} />
+					<SummaryRow label="เวลา" value={serviceFormData.serviceTime} />
+					<SummaryRow label="สถานที่" value={address} />
 				</div>
 			</div>
 			<div className="mt-3 flex items-center justify-between text-xs">
 				<span className="text-gray-500">รวม</span>
-				<span className="font-semibold text-black">1,600.00 ฿</span>
+				<span className="font-semibold text-black">{totAmount.toFixed(2)} ฿</span>
 			</div>
 			<div className="mt-3 grid grid-cols-2 gap-3 border-t border-gray-200 pt-3">
 				<button type="button" onClick={handleBack} className="flex h-8 items-center justify-center gap-1 rounded-[7px] border border-blue-500 text-xs font-medium text-blue-600">
 					<ChevronLeftRoundedIcon className="text-[17px]" />
 					ย้อนกลับ
 				</button>
-				<button type="button" className="flex h-8 items-center justify-center gap-1 rounded-[7px] bg-blue-500 text-xs font-medium text-white">
+				<button
+					type="button"
+					disabled={!isFormComplete}
+					className={`flex h-8 items-center justify-center gap-1 rounded-[7px] text-xs font-medium text-white ${isFormComplete ? "bg-blue-500" : "bg-[#d0d5df]"}`}
+				>
 					ดำเนินการต่อ
 					<ChevronRightRoundedIcon className="text-[17px]" />
 				</button>
@@ -61,20 +88,22 @@ export default function MobileFooterTwo() {
 
 			<aside className="hidden h-fit rounded-lg border border-gray-200 bg-white p-3 min-[801px]:block">
 				<h2 className="text-sm font-medium text-gray-500">สรุปรายการ</h2>
-				<div className="mt-2 border-b border-gray-200 pb-3 text-[10px]">
-					<div className="flex items-start justify-between gap-2 text-gray-700">
-						<span>9,000 - 18,000 BTU, แบบติดผนัง</span>
-						<span className="shrink-0">2 เครื่อง</span>
-					</div>
+				<div className="mt-2 space-y-2 border-b border-gray-200 pb-3 text-[10px] text-gray-700">
+					{selectedServices.map((service, index) => (
+						<div key={`${service.serviceDetail}-${index}`} className="flex items-start justify-between gap-2">
+							<span>{service.serviceDetail}</span>
+							<span className="shrink-0">{service.quantity} {service.unit}</span>
+						</div>
+					))}
 				</div>
 				<div className="space-y-2 border-b border-gray-200 py-3 text-[10px]">
-					<SummaryRow label="วันที่" value="23 เม.ย. 2022" />
-					<SummaryRow label="เวลา" value="11:00 น." />
-					<SummaryRow label="สถานที่" value={<>444/4 คอนโดสุขสมัย แขวงดินแดง<br />จตุจักร กรุงเทพฯ</>} />
+					<SummaryRow label="วันที่" value={serviceFormData.serviceDate} />
+					<SummaryRow label="เวลา" value={serviceFormData.serviceTime} />
+					<SummaryRow label="สถานที่" value={address} />
 				</div>
 				<div className="mt-3 flex items-center justify-between text-xs">
 					<span className="text-gray-500">รวม</span>
-					<span className="font-semibold text-black">1,600.00 ฿</span>
+					<span className="font-semibold text-black">{totAmount.toFixed(2)} ฿</span>
 				</div>
 			</aside>
 
@@ -84,7 +113,11 @@ export default function MobileFooterTwo() {
 						<ChevronLeftRoundedIcon className="text-[17px]" />
 						ย้อนกลับ
 					</button>
-					<button type="button" className="flex h-8 items-center justify-center gap-1 rounded-[7px] bg-blue-500 px-5 text-xs font-medium text-white">
+					<button
+						type="button"
+						disabled={!isFormComplete}
+						className={`flex h-8 items-center justify-center gap-1 rounded-[7px] px-5 text-xs font-medium text-white ${isFormComplete ? "bg-blue-500" : "bg-[#d0d5df]"}`}
+					>
 						ดำเนินการต่อ
 						<ChevronRightRoundedIcon className="text-[17px]" />
 					</button>
