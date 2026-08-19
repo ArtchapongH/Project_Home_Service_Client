@@ -2,8 +2,6 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined';
-import AccessTimeOutlinedIcon from '@mui/icons-material/AccessTimeOutlined';
 import { PromotionType } from '@/types/promotion';
 import { createPromotion } from '@/lib/promotionApi';
 
@@ -77,12 +75,13 @@ export default function NewPromotionPage() {
 
       router.push('/admin/promotions');
       router.refresh();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to create promotion:', error);
-      if (error?.response?.data?.code === 'PROMOTION_CODE_EXISTS') {
+      const err = error as { response?: { data?: { code?: string; message?: string } } };
+      if (err?.response?.data?.code === 'PROMOTION_CODE_EXISTS') {
         setErrorMessage('Promotion Code นี้มีอยู่ในระบบแล้ว');
-      } else if (error?.response?.data?.message) {
-        setErrorMessage(error.response.data.message);
+      } else if (err?.response?.data?.message) {
+        setErrorMessage(err.response.data.message);
       } else {
         setErrorMessage('เกิดข้อผิดพลาดในการสร้าง Promotion Code');
       }

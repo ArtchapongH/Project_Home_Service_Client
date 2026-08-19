@@ -8,7 +8,9 @@ import {
   useEffect,
   useState,
 } from "react";
+import axios from "axios";
 import apiClient from "@/services/apiClient";
+
 
 export interface User {
   id: string | number;
@@ -50,10 +52,22 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 function getErrorMessage(error: unknown, fallback: string): string {
+  if (axios.isAxiosError(error)) {
+    const data = error.response?.data;
+    if (typeof data === "object" && data !== null) {
+      if ("message" in data && typeof data.message === "string") {
+        return data.message;
+      }
+      if ("error" in data && typeof data.error === "string") {
+        return data.error;
+      }
+    }
+  }
   return typeof error === "object" && error !== null && "message" in error
-    ? String(error.message)
+    ? String((error as { message: unknown }).message)
     : fallback;
 }
+
 
 function getAccessToken(data: unknown): string | null {
   if (typeof data !== "object" || data === null || !("session" in data)) {
