@@ -1,41 +1,33 @@
 "use client";
 
-import React, { createContext, useState, type ReactNode } from "react";
+import React, { createContext, useState } from "react";
 
 type PaymentContextValue = {
     serviceTitle: string;
     setServiceTitle: React.Dispatch<React.SetStateAction<string>>;
-    serviceDetail: string;
-    setServiceDetail: React.Dispatch<React.SetStateAction<string>>;
-    pricePerUnit: number;
-    setPricePerUnit: React.Dispatch<React.SetStateAction<number>>;
-    quantity: number;
-    setQuantity: React.Dispatch<React.SetStateAction<number>>;
-    address: string;
-    setAddress: React.Dispatch<React.SetStateAction<string>>;
-    subdistrict: string;
-    setSubdistrict: React.Dispatch<React.SetStateAction<string>>;
-    district: string;
-    setDistrict: React.Dispatch<React.SetStateAction<string>>;
-    province: string;
-    setProvince: React.Dispatch<React.SetStateAction<string>>;
-    serviceDate: string;
-    setServiceDate: React.Dispatch<React.SetStateAction<string>>;
-    serviceTime: string;
-    setServiceTime: React.Dispatch<React.SetStateAction<string>>;
-    information: string;
-    setInformation: React.Dispatch<React.SetStateAction<string>>;
-    creditCardNumber: string;
-    setCreditCardNumber: React.Dispatch<React.SetStateAction<string>>;
-    creditCardName: string;
-    setCreditCardName: React.Dispatch<React.SetStateAction<string>>;
-    creditCardExpiry: string;
-    setCreditCardExpiry: React.Dispatch<React.SetStateAction<string>>;
-    creditCardCVC: string;
-    setCreditCardCVC: React.Dispatch<React.SetStateAction<string>>;
+    serviceDetail: ServiceDetail[];
+    setServiceDetail: React.Dispatch<React.SetStateAction<ServiceDetail[]>>;
+    serviceFormData: ServiceFormData;
+    setServiceFormData: React.Dispatch<React.SetStateAction<ServiceFormData>>;
+    paymentFormData: PaymentFormData;
+    setPaymentFormData: React.Dispatch<React.SetStateAction<PaymentFormData>>;
     promotionCode: string;
     setPromotionCode: React.Dispatch<React.SetStateAction<string>>;
+    isFirstPageCompleted: boolean;
+    setIsFirstPageCompleted: React.Dispatch<React.SetStateAction<boolean>>;
+    isSecondPageCompleted: boolean;
+    setIsSecondPageCompleted: React.Dispatch<React.SetStateAction<boolean>>;
+    isThirdPageCompleted: boolean;
+    setIsThirdPageCompleted: React.Dispatch<React.SetStateAction<boolean>>;
+
 };
+
+type ServiceDetail = {
+  serviceDetail: string;
+  pricePerUnit: number;
+  quantity: number;
+};
+
 
 interface ServiceFormData {
   address: string;
@@ -55,14 +47,15 @@ interface PaymentFormData {
   creditCardCVC: string;
 }
 
+
 export const PaymentContext = createContext<PaymentContextValue | undefined>(undefined);
 
 export function PaymentProvider({ children }: { children: React.ReactNode }) {
+    
+    
     const [serviceTitle, setServiceTitle] = useState("");
     // ข้อมูล sevice datail มันจะต้องเป็น array ของ object ที่มี serviceDetail, pricePerUnit, quantity
-    const [serviceDetail, setServiceDetail] = useState("");
-    const [pricePerUnit, setPricePerUnit] = useState(0);
-    const [quantity, setQuantity] = useState(0);
+    const [serviceDetail, setServiceDetail] = useState<ServiceDetail[]>(serviceOptions);
 
     const [serviceFormData, setServiceFormData] = useState<ServiceFormData>({
         address: "",
@@ -84,40 +77,30 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
 
     const [promotionCode, setPromotionCode] = useState("");
 
+    const [isFirstPageCompleted, setIsFirstPageCompleted] = useState(false);
+    const [isSecondPageCompleted, setIsSecondPageCompleted] = useState(false);    
+    const [isThirdPageCompleted, setIsThirdPageCompleted] = useState(false);
+
     const value: PaymentContextValue = {
         serviceTitle,
         setServiceTitle,
         serviceDetail,
         setServiceDetail,
-        pricePerUnit,
-        setPricePerUnit,
-        quantity,
-        setQuantity,
-        address,
-        setAddress,
-        subdistrict,
-        setSubdistrict,
-        district,
-        setDistrict,
-        province,
-        setProvince,
-        serviceDate,
-        setServiceDate,
-        serviceTime,
-        setServiceTime,
-        information,
-        setInformation,
-        creditCardNumber,
-        setCreditCardNumber,
-        creditCardName,
-        setCreditCardName,
-        creditCardExpiry,
-        setCreditCardExpiry,
-        creditCardCVC,
-        setCreditCardCVC,
+        serviceFormData,
+        setServiceFormData,
+        paymentFormData,
+        setPaymentFormData,
         promotionCode,
-        setPromotionCode
+        setPromotionCode,
+        
+        isFirstPageCompleted,
+        setIsFirstPageCompleted,
+        isSecondPageCompleted,
+        setIsSecondPageCompleted,
+        isThirdPageCompleted,
+        setIsThirdPageCompleted
     };
+
 
     return(
         <PaymentContext.Provider value={value}>
