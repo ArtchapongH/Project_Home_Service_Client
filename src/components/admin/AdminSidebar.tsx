@@ -39,7 +39,7 @@ const AdminSidebar = () => {
     {
       key: "promotion",
       label: "Promotion Code",
-      href: "/admin/promotion",
+      href: "/admin/promotions",
       icon: promotionIcon,
     },
   ];
@@ -47,7 +47,7 @@ const AdminSidebar = () => {
   const getActiveItem = (): ActiveKey | null => {
     if (pathname.startsWith("/admin/categories")) return "category";
     if (pathname.startsWith("/admin/services")) return "service";
-    if (pathname.startsWith("/admin/promotion")) return "promotion";
+    if (pathname.startsWith("/admin/promotions") || pathname.startsWith("/admin/promotion")) return "promotion";
     return null;
   };
 
