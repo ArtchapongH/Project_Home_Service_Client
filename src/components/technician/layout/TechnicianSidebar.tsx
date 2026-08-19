@@ -21,7 +21,7 @@ export function TechnicianSidebar() {
 
   const handleLogout = async () => {
     await logout();
-    router.push("/login");
+    router.push("/technician/login");
   };
 
   return (
