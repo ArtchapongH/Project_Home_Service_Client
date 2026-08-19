@@ -2,7 +2,9 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Checkbox from "@mui/material/Checkbox";
+import { useAuth } from "@/contexts/AuthContext";
 import FacebookLoginButton from "./FacebookLoginButton";
 import LoginCard from "./LoginCard";
 import LoginSubmitButton from "./LoginSubmitButton";
@@ -15,9 +17,48 @@ export default function RegisterForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isAcceptedTerms, setIsAcceptedTerms] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const { register } = useAuth();
+  const router = useRouter();
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    if (!isAcceptedTerms) {
+      setErrorMessage("กรุณายอมรับข้อตกลงและเงื่อนไขก่อนลงทะเบียน");
+      return;
+    }
+
+    if (password.length < 6) {
+      setErrorMessage("รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร");
+      return;
+    }
+
+    setIsLoading(true);
+    const result = await register({
+      fullName,
+      phone,
+      email,
+      password,
+    });
+    setIsLoading(false);
+
+    if (result.success) {
+      setSuccessMessage(
+        result.requiresEmailConfirmation
+          ? "ลงทะเบียนสำเร็จ! กรุณายืนยันอีเมลก่อนเข้าสู่ระบบ"
+          : "ลงทะเบียนสำเร็จ! กำลังนำคุณเข้าสู่ระบบ...",
+      );
+      setTimeout(() => {
+        router.push(result.requiresEmailConfirmation ? "/login" : "/");
+      }, 1500);
+    } else {
+      setErrorMessage(result.error || "เกิดข้อผิดพลาดในการลงทะเบียน");
+    }
   };
 
   return (
@@ -25,6 +66,18 @@ export default function RegisterForm() {
       <h1 className="mb-6 text-center text-xl font-semibold text-blue-900 sm:mb-8 sm:text-2xl">
         ลงทะเบียน
       </h1>
+
+      {errorMessage && (
+        <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600 border border-red-200">
+          {errorMessage}
+        </div>
+      )}
+
+      {successMessage && (
+        <div className="mb-4 rounded-lg bg-green-50 p-3 text-sm text-green-700 border border-green-200">
+          {successMessage}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <LoginTextField
@@ -57,7 +110,7 @@ export default function RegisterForm() {
           id="password"
           label="รหัสผ่าน"
           type="password"
-          placeholder="กรุณากรอกรหัสผ่าน"
+          placeholder="กรุณากรอกรหัสผ่าน (อย่างน้อย 6 ตัวอักษร)"
           autoComplete="new-password"
           value={password}
           onChange={setPassword}
@@ -82,8 +135,8 @@ export default function RegisterForm() {
           </p>
         </div>
 
-        <LoginSubmitButton isDisabled={!isAcceptedTerms}>
-          ลงทะเบียน
+        <LoginSubmitButton isDisabled={!isAcceptedTerms || isLoading}>
+          {isLoading ? "กำลังลงทะเบียน..." : "ลงทะเบียน"}
         </LoginSubmitButton>
       </form>
 

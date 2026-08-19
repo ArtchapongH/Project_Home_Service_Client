@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { ServiceCard } from "./service-card";
+import { ServiceCard, type ServiceItem } from "./service-card";
 
-const services = [
+const services: ServiceItem[] = [
   {
     slug: "general-cleaning",
     category: "บริการทั่วไป",
