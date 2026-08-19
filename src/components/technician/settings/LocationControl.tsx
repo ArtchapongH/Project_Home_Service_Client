@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { LocateFixed } from "lucide-react";
 import { updateTechnicianLocation } from "@/services/technicianApi";
 import type { TechnicianProfile } from "@/types/technician";
 import { formatThaiDateTime } from "@/utils/technician";
@@ -56,12 +55,9 @@ export function LocationControl({
   return (
     <div>
       <div className="flex flex-wrap items-center gap-3">
-        <button type="button" onClick={locate} disabled={loading} className="inline-flex items-center gap-2 rounded-lg border border-blue-600 px-4 py-2 text-sm text-blue-600 disabled:opacity-50">
-          <LocateFixed size={17} /> {loading ? "กำลังรับพิกัด..." : "รับพิกัด"}
+        <button type="button" onClick={locate} disabled={loading} className="inline-flex h-11 items-center rounded-lg border border-blue-600 px-4 text-sm font-medium text-blue-600 disabled:opacity-50">
+          {loading ? "กำลังรีเฟรช..." : "รีเฟรช"}
         </button>
-        {profile.latitude !== null && profile.longitude !== null && (
-          <span className="text-xs text-gray-500">{profile.latitude.toFixed(6)}, {profile.longitude.toFixed(6)}</span>
-        )}
       </div>
       {profile.locationUpdatedAt && <p className="mt-2 text-xs text-gray-400">อัปเดตล่าสุด {formatThaiDateTime(profile.locationUpdatedAt)}</p>}
       {message && <p role="status" className="mt-2 text-xs text-gray-600">{message}</p>}
