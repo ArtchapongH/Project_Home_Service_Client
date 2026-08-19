@@ -26,7 +26,15 @@ type ServiceDetail = {
   serviceDetail: string;
   pricePerUnit: number;
   quantity: number;
+    unit: string;
 };
+
+const serviceOptions: ServiceDetail[] = [
+        { serviceDetail: "9,000 - 18,000 BTU, แบบติดผนัง", quantity: 0, pricePerUnit: 800, unit: "เครื่อง" },
+        { serviceDetail: "9,000 - 18,000 BTU, แบบติดผนัง", quantity: 0, pricePerUnit: 800, unit: "เครื่อง" },
+        { serviceDetail: "9,000 - 18,000 BTU, แบบติดผนัง", quantity: 0, pricePerUnit: 800, unit: "เครื่อง" },
+        { serviceDetail: "9,000 - 18,000 BTU, แบบติดผนัง", quantity: 0, pricePerUnit: 800, unit: "เครื่อง" },
+];
 
 
 interface ServiceFormData {

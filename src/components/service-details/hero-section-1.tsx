@@ -13,14 +13,6 @@ import serviceDetailBanner from "@/assets/images/service-detail-banner.png";
 import MobileFooter from "./mobile-footer";
 import { PaymentContext } from "@/app/service-details/layout";
 
-const serviceOptions = [
-    { serviceDetail: "9,000 - 18,000 BTU, แบบติดผนัง", quantity: 0, pricePerUnit: 800 },
-    { serviceDetail: "9,000 - 18,000 BTU, แบบติดผนัง", quantity: 0, pricePerUnit: 800 },
-    { serviceDetail: "9,000 - 18,000 BTU, แบบติดผนัง", quantity: 0, pricePerUnit: 800 },
-    { serviceDetail: "9,000 - 18,000 BTU, แบบติดผนัง", quantity: 0, pricePerUnit: 800 },
-];
-
-
 export default function HeroSection({ serviceId }: { serviceId?: string | number }) {
 	const payment = React.useContext(PaymentContext);
 
@@ -28,26 +20,8 @@ export default function HeroSection({ serviceId }: { serviceId?: string | number
 		throw new Error("HeroSection must be rendered inside PaymentProvider");
 	}
 
-	const { serviceTitle,
-			setServiceTitle,
-			serviceDetail,
-			setServiceDetail,
-			serviceFormData,
-			setServiceFormData,
-			paymentFormData,
-			setPaymentFormData,
-			promotionCode,
-			setPromotionCode,
-			
-			isFirstPageCompleted,
-			setIsFirstPageCompleted,
-			isSecondPageCompleted,
-			setIsSecondPageCompleted,
-			isThirdPageCompleted,
-			setIsThirdPageCompleted } = payment;
+	const { serviceDetail, setServiceDetail } = payment;
 
-	setServiceDetail(serviceOptions);
-	
 	function changeQuantity(index: number, amount: number): void {
 		setServiceDetail((currentServiceDetails) =>
 			currentServiceDetails.map((service, serviceIndex) =>
@@ -89,16 +63,16 @@ export default function HeroSection({ serviceId }: { serviceId?: string | number
 				<div className="rounded-lg border border-gray-200 bg-white p-3 min-[801px]:p-3.5">
 					<h1 className="text-base font-semibold text-gray-500">เลือกรายการบริการล้างแอร์</h1>
 					<div className="mt-2">
-					{serviceDetail.map((serviceOption, index) => (
+					{serviceDetail.map((service, index) => (
 						<div
-							key={`${serviceOption.serviceDetail}-${index}`}
+							key={`${service.serviceDetail}-${index}`}
 							className="flex items-center justify-between border-b border-gray-200 py-3 last:border-b-0 last:pb-0"
 						>
 							<div className="pr-3">
-								<p className="text-sm font-semibold leading-5 text-black">{serviceOption.serviceDetail}</p>
+								<p className="text-sm font-semibold leading-5 text-black">{service.serviceDetail}</p>
 								<p className="mt-1 flex items-center gap-1 text-xs text-gray-500">
 									<LocalOfferOutlinedIcon className="text-[14px]" />
-									800.00 ฿ / เครื่อง
+									{service.pricePerUnit} ฿ / {service.unit}
 								</p>
 							</div>
 							<div className="flex shrink-0 items-center gap-3">
@@ -107,7 +81,7 @@ export default function HeroSection({ serviceId }: { serviceId?: string | number
 									onClick={() => changeQuantity(index, -1)}
 									icon={<RemoveRoundedIcon className="text-[18px]" />}
 								/>
-								<span className="w-2 text-center text-sm font-medium text-gray-700">{serviceOption.quantity}</span>
+								<span className="w-2 text-center text-sm font-medium text-gray-700">{service.quantity}</span>
 								<QuantityButton
 									label="เพิ่มจำนวน"
 									onClick={() => changeQuantity(index, 1)}

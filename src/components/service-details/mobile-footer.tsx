@@ -6,6 +6,15 @@ import { PaymentContext } from "@/app/service-details/layout";
 
 export default function MobileFooter() {
 	const payment = React.useContext(PaymentContext);
+
+	if (!payment) {
+		throw new Error("HeroSection must be rendered inside PaymentProvider");
+	}
+
+	const { serviceDetail, setServiceDetail, isFirstPageCompleted, setIsFirstPageCompleted } = payment;
+
+	
+
 	return (
 		<>
 			<aside className="hidden h-fit rounded-lg border border-gray-200 bg-white p-3 min-[801px]:block">
