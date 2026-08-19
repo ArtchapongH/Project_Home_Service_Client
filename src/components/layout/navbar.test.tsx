@@ -15,7 +15,10 @@ let authState = {
   isAdmin: false,
 };
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push }),
+  usePathname: () => "/",
+}));
 vi.mock("next/image", () => ({ default: (props: { alt: string }) => <span aria-label={props.alt} /> }));
 vi.mock("@/contexts/AuthContext", () => ({
   useAuth: () => ({ ...authState, logout }),
