@@ -2,7 +2,10 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createCategory } from '@/lib/categoryApi';
+import {
+  createCategory,
+  isInactiveCategoryError,
+} from '@/lib/categoryApi';
 
 export default function CreateCategoryPage() {
   const router = useRouter();
@@ -26,7 +29,11 @@ export default function CreateCategoryPage() {
       router.refresh();
     } catch (error) {
       console.error('Failed to create category:', error);
-      setErrorMessage('ไม่สามารถสร้างหมวดหมู่ได้');
+      setErrorMessage(
+        isInactiveCategoryError(error)
+          ? 'Category ดังกล่าวอยู่ในสถานะ Inactive โปรดแก้ไขผ่านทาง Database'
+          : 'ไม่สามารถสร้างหมวดหมู่ได้',
+      );
     } finally {
       setIsSubmitting(false);
     }

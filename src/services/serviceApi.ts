@@ -120,21 +120,26 @@ export async function uploadServiceImage(file: File): Promise<string> {
       const fileName = `service-${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
       const filePath = `services/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
+      const { data, error: uploadError } = await supabase.storage
         .from("services")
         .upload(filePath, file, { cacheControl: "3600", upsert: true });
 
-      if (!uploadError) {
+      if (uploadError) {
+        console.error("❌ Supabase Storage Upload Error:", uploadError);
+      } else {
         const { data: publicUrlData } = supabase.storage
           .from("services")
           .getPublicUrl(filePath);
         if (publicUrlData?.publicUrl) {
+          console.log("✅ Supabase Upload Success:", publicUrlData.publicUrl);
           return publicUrlData.publicUrl;
         }
       }
     } catch (e) {
-      console.warn("Supabase storage upload error, falling back to data URL:", e);
+      console.error("❌ Supabase storage upload exception:", e);
     }
+  } else {
+    console.warn("⚠️ Supabase client is not initialized. Check NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.");
   }
 
   // Fallback to Data URL

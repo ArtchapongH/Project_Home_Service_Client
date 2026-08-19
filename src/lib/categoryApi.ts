@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 import apiClient from '@/services/apiClient';
 import { Category } from '@/types/category';
 
@@ -6,6 +8,7 @@ const CATEGORY_ENDPOINT = '/api/admin/categories';
 type CategoryDto = {
   category_id: number | string;
   name: string;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
 };
@@ -14,6 +17,26 @@ type ApiResponse<T> = {
   success: boolean;
   data: T;
 };
+
+type CategoryApiError = {
+  code?: string;
+  message?: string;
+};
+
+export function isInactiveCategoryError(
+  error: unknown,
+): boolean {
+  if (axios.isAxiosError<CategoryApiError>(error)) {
+    return error.response?.data?.code === 'CATEGORY_INACTIVE';
+  }
+
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    error.code === 'CATEGORY_INACTIVE'
+  );
+}
 
 function formatDate(value: string) {
   const date = new Date(value);
@@ -50,7 +73,9 @@ export async function getCategories(signal?: AbortSignal) {
     { signal },
   );
 
-  return response.data.data.map(toCategory);
+  return response.data.data
+    .filter((category) => category.is_active)
+    .map(toCategory);
 }
 
 export async function getCategory(id: string, signal?: AbortSignal) {
