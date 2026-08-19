@@ -1,8 +1,11 @@
+import React from "react";
 import Link from "next/link";
 import NotificationsNoneRoundedIcon from "@mui/icons-material/NotificationsNoneRounded";
 import { HomeServicesLogo } from "../layout/home-services-logo";
+import { PaymentContext } from "@/app/service-details/layout";
 
 export default function NavbarResponsive() {
+	const payment = React.useContext(PaymentContext);
 	return (
 		<header className="relative z-10 h-14 border-b border-gray-200 bg-white shadow-[0_2px_12px_rgb(23_51_109/7%)] min-[801px]:h-18">
 			<div className="mx-auto flex h-full w-[min(1140px,calc(100%-28px))] items-center justify-between min-[801px]:w-[min(1140px,calc(100%-48px))]">

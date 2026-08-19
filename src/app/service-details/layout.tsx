@@ -37,26 +37,50 @@ type PaymentContextValue = {
     setPromotionCode: React.Dispatch<React.SetStateAction<string>>;
 };
 
+interface ServiceFormData {
+  address: string;
+  subdistrict: string;
+  district: string;
+  province: string;
+  serviceDate: string;
+  serviceTime: string;
+  information: string;
+}
+
+
+interface PaymentFormData {
+  creditCardNumber: string;
+  creditCardName: string;
+  creditCardExpiry: string;
+  creditCardCVC: string;
+}
+
 export const PaymentContext = createContext<PaymentContextValue | undefined>(undefined);
 
 export function PaymentProvider({ children }: { children: React.ReactNode }) {
     const [serviceTitle, setServiceTitle] = useState("");
+    // ข้อมูล sevice datail มันจะต้องเป็น array ของ object ที่มี serviceDetail, pricePerUnit, quantity
     const [serviceDetail, setServiceDetail] = useState("");
     const [pricePerUnit, setPricePerUnit] = useState(0);
     const [quantity, setQuantity] = useState(0);
 
-    const [address, setAddress] = useState("");
-    const [subdistrict, setSubdistrict] = useState("");
-    const [district, setDistrict] = useState("");
-    const [province, setProvince] = useState("");
-    const [serviceDate, setServiceDate] = useState("");
-    const [serviceTime, setServiceTime] = useState("");
-    const [information, setInformation] = useState("");
+    const [serviceFormData, setServiceFormData] = useState<ServiceFormData>({
+        address: "",
+        subdistrict: "",
+        district: "",
+        province: "",
+        serviceDate: "",
+        serviceTime: "",
+        information: "",
+    });
 
-    const [creditCardNumber, setCreditCardNumber] = useState("");
-    const [creditCardName, setCreditCardName] = useState("");
-    const [creditCardExpiry, setCreditCardExpiry] = useState("");
-    const [creditCardCVC, setCreditCardCVC] = useState("");
+    
+    const [paymentFormData, setPaymentFormData] = useState<PaymentFormData>({
+        creditCardNumber: "",
+        creditCardName: "",
+        creditCardExpiry: "",
+        creditCardCVC: "",
+    });
 
     const [promotionCode, setPromotionCode] = useState("");
 

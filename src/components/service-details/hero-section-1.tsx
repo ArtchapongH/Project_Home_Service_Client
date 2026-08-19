@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import React from "react";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import CreditCardOutlinedIcon from "@mui/icons-material/CreditCardOutlined";
@@ -11,6 +12,8 @@ import RemoveRoundedIcon from "@mui/icons-material/RemoveRounded";
 import Image from "next/image";
 import serviceDetailBanner from "@/assets/images/service-detail-banner.png";
 import MobileFooter from "./mobile-footer";
+import { PaymentContext } from "@/app/service-details/layout";
+import { useAuth } from "@/contexts/AuthContext";
 
 const serviceOptions = [
 	"9,000 - 18,000 BTU, แบบติดผนัง",
@@ -20,6 +23,9 @@ const serviceOptions = [
 ];
 
 export default function HeroSection() {
+	const { user } = useAuth();
+	const userId = user?.id;
+	const payment = React.useContext(PaymentContext);
 	const [quantities, setQuantities] = useState<number[]>([0, 0, 0, 0]);
 
 	function changeQuantity(index: number, amount: number): void {

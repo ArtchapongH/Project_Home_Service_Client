@@ -1,7 +1,10 @@
+import React from "react";
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 import Link from "next/link";
+import { PaymentContext } from "@/app/service-details/layout";
 
 export default function PaymentSuccess() {
+	const payment = React.useContext(PaymentContext);
 	return (
 		<section className="min-h-screen bg-utility-bg px-2 pt-6 min-[801px]:flex min-[801px]:items-start min-[801px]:justify-center min-[801px]:px-6 min-[801px]:pt-7">
 			<div className="w-full rounded-[7px] border border-gray-200 bg-white px-2.5 py-6 shadow-[0_1px_3px_rgb(23_51_109/6%)] min-[801px]:w-87 min-[801px]:px-9.5 min-[801px]:py-7.5">

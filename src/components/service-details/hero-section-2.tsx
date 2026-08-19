@@ -1,5 +1,5 @@
 "use client";
-
+import React from "react";
 import { useState } from "react";
 import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import CreditCardOutlinedIcon from "@mui/icons-material/CreditCardOutlined";
@@ -8,8 +8,10 @@ import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import Image from "next/image";
 import serviceDetailBanner from "@/assets/images/service-detail-banner.png";
 import MobileFooterTwo from "./mobile-footer2";
+import { PaymentContext } from "@/app/service-details/layout";
 
 export default function HeroSectionTwo() {
+	const payment = React.useContext(PaymentContext);
 	const [form, setForm] = useState({
 		date: "",
 		time: "",

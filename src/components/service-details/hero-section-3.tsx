@@ -1,5 +1,5 @@
 "use client";
-
+import React from "react";
 import { useState } from "react";
 import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import CreditCardOutlinedIcon from "@mui/icons-material/CreditCardOutlined";
@@ -9,10 +9,13 @@ import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import Image from "next/image";
 import serviceDetailBanner from "@/assets/images/service-detail-banner.png";
 import MobileFooterThree from "./mobile-footer3";
+import { PaymentContext } from "@/app/service-details/layout";
 
 type PaymentMethod = "promptpay" | "card";
 
 export default function HeroSectionThree() {
+	const payment = React.useContext(PaymentContext);
+
 	const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
 	const [form, setForm] = useState({ cardNumber: "", cardholder: "", expiry: "", cvc: "", promotionCode: "" });
 

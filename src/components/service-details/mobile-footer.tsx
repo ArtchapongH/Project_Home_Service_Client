@@ -1,8 +1,11 @@
+import React from "react";
 import ChevronLeftRoundedIcon from "@mui/icons-material/ChevronLeftRounded";
 import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
+import { PaymentContext } from "@/app/service-details/layout";
 
 export default function MobileFooter() {
+	const payment = React.useContext(PaymentContext);
 	return (
 		<>
 			<aside className="hidden h-fit rounded-lg border border-gray-200 bg-white p-3 min-[801px]:block">

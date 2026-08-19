@@ -1,12 +1,14 @@
 "use client";
-
+import React from "react";
 import { useState } from "react";
 import ChevronLeftRoundedIcon from "@mui/icons-material/ChevronLeftRounded";
 import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
 import KeyboardArrowUpRoundedIcon from "@mui/icons-material/KeyboardArrowUpRounded";
+import { PaymentContext } from "@/app/service-details/layout";
 
 export default function MobileFooterTwo() {
+    const payment = React.useContext(PaymentContext);
     const [summaryExpanded, setSummaryExpanded] = useState(true);
 
     return (
