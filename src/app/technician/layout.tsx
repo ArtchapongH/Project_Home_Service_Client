@@ -1,10 +1,11 @@
 import type { ReactNode } from "react";
-import TechnicianGuard from "@/components/technician/TechnicianGuard";
+import { TechnicianProvider } from "@/contexts/TechnicianContext";
+import { TechnicianRouteShell } from "@/components/technician/layout/TechnicianRouteShell";
 
-export default function TechnicianRootLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
-  return <TechnicianGuard>{children}</TechnicianGuard>;
+export default function TechnicianRootLayout({ children }: { children: ReactNode }) {
+  return (
+    <TechnicianProvider>
+      <TechnicianRouteShell>{children}</TechnicianRouteShell>
+    </TechnicianProvider>
+  );
 }
