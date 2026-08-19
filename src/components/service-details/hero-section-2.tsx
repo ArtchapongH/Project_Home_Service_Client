@@ -17,10 +17,18 @@ export default function HeroSectionTwo() {
 			throw new Error("HeroSection must be rendered inside PaymentProvider");
 		}
 	
-	const { serviceFormData, setServiceFormData } = payment;
+	const { serviceFormData, setServiceFormData, setIsSecondPageCompleted } = payment;
 
 	function updateField(field: keyof typeof serviceFormData, value: string): void {
-		setServiceFormData((currentForm) => ({ ...currentForm, [field]: value }));
+		setServiceFormData((currentForm) => {
+			const nextForm = { ...currentForm, [field]: value };
+			const isComplete = Object.entries(nextForm)
+				.filter(([formField]) => formField !== "information")
+				.every(([, formValue]) => formValue.trim().length > 0);
+
+			setIsSecondPageCompleted(isComplete);
+			return nextForm;
+		});
 	}
 
 

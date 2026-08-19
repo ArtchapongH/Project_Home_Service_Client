@@ -28,16 +28,12 @@ export default function MobileFooterTwo() {
 		.filter(Boolean)
 		.join(" ");
 
-	const isFormComplete = Object.entries(serviceFormData)
-		.filter(([field]) => field !== "information")
-		.every(([, value]) => value.trim().length > 0);
-
 	function handleBack(): void {
 		router.push("/service-details/service");
 	}
 
 	function handleNext(): void {
-		if (isFormComplete) {
+		if (isSecondPageCompleted) {
 			router.push("/service-details/payment");
 		}
 	}
@@ -83,9 +79,9 @@ export default function MobileFooterTwo() {
 				</button>
 				<button
 					type="button"
-					disabled={!isFormComplete}
+					disabled={!isSecondPageCompleted}
 					onClick={handleNext}
-					className={`flex h-8 items-center justify-center gap-1 rounded-[7px] text-xs font-medium text-white ${isFormComplete ? "bg-blue-500" : "bg-[#d0d5df]"}`}
+					className={`flex h-8 items-center justify-center gap-1 rounded-[7px] text-xs font-medium text-white ${isSecondPageCompleted ? "bg-blue-500" : "bg-[#d0d5df]"}`}
 				>
 					ดำเนินการต่อ
 					<ChevronRightRoundedIcon className="text-[17px]" />
@@ -122,9 +118,9 @@ export default function MobileFooterTwo() {
 					</button>
 					<button
 						type="button"
-						disabled={!isFormComplete}
+						disabled={!isSecondPageCompleted}
 						onClick={handleNext}
-						className={`flex h-8 items-center justify-center gap-1 rounded-[7px] px-5 text-xs font-medium text-white ${isFormComplete ? "bg-blue-500" : "bg-[#d0d5df]"}`}
+						className={`flex h-8 items-center justify-center gap-1 rounded-[7px] px-5 text-xs font-medium text-white ${isSecondPageCompleted ? "bg-blue-500" : "bg-[#d0d5df]"}`}
 					>
 						ดำเนินการต่อ
 						<ChevronRightRoundedIcon className="text-[17px]" />

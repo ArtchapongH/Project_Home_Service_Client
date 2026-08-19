@@ -65,6 +65,12 @@ function getSavedPayment(): SavedPayment | null {
     }
 }
 
+function hasRequiredServiceFormData(formData: ServiceFormData): boolean {
+    return Object.entries(formData)
+        .filter(([field]) => field !== "information")
+        .every(([, value]) => value.trim().length > 0);
+}
+
 
 interface ServiceFormData {
   address: string;
@@ -123,7 +129,17 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
     const [promotionCode, setPromotionCode] = useState("");
 
     const [isFirstPageCompleted, setIsFirstPageCompleted] = useState(false);
-    const [isSecondPageCompleted, setIsSecondPageCompleted] = useState(false);    
+    const [isSecondPageCompleted, setIsSecondPageCompleted] = useState(() =>
+        hasRequiredServiceFormData(getSavedPayment()?.serviceFormData ?? {
+            address: "",
+            subdistrict: "",
+            district: "",
+            province: "",
+            serviceDate: "",
+            serviceTime: "",
+            information: "",
+        }),
+    );    
     const [isThirdPageCompleted, setIsThirdPageCompleted] = useState(false);
 
     const [totAmount, setTotAmount] = useState(
