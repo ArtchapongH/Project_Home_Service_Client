@@ -10,8 +10,9 @@ export interface UserProfile {
 
 export interface UpdateProfileInput {
   fullName: string;
+  email: string;
   phone: string | null;
-  address: string | null;
+  address?: string | null;
   avatarUrl: string | null;
 }
 
