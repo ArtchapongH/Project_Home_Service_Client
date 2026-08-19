@@ -17,7 +17,7 @@ export interface User {
   phone?: string | null;
   address?: string | null;
   avatarUrl?: string | null;
-  role: "USER" | "ADMIN" | string;
+  role: "USER" | "ADMIN" | "TECHNICIAN" | string;
 }
 
 interface RegisterData {
@@ -40,6 +40,7 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  isTechnician: boolean;
   login: (email: string, password: string) => Promise<AuthResult>;
   register: (data: RegisterData) => Promise<AuthResult>;
   logout: () => Promise<void>;
@@ -168,7 +169,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const isAuthenticated = !!user;
-  const isAdmin = user?.role?.toUpperCase() === "ADMIN";
+  const userRole = user?.role?.toUpperCase() ?? "";
+  const isAdmin = userRole === "ADMIN";
+  const isTechnician = userRole === "TECHNICIAN";
 
   return (
     <AuthContext.Provider
@@ -178,6 +181,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         isAuthenticated,
         isAdmin,
+        isTechnician,
         login,
         register,
         logout,
