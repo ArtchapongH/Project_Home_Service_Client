@@ -24,10 +24,9 @@ export default function HeroSectionThree() {
 		
 
 	const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
-	const [form, setForm] = useState({ cardNumber: "", cardholder: "", expiry: "", cvc: "", promotionCode: "" });
 
-	function updateField(field: keyof typeof form, value: string): void {
-		setForm((currentForm) => ({ ...currentForm, [field]: value }));
+	function updateField(field: keyof typeof paymentFormData, value: string): void {
+		setPaymentFormData((currentForm) => ({ ...currentForm, [field]: value }));
 	}
 
 	return (
@@ -62,16 +61,16 @@ export default function HeroSectionThree() {
 					{paymentMethod === "card" && (
 						<div className="mt-4 space-y-3 min-[801px]:grid min-[801px]:grid-cols-2 min-[801px]:gap-x-3 min-[801px]:gap-y-3 min-[801px]:space-y-0">
 						<Field label="หมายเลขบัตรเครดิต" required className="min-[801px]:col-span-2">
-							<input type="text" inputMode="numeric" value={form.cardNumber} onChange={(event) => updateField("cardNumber", event.target.value)} placeholder="กรุณากรอกหมายเลขบัตรเครดิต" className={inputClass} />
+							<input type="text" inputMode="numeric" value={paymentFormData.creditCardNumber} onChange={(event) => updateField("creditCardNumber", event.target.value)} placeholder="กรุณากรอกหมายเลขบัตรเครดิต" className={inputClass} />
 						</Field>
 						<Field label="ชื่อบนบัตร" required className="min-[801px]:col-span-2">
-							<input type="text" value={form.cardholder} onChange={(event) => updateField("cardholder", event.target.value)} placeholder="กรุณากรอกชื่อบนบัตร" className={inputClass} />
+							<input type="text" value={paymentFormData.creditCardName} onChange={(event) => updateField("creditCardName", event.target.value)} placeholder="กรุณากรอกชื่อบนบัตร" className={inputClass} />
 						</Field>
 						<Field label="วันหมดอายุ" required>
-							<input type="text" inputMode="numeric" value={form.expiry} onChange={(event) => updateField("expiry", event.target.value)} placeholder="MM/YY" className={inputClass} />
+							<input type="text" inputMode="numeric" value={paymentFormData.creditCardExpiry} onChange={(event) => updateField("creditCardExpiry", event.target.value)} placeholder="MM/YY" className={inputClass} />
 						</Field>
 						<Field label="รหัส CVC / CVV" required>
-							<input type="text" inputMode="numeric" value={form.cvc} onChange={(event) => updateField("cvc", event.target.value)} placeholder="xxx" className={inputClass} />
+							<input type="text" inputMode="numeric" value={paymentFormData.creditCardCVC} onChange={(event) => updateField("creditCardCVC", event.target.value)} placeholder="xxx" className={inputClass} />
 						</Field>
 					</div>
 				)}
@@ -79,7 +78,7 @@ export default function HeroSectionThree() {
 					<div className="mt-4 border-t border-gray-200 pt-4">
 					<label className="block text-sm font-medium text-gray-700">Promotion Code</label>
 					<div className="mt-1 grid grid-cols-[1fr_69px] gap-3">
-						<input type="text" value={form.promotionCode} onChange={(event) => updateField("promotionCode", event.target.value)} placeholder="กรุณากรอกโค้ดส่วนลด (ถ้ามี)" className={`${inputClass} h-10`} />
+						<input type="text" value={paymentFormData.promotionCode} onChange={(event) => updateField("promotionCode", event.target.value)} placeholder="กรุณากรอกโค้ดส่วนลด (ถ้ามี)" className={`${inputClass} h-10`} />
 						<button type="button" className="h-10 rounded-[7px] bg-blue-500 text-sm font-medium text-white">ใช้โค้ด</button>
 					</div>
 					</div>

@@ -17,7 +17,7 @@ export default function MobileFooterTwo() {
 		throw new Error("MobileFooterTwo must be rendered inside PaymentProvider");
 	}
 
-	const { serviceDetail, serviceFormData, totAmount } = payment;
+	const { serviceDetail, serviceFormData, totAmount, isSecondPageCompleted } = payment;
 	const selectedServices = serviceDetail.filter((service) => service.quantity !== 0);
 	const address = [
 		serviceFormData.address,
