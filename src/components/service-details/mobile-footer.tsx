@@ -3,17 +3,19 @@ import ChevronLeftRoundedIcon from "@mui/icons-material/ChevronLeftRounded";
 import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
 import KeyboardArrowUpRoundedIcon from "@mui/icons-material/KeyboardArrowUpRounded";
+import { useRouter } from "next/navigation";
 import { PaymentContext } from "@/app/service-details/layout";
 
 export default function MobileFooter() {
 	const payment = React.useContext(PaymentContext);
 	const [summaryExpanded, setSummaryExpanded] = React.useState(true);
+	const router = useRouter();
 
 	if (!payment) {
 		throw new Error("HeroSection must be rendered inside PaymentProvider");
 	}
 
-	const { serviceDetail, setIsFirstPageCompleted } = payment;
+	const { serviceDetail, setIsFirstPageCompleted, totAmount, setTotAmount } = payment;
 
 	function calculateTotalAmount(): number {
 		return serviceDetail
@@ -21,12 +23,26 @@ export default function MobileFooter() {
 			.reduce((total, amount) => total + amount, 0);
 	}
 
-	const totAmount = calculateTotalAmount();
+	React.useEffect(() => {
+		const nextTotalAmount = serviceDetail
+			.map((service) => service.quantity * service.pricePerUnit)
+			.reduce((total, amount) => total + amount, 0);
+		setTotAmount(nextTotalAmount);
+	}, [serviceDetail, setTotAmount]);
+
 	const selectedServices = serviceDetail.filter((service) => service.quantity !== 0);
 
 	function handleNext(): void {
-		calculateTotalAmount();
+		const nextTotalAmount = calculateTotalAmount();
+		setTotAmount(nextTotalAmount);
+
+		if (nextTotalAmount === 0) {
+			window.alert("กรุณาเลือกบริการอย่างน้อย 1 รายการ");
+			return;
+		}
+
 		setIsFirstPageCompleted(true);
+		router.push("/service-details/userinfo");
 	}
 
 	return (

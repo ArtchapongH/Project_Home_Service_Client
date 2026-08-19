@@ -19,7 +19,8 @@ type PaymentContextValue = {
     setIsSecondPageCompleted: React.Dispatch<React.SetStateAction<boolean>>;
     isThirdPageCompleted: boolean;
     setIsThirdPageCompleted: React.Dispatch<React.SetStateAction<boolean>>;
-
+    totAmount: number;
+    setTotAmount: React.Dispatch<React.SetStateAction<number>>;
 };
 
 type ServiceDetail = {
@@ -89,6 +90,8 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
     const [isSecondPageCompleted, setIsSecondPageCompleted] = useState(false);    
     const [isThirdPageCompleted, setIsThirdPageCompleted] = useState(false);
 
+    const [totAmount, setTotAmount] = useState(0);
+
     const value: PaymentContextValue = {
         serviceTitle,
         setServiceTitle,
@@ -106,7 +109,10 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
         isSecondPageCompleted,
         setIsSecondPageCompleted,
         isThirdPageCompleted,
-        setIsThirdPageCompleted
+        setIsThirdPageCompleted,
+
+        totAmount,
+        setTotAmount
     };
 
 
