@@ -5,11 +5,15 @@ import ChevronLeftRoundedIcon from "@mui/icons-material/ChevronLeftRounded";
 import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
 import KeyboardArrowUpRoundedIcon from "@mui/icons-material/KeyboardArrowUpRounded";
-import { PaymentContext } from "@/app/service-details/layout";
+import { useRouter } from "next/navigation";
 
 export default function MobileFooterTwo() {
-	const payment = React.useContext(PaymentContext);
 	const [summaryExpanded, setSummaryExpanded] = useState(true);
+	const router = useRouter();
+
+	function handleBack(): void {
+		router.push("/service-details/service");
+	}
 
 	return (
 		<>
@@ -44,7 +48,7 @@ export default function MobileFooterTwo() {
 				<span className="font-semibold text-black">1,600.00 ฿</span>
 			</div>
 			<div className="mt-3 grid grid-cols-2 gap-3 border-t border-gray-200 pt-3">
-				<button type="button" className="flex h-8 items-center justify-center gap-1 rounded-[7px] border border-blue-500 text-xs font-medium text-blue-600">
+				<button type="button" onClick={handleBack} className="flex h-8 items-center justify-center gap-1 rounded-[7px] border border-blue-500 text-xs font-medium text-blue-600">
 					<ChevronLeftRoundedIcon className="text-[17px]" />
 					ย้อนกลับ
 				</button>
@@ -76,7 +80,7 @@ export default function MobileFooterTwo() {
 
 			<footer className="fixed inset-x-0 bottom-0 z-30 hidden h-16 border-t border-gray-200 bg-white min-[801px]:block">
 				<div className="mx-auto flex h-full w-[min(644px,calc(100%-48px))] items-center justify-between">
-					<button type="button" className="flex h-8 items-center justify-center gap-1 rounded-[7px] border border-blue-500 px-6 text-xs font-medium text-blue-600">
+					<button type="button" onClick={handleBack} className="flex h-8 items-center justify-center gap-1 rounded-[7px] border border-blue-500 px-6 text-xs font-medium text-blue-600">
 						<ChevronLeftRoundedIcon className="text-[17px]" />
 						ย้อนกลับ
 					</button>

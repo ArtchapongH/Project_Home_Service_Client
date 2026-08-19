@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useState } from "react";
+import React, { createContext, useEffect, useState } from "react";
 
 type PaymentContextValue = {
     serviceTitle: string;
@@ -37,6 +37,32 @@ const serviceOptions: ServiceDetail[] = [
         { serviceDetail: "9,000 - 18,000 BTU, แบบติดผนัง", quantity: 0, pricePerUnit: 800, unit: "เครื่อง" },
 ];
 
+const paymentStorageKey = "home-service-payment";
+
+type SavedPayment = {
+    serviceDetail?: ServiceDetail[];
+    totAmount?: number;
+};
+
+function getSavedPayment(): SavedPayment | null {
+    if (typeof window === "undefined") {
+        return null;
+    }
+
+    const savedPayment = window.sessionStorage.getItem(paymentStorageKey);
+
+    if (!savedPayment) {
+        return null;
+    }
+
+    try {
+        return JSON.parse(savedPayment) as SavedPayment;
+    } catch {
+        window.sessionStorage.removeItem(paymentStorageKey);
+        return null;
+    }
+}
+
 
 interface ServiceFormData {
   address: string;
@@ -64,7 +90,9 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
     
     const [serviceTitle, setServiceTitle] = useState("");
     // ข้อมูล sevice datail มันจะต้องเป็น array ของ object ที่มี serviceDetail, pricePerUnit, quantity
-    const [serviceDetail, setServiceDetail] = useState<ServiceDetail[]>(serviceOptions);
+    const [serviceDetail, setServiceDetail] = useState<ServiceDetail[]>(
+        () => getSavedPayment()?.serviceDetail ?? serviceOptions,
+    );
 
     const [serviceFormData, setServiceFormData] = useState<ServiceFormData>({
         address: "",
@@ -90,7 +118,16 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
     const [isSecondPageCompleted, setIsSecondPageCompleted] = useState(false);    
     const [isThirdPageCompleted, setIsThirdPageCompleted] = useState(false);
 
-    const [totAmount, setTotAmount] = useState(0);
+    const [totAmount, setTotAmount] = useState(
+        () => getSavedPayment()?.totAmount ?? 0,
+    );
+
+    useEffect(() => {
+        window.sessionStorage.setItem(
+            paymentStorageKey,
+            JSON.stringify({ serviceDetail, totAmount }),
+        );
+    }, [serviceDetail, totAmount]);
 
     const value: PaymentContextValue = {
         serviceTitle,
