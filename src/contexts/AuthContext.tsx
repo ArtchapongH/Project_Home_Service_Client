@@ -17,7 +17,7 @@ export interface User {
   phone?: string | null;
   address?: string | null;
   avatarUrl?: string | null;
-  role: "USER" | "ADMIN" | string;
+  role: "USER" | "ADMIN" | "TECHNICIAN" | string;
 }
 
 interface RegisterData {
@@ -169,8 +169,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const isAuthenticated = !!user;
-  const isAdmin = user?.role?.toUpperCase() === "ADMIN";
-  const isTechnician = user?.role?.toUpperCase() === "TECHNICIAN";
+  const userRole = user?.role?.toUpperCase() ?? "";
+  const isAdmin = userRole === "ADMIN";
+  const isTechnician = userRole === "TECHNICIAN";
 
   return (
     <AuthContext.Provider

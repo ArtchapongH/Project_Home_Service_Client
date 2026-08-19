@@ -76,7 +76,7 @@ export function ProfileForm() {
         avatarUrl: form.avatarUrl,
       });
       setStatus("ready");
-      setMessage(result.message || "บันทึกโปรไฟล์สำเร็จ");
+      setMessage("บันทึกโปรไฟล์สำเร็จ");
     } catch (error: unknown) {
       setStatus("error");
       setMessage(
