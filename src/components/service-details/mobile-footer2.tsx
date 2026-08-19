@@ -36,6 +36,12 @@ export default function MobileFooterTwo() {
 		router.push("/service-details/service");
 	}
 
+	function handleNext(): void {
+		if (isFormComplete) {
+			router.push("/service-details/payment");
+		}
+	}
+
 	return (
 		<>
 			<aside className="fixed inset-x-0 bottom-0 z-30 h-fit rounded-t-lg border border-gray-200 bg-white p-3 shadow-[0_-2px_10px_rgb(23_51_109/10%)] min-[801px]:hidden">
@@ -78,6 +84,7 @@ export default function MobileFooterTwo() {
 				<button
 					type="button"
 					disabled={!isFormComplete}
+					onClick={handleNext}
 					className={`flex h-8 items-center justify-center gap-1 rounded-[7px] text-xs font-medium text-white ${isFormComplete ? "bg-blue-500" : "bg-[#d0d5df]"}`}
 				>
 					ดำเนินการต่อ
@@ -116,6 +123,7 @@ export default function MobileFooterTwo() {
 					<button
 						type="button"
 						disabled={!isFormComplete}
+						onClick={handleNext}
 						className={`flex h-8 items-center justify-center gap-1 rounded-[7px] px-5 text-xs font-medium text-white ${isFormComplete ? "bg-blue-500" : "bg-[#d0d5df]"}`}
 					>
 						ดำเนินการต่อ

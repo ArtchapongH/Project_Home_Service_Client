@@ -41,6 +41,7 @@ const paymentStorageKey = "home-service-payment";
 
 type SavedPayment = {
     serviceDetail?: ServiceDetail[];
+    serviceFormData?: ServiceFormData;
     totAmount?: number;
 };
 
@@ -94,15 +95,17 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
         () => getSavedPayment()?.serviceDetail ?? serviceOptions,
     );
 
-    const [serviceFormData, setServiceFormData] = useState<ServiceFormData>({
-        address: "",
-        subdistrict: "",
-        district: "",
-        province: "",
-        serviceDate: "",
-        serviceTime: "",
-        information: "",
-    });
+    const [serviceFormData, setServiceFormData] = useState<ServiceFormData>(
+        () => getSavedPayment()?.serviceFormData ?? {
+            address: "",
+            subdistrict: "",
+            district: "",
+            province: "",
+            serviceDate: "",
+            serviceTime: "",
+            information: "",
+        },
+    );
 
     
     const [paymentFormData, setPaymentFormData] = useState<PaymentFormData>({
@@ -125,9 +128,9 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         window.sessionStorage.setItem(
             paymentStorageKey,
-            JSON.stringify({ serviceDetail, totAmount }),
+            JSON.stringify({ serviceDetail, serviceFormData, totAmount }),
         );
-    }, [serviceDetail, totAmount]);
+    }, [serviceDetail, serviceFormData, totAmount]);
 
     const value: PaymentContextValue = {
         serviceTitle,

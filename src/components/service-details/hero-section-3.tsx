@@ -15,6 +15,13 @@ type PaymentMethod = "promptpay" | "card";
 
 export default function HeroSectionThree() {
 	const payment = React.useContext(PaymentContext);
+	
+	if (!payment) {
+		throw new Error("HeroSection must be rendered inside PaymentProvider");
+	}
+
+	const { paymentFormData, setPaymentFormData } = payment;
+		
 
 	const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
 	const [form, setForm] = useState({ cardNumber: "", cardholder: "", expiry: "", cvc: "", promotionCode: "" });
