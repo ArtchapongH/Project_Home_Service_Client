@@ -30,6 +30,13 @@ export default function MobileFooterTwo() {
         .filter(Boolean)
         .join(" ");
 
+    // add function to check if all values in paymentFormData are filled except for promotionCode
+    function isPaymentFormComplete(): boolean {
+        return Object.entries(paymentFormData)
+            .filter(([formField]) => formField !== "promotionCode")
+            .every(([, formValue]) => formValue.trim().length > 0);
+    }
+
     function handleBack(): void {
         router.push("/service-details/userinfo");
     }
