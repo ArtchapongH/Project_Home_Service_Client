@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Checkbox from "@mui/material/Checkbox";
@@ -22,9 +22,15 @@ export default function RegisterForm() {
   const [successMessage, setSuccessMessage] = useState("");
   const { register } = useAuth();
   const router = useRouter();
+  const isSubmittingRef = useRef(false);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (isSubmittingRef.current) {
+      return;
+    }
+
     setErrorMessage("");
     setSuccessMessage("");
 
@@ -38,26 +44,36 @@ export default function RegisterForm() {
       return;
     }
 
+    isSubmittingRef.current = true;
     setIsLoading(true);
-    const result = await register({
-      fullName,
-      phone,
-      email,
-      password,
-    });
-    setIsLoading(false);
 
-    if (result.success) {
-      setSuccessMessage(
-        result.requiresEmailConfirmation
-          ? "ลงทะเบียนสำเร็จ! กรุณายืนยันอีเมลก่อนเข้าสู่ระบบ"
-          : "ลงทะเบียนสำเร็จ! กำลังนำคุณเข้าสู่ระบบ...",
-      );
-      setTimeout(() => {
-        router.push(result.requiresEmailConfirmation ? "/login" : "/");
-      }, 1500);
-    } else {
+    try {
+      const result = await register({
+        fullName,
+        phone,
+        email,
+        password,
+      });
+
+      if (result.success) {
+        setSuccessMessage(
+          result.requiresEmailConfirmation
+            ? "ลงทะเบียนสำเร็จ! กรุณายืนยันอีเมลก่อนเข้าสู่ระบบ"
+            : "ลงทะเบียนสำเร็จ! กำลังนำคุณเข้าสู่ระบบ...",
+        );
+        setTimeout(() => {
+          router.push(result.requiresEmailConfirmation ? "/login" : "/");
+        }, 1500);
+        return;
+      }
+
       setErrorMessage(result.error || "เกิดข้อผิดพลาดในการลงทะเบียน");
+      isSubmittingRef.current = false;
+      setIsLoading(false);
+    } catch {
+      setErrorMessage("ไม่สามารถลงทะเบียนได้ กรุณาลองใหม่อีกครั้ง");
+      isSubmittingRef.current = false;
+      setIsLoading(false);
     }
   };
 
