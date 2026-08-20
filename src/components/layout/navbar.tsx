@@ -64,12 +64,13 @@ export function Navbar() {
                 aria-label="เปิดหน้าโปรไฟล์"
               >
                 <UserAvatar
+                  displayName={user?.displayName}
                   fullName={user?.fullName}
                   email={user?.email}
                   avatarUrl={user?.avatarUrl}
                 />
                 <span className="max-w-32 truncate font-semibold text-blue-600 sm:max-w-48">
-                  {user?.fullName || user?.email}
+                  {user?.displayName || user?.fullName || user?.email}
                 </span>
               </Link>
               <button

@@ -4,6 +4,9 @@ import { type ChangeEvent, type FormEvent, useEffect, useState } from "react";
 import { getMyProfile, updateMyProfile } from "@/services/profile.service";
 
 const emptyForm = {
+  displayName: "",
+  firstName: "",
+  lastName: "",
   fullName: "",
   phone: "",
   email: "",
@@ -34,6 +37,9 @@ export function ProfileForm() {
         }
 
         setForm({
+          displayName: profile.displayName || profile.fullName || "",
+          firstName: profile.firstName || "",
+          lastName: profile.lastName || "",
           fullName: profile.fullName || "",
           phone: profile.phone || "",
           email: profile.email || "",
@@ -69,8 +75,11 @@ export function ProfileForm() {
     setMessage("");
 
     try {
-      const result = await updateMyProfile({
-        fullName: form.fullName,
+      await updateMyProfile({
+        displayName: form.displayName,
+        firstName: form.firstName,
+        lastName: form.lastName,
+        fullName: form.displayName,
         email: form.email,
         phone: form.phone,
         avatarUrl: form.avatarUrl,
@@ -114,20 +123,51 @@ export function ProfileForm() {
 
       <fieldset className={fieldsetClass}>
         <legend className={legendClass}>ข้อมูลส่วนตัว</legend>
-        <label className={labelClass} htmlFor="fullName">
-          ชื่อ-นามสกุล
+        <label className={labelClass} htmlFor="displayName">
+          ชื่อที่แสดง (Display Name)
         </label>
         <input
-          id="fullName"
-          name="fullName"
+          id="displayName"
+          name="displayName"
           type="text"
           required
           minLength={2}
           maxLength={80}
-          value={form.fullName}
+          value={form.displayName}
           onChange={handleChange}
           className={inputClass}
         />
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div>
+            <label className={labelClass} htmlFor="firstName">
+              ชื่อจริง
+            </label>
+            <input
+              id="firstName"
+              name="firstName"
+              type="text"
+              maxLength={50}
+              value={form.firstName}
+              onChange={handleChange}
+              className={inputClass}
+            />
+          </div>
+          <div>
+            <label className={labelClass} htmlFor="lastName">
+              นามสกุล
+            </label>
+            <input
+              id="lastName"
+              name="lastName"
+              type="text"
+              maxLength={50}
+              value={form.lastName}
+              onChange={handleChange}
+              className={inputClass}
+            />
+          </div>
+        </div>
 
         <label className={labelClass} htmlFor="phone">
           เบอร์โทรศัพท์

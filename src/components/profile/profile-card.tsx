@@ -27,7 +27,9 @@ const ALLOWED_PROFILE_IMAGE_TYPES = [
 const PHONE_PATTERN = /^0[0-9]{8,9}$/;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-type EditableField = "fullName" | "email" | "phone";
+const NAME_PATTERN = /^[\p{Letter}\p{Mark}]+(?:[ '\-][\p{Letter}\p{Mark}]+)*$/u;
+
+type EditableField = "displayName" | "firstName" | "lastName" | "email" | "phone";
 
 const EDITABLE_FIELDS: {
   key: EditableField;
@@ -35,7 +37,9 @@ const EDITABLE_FIELDS: {
   inputType: "text" | "email" | "tel";
   maxLength: number;
 }[] = [
-  { key: "fullName", label: "ชื่อ-นามสกุล", inputType: "text", maxLength: 80 },
+  { key: "displayName", label: "ชื่อที่แสดง", inputType: "text", maxLength: 80 },
+  { key: "firstName", label: "ชื่อจริง", inputType: "text", maxLength: 50 },
+  { key: "lastName", label: "นามสกุล", inputType: "text", maxLength: 50 },
   { key: "email", label: "อีเมล", inputType: "email", maxLength: 120 },
   { key: "phone", label: "เบอร์โทรศัพท์", inputType: "tel", maxLength: 10 },
 ];
@@ -66,6 +70,9 @@ function getErrorMessage(reason: unknown, fallback: string): string {
 }
 
 function fieldValue(profile: UserProfile, key: EditableField): string {
+  if (key === "displayName") return profile.displayName || profile.fullName || "";
+  if (key === "firstName") return profile.firstName ?? "";
+  if (key === "lastName") return profile.lastName ?? "";
   if (key === "phone") return profile.phone ?? "";
   return profile[key] ?? "";
 }
@@ -74,7 +81,9 @@ type ProfileDraft = Record<EditableField, string>;
 
 function toDraft(profile: UserProfile): ProfileDraft {
   return {
-    fullName: fieldValue(profile, "fullName"),
+    displayName: fieldValue(profile, "displayName"),
+    firstName: fieldValue(profile, "firstName"),
+    lastName: fieldValue(profile, "lastName"),
     email: fieldValue(profile, "email"),
     phone: fieldValue(profile, "phone"),
   };
@@ -82,8 +91,14 @@ function toDraft(profile: UserProfile): ProfileDraft {
 
 function validateField(key: EditableField, value: string): string | null {
   const trimmed = value.trim();
-  if (key === "fullName" && (trimmed.length < 2 || trimmed.length > 80)) {
-    return "กรุณากรอกชื่อ-นามสกุล 2 ถึง 80 ตัวอักษร";
+  if (key === "displayName" && (trimmed.length < 2 || trimmed.length > 80)) {
+    return "กรุณากรอกชื่อที่แสดง 2 ถึง 80 ตัวอักษร";
+  }
+  if ((key === "firstName" || key === "lastName") && trimmed && (trimmed.length < 2 || trimmed.length > 50)) {
+    return `กรุณากรอก${key === "firstName" ? "ชื่อจริง" : "นามสกุล"} 2 ถึง 50 ตัวอักษร`;
+  }
+  if (trimmed && (key === "displayName" || key === "firstName" || key === "lastName") && !NAME_PATTERN.test(trimmed)) {
+    return "ชื่อต้องเป็นตัวอักษรภาษาไทยหรืออังกฤษเท่านั้น";
   }
   if (key === "email" && !EMAIL_PATTERN.test(trimmed.toLowerCase())) {
     return "กรุณากรอกอีเมลให้ถูกต้อง";
@@ -98,7 +113,9 @@ export function ProfileCard() {
   const { fetchCurrentUser } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [draft, setDraft] = useState<ProfileDraft>({
-    fullName: "",
+    displayName: "",
+    firstName: "",
+    lastName: "",
     email: "",
     phone: "",
   });
@@ -160,7 +177,10 @@ export function ProfileCard() {
 
     try {
       const updatedProfile = await updateMyProfile({
-        fullName: draft.fullName.trim(),
+        displayName: draft.displayName.trim(),
+        firstName: draft.firstName.trim() || null,
+        lastName: draft.lastName.trim() || null,
+        fullName: draft.displayName.trim(),
         email: draft.email.trim().toLowerCase(),
         phone: draft.phone.trim() || null,
         avatarUrl: profile.avatarUrl,
@@ -231,7 +251,8 @@ export function ProfileCard() {
     );
   }
 
-  const profileInitial = profile.fullName.trim().charAt(0).toUpperCase() || "U";
+  const displayName = profile.displayName || profile.fullName || "User";
+  const profileInitial = displayName.trim().charAt(0).toUpperCase() || "U";
   const displayedAvatar = profileImagePreview || profile.avatarUrl;
 
   return (
@@ -242,12 +263,12 @@ export function ProfileCard() {
       <div className="flex flex-col gap-5 border-b border-gray-100 pb-7 sm:flex-row sm:items-center sm:gap-6">
         <div
           className="relative flex size-27 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#e8e5e1] text-[36px] font-semibold text-gray-900"
-          aria-label={`รูปโปรไฟล์ของ ${profile.fullName}`}
+          aria-label={`รูปโปรไฟล์ของ ${displayName}`}
         >
           {displayedAvatar ? (
             <Image
               src={displayedAvatar}
-              alt={`รูปโปรไฟล์ของ ${profile.fullName}`}
+              alt={`รูปโปรไฟล์ของ ${displayName}`}
               fill
               unoptimized
               className="object-cover"
