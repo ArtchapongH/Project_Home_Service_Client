@@ -2,7 +2,13 @@
 
 import Image from "next/image";
 import PhotoCameraOutlinedIcon from "@mui/icons-material/PhotoCameraOutlined";
-import { type ChangeEvent, type FormEvent, useEffect, useRef, useState } from "react";
+import {
+  type ChangeEvent,
+  type FormEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   getMyProfile,
   updateMyProfile,
@@ -37,9 +43,9 @@ const EDITABLE_FIELDS: {
 const inputClass =
   "w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 outline-none focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500";
 const cancelButtonClass =
-  "inline-flex min-h-10 min-w-24 items-center justify-center rounded-lg border border-[#3366FF] bg-white px-5 text-sm font-medium text-[#3366FF] transition hover:bg-blue-50 disabled:opacity-50";
+  "inline-flex min-h-[42px] min-w-24 items-center justify-center rounded-[8px] border border-blue-500 bg-white px-[22px] py-2.5 text-sm font-medium text-blue-500 transition hover:bg-blue-100 disabled:opacity-50";
 const saveButtonClass =
-  "inline-flex min-h-10 min-w-24 items-center justify-center rounded-lg border border-transparent bg-[#3366FF] px-5 text-sm font-medium text-white transition hover:bg-[#2557E0] disabled:opacity-50";
+  "inline-flex min-h-[42px] min-w-24 items-center justify-center rounded-[8px] border border-transparent bg-blue-500 px-[22px] py-2.5 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-50";
 
 function getErrorMessage(reason: unknown, fallback: string): string {
   if (typeof reason === "object" && reason !== null) {
@@ -64,9 +70,14 @@ function fieldValue(profile: UserProfile, key: EditableField): string {
   return profile[key] ?? "";
 }
 
-function displayValue(profile: UserProfile, key: EditableField): string {
-  const value = fieldValue(profile, key).trim();
-  return value || "-";
+type ProfileDraft = Record<EditableField, string>;
+
+function toDraft(profile: UserProfile): ProfileDraft {
+  return {
+    fullName: fieldValue(profile, "fullName"),
+    email: fieldValue(profile, "email"),
+    phone: fieldValue(profile, "phone"),
+  };
 }
 
 function validateField(key: EditableField, value: string): string | null {
@@ -86,8 +97,11 @@ function validateField(key: EditableField, value: string): string | null {
 export function ProfileCard() {
   const { fetchCurrentUser } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [editingField, setEditingField] = useState<EditableField | null>(null);
-  const [draft, setDraft] = useState("");
+  const [draft, setDraft] = useState<ProfileDraft>({
+    fullName: "",
+    email: "",
+    phone: "",
+  });
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -102,6 +116,7 @@ export function ProfileCard() {
       .then((data) => {
         if (!active) return;
         setProfile(data);
+        setDraft(toDraft(data));
       })
       .catch((reason: unknown) => {
         if (active) {
@@ -120,28 +135,23 @@ export function ProfileCard() {
     };
   }, [profileImagePreview]);
 
-  const startEdit = (key: EditableField) => {
+  const cancelEdit = () => {
     if (!profile) return;
-    setEditingField(key);
-    setDraft(fieldValue(profile, key));
+    setDraft(toDraft(profile));
     setError("");
     setSuccess("");
   };
 
-  const cancelEdit = () => {
-    setEditingField(null);
-    setDraft("");
-    setError("");
-  };
-
-  const saveField = async (event: FormEvent<HTMLFormElement>) => {
+  const saveProfile = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!profile || !editingField) return;
+    if (!profile) return;
 
-    const validationError = validateField(editingField, draft);
-    if (validationError) {
-      setError(validationError);
-      return;
+    for (const { key } of EDITABLE_FIELDS) {
+      const validationError = validateField(key, draft[key]);
+      if (validationError) {
+        setError(validationError);
+        return;
+      }
     }
 
     setError("");
@@ -149,18 +159,14 @@ export function ProfileCard() {
     setIsSaving(true);
 
     try {
-      const nextEmail = editingField === "email" ? draft.trim().toLowerCase() : profile.email;
-      const nextName = editingField === "fullName" ? draft.trim() : profile.fullName;
-      const nextPhone = editingField === "phone" ? draft.trim() || null : profile.phone;
       const updatedProfile = await updateMyProfile({
-        fullName: nextName,
-        email: nextEmail,
-        phone: nextPhone,
+        fullName: draft.fullName.trim(),
+        email: draft.email.trim().toLowerCase(),
+        phone: draft.phone.trim() || null,
         avatarUrl: profile.avatarUrl,
       });
       setProfile(updatedProfile);
-      setEditingField(null);
-      setDraft("");
+      setDraft(toDraft(updatedProfile));
       await fetchCurrentUser();
       setSuccess("บันทึกข้อมูลโปรไฟล์สำเร็จ");
     } catch (reason: unknown) {
@@ -170,7 +176,9 @@ export function ProfileCard() {
     }
   };
 
-  const handleProfileImageChange = async (event: ChangeEvent<HTMLInputElement>) => {
+  const handleProfileImageChange = async (
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
@@ -197,7 +205,9 @@ export function ProfileCard() {
       await fetchCurrentUser();
       setSuccess("อัปโหลดรูปโปรไฟล์สำเร็จ");
     } catch (reason: unknown) {
-      setProfileImageError(getErrorMessage(reason, "อัปโหลดรูปโปรไฟล์ไม่สำเร็จ"));
+      setProfileImageError(
+        getErrorMessage(reason, "อัปโหลดรูปโปรไฟล์ไม่สำเร็จ"),
+      );
     } finally {
       URL.revokeObjectURL(preview);
       setProfileImagePreview("");
@@ -206,14 +216,19 @@ export function ProfileCard() {
 
   if (error && !profile) {
     return (
-      <div role="alert" className="max-w-160 rounded-xl bg-red-50 p-6 text-sm text-red-700">
+      <div
+        role="alert"
+        className="max-w-160 rounded-xl bg-red-50 p-6 text-sm text-red-700"
+      >
         {error}
       </div>
     );
   }
 
   if (!profile) {
-    return <p className="m-0 text-sm text-gray-500">กำลังโหลดข้อมูลโปรไฟล์...</p>;
+    return (
+      <p className="m-0 text-sm text-gray-500">กำลังโหลดข้อมูลโปรไฟล์...</p>
+    );
   }
 
   const profileInitial = profile.fullName.trim().charAt(0).toUpperCase() || "U";
@@ -261,7 +276,8 @@ export function ProfileCard() {
             Upload profile image
           </button>
           <p className="mt-3 max-w-md text-xs leading-5 text-gray-500 sm:text-[13px]">
-            JPEG, PNG, GIF or WebP up to 5MB. A default avatar appears when no image is uploaded.
+            JPEG, PNG, GIF or WebP up to 5MB. A default avatar appears when no
+            image is uploaded.
           </p>
           {profileImageError ? (
             <p role="alert" className="mt-2 text-xs text-red-700">
@@ -271,76 +287,70 @@ export function ProfileCard() {
         </div>
       </div>
 
-      <dl className="m-0 divide-y divide-gray-100">
-        {EDITABLE_FIELDS.map(({ key, label, inputType, maxLength }) => (
-          <div key={key} className="grid gap-2 py-4 sm:grid-cols-[160px_1fr] sm:items-start sm:gap-6">
-            <dt className="text-sm font-medium text-gray-500">{label}</dt>
-            <dd className="m-0">
-              {editingField === key ? (
-                <form
-                  className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4"
-                  onSubmit={saveField}
-                >
-                  <input
-                    id={`profile-${key}`}
-                    type={inputType}
-                    value={draft}
-                    maxLength={maxLength}
-                    autoFocus
-                    aria-label={label}
-                    onChange={(event) => setDraft(event.target.value)}
-                    className={inputClass}
-                  />
-                  <div className="flex shrink-0 justify-end gap-3">
-                    <button
-                      type="button"
-                      onClick={cancelEdit}
-                      disabled={isSaving}
-                      className={cancelButtonClass}
-                    >
-                      ยกเลิก
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={isSaving}
-                      className={saveButtonClass}
-                    >
-                      {isSaving ? "กำลังบันทึก..." : "ตกลง"}
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                <div className="flex items-start justify-between gap-4">
-                  <span className="text-sm font-medium text-gray-900">{displayValue(profile, key)}</span>
-                  <button
-                    type="button"
-                    onClick={() => startEdit(key)}
-                    className="shrink-0 text-sm font-medium text-[#3366FF] hover:underline"
-                  >
-                    แก้ไข
-                  </button>
-                </div>
-              )}
+      <form className="grid gap-1" onSubmit={saveProfile}>
+        <dl className="m-0 divide-y divide-gray-100">
+          {EDITABLE_FIELDS.map(({ key, label, inputType, maxLength }) => (
+            <div
+              key={key}
+              className="grid gap-2 py-4 sm:grid-cols-[160px_1fr] sm:items-center sm:gap-6"
+            >
+              <dt className="text-sm font-medium text-gray-500">
+                <label htmlFor={`profile-${key}`}>{label}</label>
+              </dt>
+              <dd className="m-0">
+                <input
+                  id={`profile-${key}`}
+                  type={inputType}
+                  value={draft[key]}
+                  maxLength={maxLength}
+                  aria-label={label}
+                  onChange={(event) =>
+                    setDraft((current) => ({
+                      ...current,
+                      [key]: event.target.value,
+                    }))
+                  }
+                  className={inputClass}
+                />
+              </dd>
+            </div>
+          ))}
+
+          <div className="grid gap-1 py-4 sm:grid-cols-[160px_1fr] sm:gap-6">
+            <dt className="text-sm font-medium text-gray-500">
+              สิทธิ์ผู้ใช้งาน
+            </dt>
+            <dd className="m-0 text-sm font-medium text-gray-900">
+              {profile.role || "-"}
             </dd>
           </div>
-        ))}
+        </dl>
 
-        <div className="grid gap-1 py-4 sm:grid-cols-[160px_1fr] sm:gap-6">
-          <dt className="text-sm font-medium text-gray-500">สิทธิ์ผู้ใช้งาน</dt>
-          <dd className="m-0 text-sm font-medium text-gray-900">{profile.role || "-"}</dd>
+        {success ? (
+          <p role="status" className="pt-2 text-sm text-green-700">
+            {success}
+          </p>
+        ) : null}
+        {error && profile ? (
+          <p role="alert" className="pt-2 text-sm text-red-600">
+            {error}
+          </p>
+        ) : null}
+
+        <div className="flex justify-end gap-3 pt-5">
+          <button
+            type="button"
+            onClick={cancelEdit}
+            disabled={isSaving}
+            className={cancelButtonClass}
+          >
+            ยกเลิก
+          </button>
+          <button type="submit" disabled={isSaving} className={saveButtonClass}>
+            {isSaving ? "กำลังบันทึก..." : "บันทึก"}
+          </button>
         </div>
-      </dl>
-
-      {success ? (
-        <p role="status" className="pt-2 text-sm text-green-700">
-          {success}
-        </p>
-      ) : null}
-      {error && profile ? (
-        <p role="alert" className="pt-2 text-sm text-red-600">
-          {error}
-        </p>
-      ) : null}
+      </form>
     </section>
   );
 }
