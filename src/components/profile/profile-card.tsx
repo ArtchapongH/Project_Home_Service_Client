@@ -237,7 +237,7 @@ export function ProfileCard() {
   return (
     <section
       aria-label="ข้อมูลโปรไฟล์"
-      className="grid max-w-2xl gap-1 overflow-hidden rounded-xl bg-white p-7 shadow-[0_8px_24px_rgb(23_51_109/6%)]"
+      className="grid w-full gap-1 overflow-hidden rounded-xl border border-gray-200 bg-white p-6 sm:p-7 shadow-sm"
     >
       <div className="flex flex-col gap-5 border-b border-gray-100 pb-7 sm:flex-row sm:items-center sm:gap-6">
         <div

@@ -6,6 +6,8 @@ import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
 import KeyboardArrowUpRoundedIcon from "@mui/icons-material/KeyboardArrowUpRounded";
 
+import Link from "next/link";
+
 export default function MobileFooterTwo() {
     const [summaryExpanded, setSummaryExpanded] = useState(true);
 
@@ -32,25 +34,25 @@ export default function MobileFooterTwo() {
                     </div>
                 </div>
                 <div className="space-y-2 border-b border-gray-200 py-3 text-[10px]">
-                    <SummaryRow label="วันที่" value="23 เม.ย. 2022" />
+                    <SummaryRow label="วันที่" value="23 เม.ย. 2021" />
                     <SummaryRow label="เวลา" value="11:00 น." />
-                    <SummaryRow label="สถานที่" value={<>444/4 คอนโดสุขสมัย แขวงดินแดง<br />จตุจักร กรุงเทพฯ</>} />
+                    <SummaryRow label="สถานที่" value={<>444/4 คอนโดศุภาลัย เสนานิคม<br />จตุจักร กรุงเทพฯ</>} />
                 </div>
                 <SummaryRow className="mt-3 text-xs" label="Promotion Code" value={<span className="text-red-500">-50.00 ฿</span>} />
             </div>
             <div className="mt-3 flex items-center justify-between text-xs">
                 <span className="text-gray-500">รวม</span>
-                <span className="font-semibold text-black">1,600.00 ฿</span>
+                <span className="font-semibold text-black">1550.00 ฿</span>
             </div>
             <div className="mt-3 grid grid-cols-2 gap-3 border-t border-gray-200 pt-3">
-                <button type="button" className="flex h-8 items-center justify-center gap-1 rounded-[7px] border border-blue-500 text-xs font-medium text-blue-600">
+                <Link href="/service-details/userinfo" className="flex h-8 items-center justify-center gap-1 rounded-[7px] border border-blue-500 text-xs font-medium text-blue-600">
                     <ChevronLeftRoundedIcon className="text-[17px]" />
                     ย้อนกลับ
-                </button>
-                <button type="button" className="flex h-8 items-center justify-center gap-1 rounded-[7px] bg-blue-500 text-xs font-medium text-white">
+                </Link>
+                <Link href="/payment/success" className="flex h-8 items-center justify-center gap-1 rounded-[7px] bg-blue-500 text-xs font-medium text-white">
                     ดำเนินการต่อ
                     <ChevronRightRoundedIcon className="text-[17px]" />
-                </button>
+                </Link>
             </div>
             </aside>
 
@@ -63,27 +65,27 @@ export default function MobileFooterTwo() {
                     </div>
                 </div>
                 <div className="space-y-2 border-b border-gray-200 py-3 text-[10px]">
-                    <SummaryRow label="วันที่" value="23 เม.ย. 2022" />
+                    <SummaryRow label="วันที่" value="23 เม.ย. 2021" />
                     <SummaryRow label="เวลา" value="11:00 น." />
-                    <SummaryRow label="สถานที่" value={<>444/4 คอนโดสุขสมัย แขวงดินแดง<br />จตุจักร กรุงเทพฯ</>} />
+                    <SummaryRow label="สถานที่" value={<>444/4 คอนโดศุภาลัย เสนานิคม<br />จตุจักร กรุงเทพฯ</>} />
                 </div>
                 <SummaryRow className="mt-3 text-xs" label="Promotion Code" value={<span className="text-red-500">-50.00 ฿</span>} />
                 <div className="mt-3 flex items-center justify-between text-xs">
                     <span className="text-gray-500">รวม</span>
-                    <span className="font-semibold text-black">1,600.00 ฿</span>
+                    <span className="font-semibold text-black">1550.00 ฿</span>
                 </div>
             </aside>
 
             <footer className="fixed inset-x-0 bottom-0 z-30 hidden h-16 border-t border-gray-200 bg-white min-[801px]:block">
                 <div className="mx-auto flex h-full w-[min(644px,calc(100%-48px))] items-center justify-between">
-                    <button type="button" className="flex h-8 items-center justify-center gap-1 rounded-[7px] border border-blue-500 px-6 text-xs font-medium text-blue-600">
+                    <Link href="/service-details/userinfo" className="flex h-8 items-center justify-center gap-1 rounded-[7px] border border-blue-500 px-6 text-xs font-medium text-blue-600">
                         <ChevronLeftRoundedIcon className="text-[17px]" />
                         ย้อนกลับ
-                    </button>
-                    <button type="button" className="flex h-8 items-center justify-center gap-1 rounded-[7px] bg-blue-500 px-5 text-xs font-medium text-white">
+                    </Link>
+                    <Link href="/payment/success" className="flex h-8 items-center justify-center gap-1 rounded-[7px] bg-blue-500 px-5 text-xs font-medium text-white">
                         ดำเนินการต่อ
                         <ChevronRightRoundedIcon className="text-[17px]" />
-                    </button>
+                    </Link>
                 </div>
             </footer>
         </>
