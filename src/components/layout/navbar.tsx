@@ -1,14 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { HomeServicesLogo } from "./home-services-logo";
 import { UserAvatar } from "./UserAvatar";
 
 export function Navbar() {
-  const { user, isAuthenticated, isAdmin, logout } = useAuth();
+  const { user, isAuthenticated, isAdmin, isTechnician, logout } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
 
   const handleLogout = async () => {
     await logout();
@@ -40,6 +45,11 @@ export function Navbar() {
                 className="whitespace-nowrap text-blue-600 font-bold hover:underline"
               >
                 ระบบจัดการหลังบ้าน (Admin)
+              </Link>
+            )}
+            {isTechnician && (
+              <Link href="/technician/requests" className="whitespace-nowrap font-bold text-blue-600 hover:underline">
+                ระบบช่าง
               </Link>
             )}
           </nav>
