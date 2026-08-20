@@ -30,7 +30,7 @@ interface ServiceBannerProps {
   onPriceRangeChange: (value: [number, number]) => void;
   sortBy: PublicServiceSort;
   onSortByChange: (value: PublicServiceSort) => void;
-  onSearchSubmit: () => void;
+  onSearchSubmit: (queryOverride?: string) => void;
   onClearSearch: () => void;
 }
 
@@ -651,7 +651,7 @@ export function ServiceBanner({
               {/* Search Button */}
               <Button
                 variant="contained"
-                onClick={onSearchSubmit}
+                onClick={() => onSearchSubmit()}
                 sx={{
                   bgcolor: "#3366FF",
                   color: "#FFFFFF",

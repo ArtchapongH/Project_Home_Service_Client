@@ -22,7 +22,8 @@ export function ServiceListContent() {
   const [categories, setCategories] = useState<PublicCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [appliedSearchQuery, setAppliedSearchQuery] = useState("");
   const [category, setCategory] = useState("all");
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 3000]);
   const [sortBy, setSortBy] = useState<PublicServiceSort>("recommended");
@@ -46,7 +47,7 @@ export function ServiceListContent() {
 
   const filteredServices = useMemo(() => services
     .filter((service) => {
-      const query = searchQuery.trim().toLowerCase();
+      const query = appliedSearchQuery.trim().toLowerCase();
       if (query && !service.name.toLowerCase().includes(query) && !service.category.toLowerCase().includes(query)) return false;
       if (category !== "all" && service.category !== category) return false;
       return service.minPrice >= priceRange[0] && service.minPrice <= priceRange[1];
@@ -57,26 +58,36 @@ export function ServiceListContent() {
       return sortBy === "asc"
         ? a.name.localeCompare(b.name, "th")
         : b.name.localeCompare(a.name, "th");
-    }), [services, searchQuery, category, priceRange, sortBy]);
+    }), [services, appliedSearchQuery, category, priceRange, sortBy]);
 
-  const handleSearchSubmit = () => document.getElementById("services-grid-section")?.scrollIntoView({ behavior: "smooth" });
+  const handleSearchSubmit = (queryOverride?: string) => {
+    setAppliedSearchQuery(typeof queryOverride === "string" ? queryOverride : searchInput);
+  };
+
   const handleCategoryClick = (value: string) => {
     setCategory(value);
     document.getElementById("service-filter-bar")?.scrollIntoView({ behavior: "smooth" });
   };
+
   const handleResetFilters = () => {
-    setSearchQuery("");
+    setSearchInput("");
+    setAppliedSearchQuery("");
     setCategory("all");
     setPriceRange([0, 3000]);
     setSortBy("recommended");
+  };
+
+  const handleClearSearch = () => {
+    setSearchInput("");
+    setAppliedSearchQuery("");
   };
 
   return (
     <Box sx={{ width: "100%", bgcolor: "#F3F4F6", minHeight: "100vh" }}>
       <ServiceBanner
         categories={categories}
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
+        searchQuery={searchInput}
+        onSearchChange={setSearchInput}
         category={category}
         onCategoryChange={setCategory}
         priceRange={priceRange}
@@ -84,7 +95,7 @@ export function ServiceListContent() {
         sortBy={sortBy}
         onSortByChange={setSortBy}
         onSearchSubmit={handleSearchSubmit}
-        onClearSearch={() => setSearchQuery("")}
+        onClearSearch={handleClearSearch}
       />
       <Box id="services-grid-section" component="section" sx={{ py: { xs: 4, sm: 6, md: 8 }, px: { xs: 2, sm: 3, md: 0 } }}>
         <div className="mx-auto w-[min(1140px,calc(100%-32px))] min-[801px]:w-[min(1140px,calc(100%-48px))]">
@@ -93,10 +104,17 @@ export function ServiceListContent() {
           ) : error ? (
             <Box role="alert" sx={{ textAlign: "center", py: 8, bgcolor: "#FEF2F2", color: "#B91C1C", borderRadius: "14px" }}>{error}</Box>
           ) : filteredServices.length > 0 ? (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
+            <div
+              key={`${sortBy}-${category}-${appliedSearchQuery}`}
+              className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8"
+            >
               {filteredServices.map((service, index) => (
-                <div key={service.id} className="animate-service-card" style={{ animationDelay: `${index * 160}ms`, opacity: 0 }}>
-                  <ServiceCard service={service} onCategoryClick={handleCategoryClick} />
+                <div
+                  key={`${sortBy}-${service.id}`}
+                  className="animate-service-card"
+                  style={{ animationDelay: `${index * 110}ms`, opacity: 0 }}
+                >
+                  <ServiceCard service={service} sortBy={sortBy} onCategoryClick={handleCategoryClick} />
                 </div>
               ))}
             </div>
