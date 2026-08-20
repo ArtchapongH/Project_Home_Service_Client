@@ -6,6 +6,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { HomeServicesLogo } from "./home-services-logo";
 import { UserAvatar } from "./UserAvatar";
 
+import NotificationsNoneRoundedIcon from "@mui/icons-material/NotificationsNoneRounded";
+
 export function Navbar() {
   const { user, isAuthenticated, isAdmin, isTechnician, logout } = useAuth();
   const router = useRouter();
@@ -63,15 +65,22 @@ export function Navbar() {
                 className="flex min-w-0 items-center gap-2 text-sm font-medium text-gray-800 hover:text-blue-600"
                 aria-label="เปิดหน้าโปรไฟล์"
               >
+                <span className="hidden max-w-32 truncate font-semibold text-gray-700 hover:text-blue-600 sm:inline sm:max-w-48">
+                  {user?.displayName || user?.fullName || user?.email}
+                </span>
                 <UserAvatar
                   displayName={user?.displayName}
                   fullName={user?.fullName}
                   email={user?.email}
                   avatarUrl={user?.avatarUrl}
                 />
-                <span className="max-w-32 truncate font-semibold text-blue-600 sm:max-w-48">
-                  {user?.displayName || user?.fullName || user?.email}
-                </span>
+              </Link>
+              <Link
+                href="/notifications"
+                className="flex size-9 items-center justify-center rounded-full bg-[#eef1f7] text-gray-600 transition hover:bg-blue-100 hover:text-blue-600"
+                aria-label="การแจ้งเตือน"
+              >
+                <NotificationsNoneRoundedIcon className="text-[20px]" />
               </Link>
               <button
                 type="button"

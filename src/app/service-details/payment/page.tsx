@@ -1,11 +1,10 @@
-import NavbarResponsive from "@/components/service-details/navbar-responsive";
 import HeroSectionThree from "@/components/service-details/hero-section-3";
+import { ProtectedRoute } from "@/components/common/ProtectedRoute";
 
-export default function servicePaymentPage() {
+export default function ServicePaymentPage() {
   return (
-    <>
-      <NavbarResponsive />
+    <ProtectedRoute>
       <HeroSectionThree />
-    </>
+    </ProtectedRoute>
   );
 }

@@ -120,7 +120,7 @@ export async function uploadServiceImage(file: File): Promise<string> {
       const fileName = `service-${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
       const filePath = `services/${fileName}`;
 
-      const { data, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from("services")
         .upload(filePath, file, { cacheControl: "3600", upsert: true });
 
