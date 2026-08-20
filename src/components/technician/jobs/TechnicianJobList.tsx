@@ -14,7 +14,7 @@ export function TechnicianJobList({ mode }: { mode: "active" | "history" }) {
   const [jobs, setJobs] = useState<TechnicianJob[]>([]);
   const [search, setSearch] = useState("");
   const [serviceId, setServiceId] = useState("");
-  const [sort, setSort] = useState<"newest" | "oldest">("newest");
+  const [sort, setSort] = useState<"newest" | "oldest"| "nearest">("newest");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -70,11 +70,13 @@ export function TechnicianJobList({ mode }: { mode: "active" | "history" }) {
             <span className="whitespace-nowrap text-xs font-medium text-gray-500">เรียงตาม</span>
             <select
               value={sort}
-              onChange={(event) => setSort(event.target.value as "newest" | "oldest")}
+              onChange={(event) => setSort(event.target.value as "newest" | "oldest" | "nearest")}
               className="h-10 w-56 rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-800 outline-none transition-colors focus:border-blue-500"
             >
               <option value="oldest">รายการเก่าที่สุด</option>
-              <option value="newest">รายการใหม่ที่สุด</option>
+              <option value="newest">รายการล่าสุด</option>
+              <option value="nearest">วันดำเนินการที่ใกล้ถึง</option>
+
             </select>
           </label>
         </div>
