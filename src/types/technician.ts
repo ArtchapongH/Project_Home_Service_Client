@@ -60,7 +60,7 @@ export interface TechnicianJob {
 export interface TechnicianListFilters {
   serviceId?: string;
   search?: string;
-  sort?: "newest" | "oldest";
+  sort?: "newest" | "oldest" | "nearest";
   status?: TechnicianJobStatus;
 }
 
