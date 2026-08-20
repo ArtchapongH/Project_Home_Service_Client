@@ -66,9 +66,10 @@ export function Navbar() {
                 aria-label="เปิดหน้าโปรไฟล์"
               >
                 <span className="hidden max-w-32 truncate font-semibold text-gray-700 hover:text-blue-600 sm:inline sm:max-w-48">
-                  {user?.fullName || user?.email}
+                  {user?.displayName || user?.fullName || user?.email}
                 </span>
                 <UserAvatar
+                  displayName={user?.displayName}
                   fullName={user?.fullName}
                   email={user?.email}
                   avatarUrl={user?.avatarUrl}

@@ -17,6 +17,9 @@ export interface User {
   id: string | number;
   email: string;
   fullName: string;
+  displayName?: string;
+  firstName?: string | null;
+  lastName?: string | null;
   phone?: string | null;
   address?: string | null;
   avatarUrl?: string | null;
@@ -24,10 +27,14 @@ export interface User {
 }
 
 interface RegisterData {
-  fullName: string;
+  fullName?: string;
+  displayName?: string;
+  firstName?: string;
+  lastName?: string;
   phone?: string;
   email: string;
   password: string;
+  acceptedTerms?: boolean;
 }
 
 interface AuthResult {
