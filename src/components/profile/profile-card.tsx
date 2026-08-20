@@ -277,7 +277,10 @@ export function ProfileCard() {
             <dt className="text-sm font-medium text-gray-500">{label}</dt>
             <dd className="m-0">
               {editingField === key ? (
-                <form className="grid gap-3" onSubmit={saveField}>
+                <form
+                  className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4"
+                  onSubmit={saveField}
+                >
                   <input
                     id={`profile-${key}`}
                     type={inputType}
@@ -288,12 +291,21 @@ export function ProfileCard() {
                     onChange={(event) => setDraft(event.target.value)}
                     className={inputClass}
                   />
-                  <div className="flex justify-end gap-3">
-                    <button type="button" onClick={cancelEdit} disabled={isSaving} className={cancelButtonClass}>
+                  <div className="flex shrink-0 justify-end gap-3">
+                    <button
+                      type="button"
+                      onClick={cancelEdit}
+                      disabled={isSaving}
+                      className={cancelButtonClass}
+                    >
                       ยกเลิก
                     </button>
-                    <button type="submit" disabled={isSaving} className={saveButtonClass}>
-                      {isSaving ? "กำลังบันทึก..." : "บันทึก"}
+                    <button
+                      type="submit"
+                      disabled={isSaving}
+                      className={saveButtonClass}
+                    >
+                      {isSaving ? "กำลังบันทึก..." : "ตกลง"}
                     </button>
                   </div>
                 </form>
