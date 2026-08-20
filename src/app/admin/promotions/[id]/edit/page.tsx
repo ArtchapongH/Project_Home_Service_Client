@@ -148,12 +148,13 @@ export default function EditPromotionPage({ params }: EditPromotionPageProps) {
 
       router.push('/admin/promotions');
       router.refresh();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to update promotion:', error);
-      if (error?.response?.data?.code === 'PROMOTION_CODE_EXISTS') {
+      const err = error as { response?: { data?: { code?: string; message?: string } } };
+      if (err?.response?.data?.code === 'PROMOTION_CODE_EXISTS') {
         setErrorMessage('Promotion Code นี้มีอยู่ในระบบแล้ว');
-      } else if (error?.response?.data?.message) {
-        setErrorMessage(error.response.data.message);
+      } else if (err?.response?.data?.message) {
+        setErrorMessage(err.response.data.message);
       } else {
         setErrorMessage('เกิดข้อผิดพลาดในการแก้ไข Promotion Code');
       }

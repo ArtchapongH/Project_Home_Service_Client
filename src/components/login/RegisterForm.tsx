@@ -12,7 +12,8 @@ import LoginTextField from "./LoginTextField";
 import OrDivider from "./OrDivider";
 
 export default function RegisterForm() {
-  const [fullName, setFullName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -49,10 +50,14 @@ export default function RegisterForm() {
 
     try {
       const result = await register({
-        fullName,
+        firstName,
+        lastName,
+        fullName: `${firstName} ${lastName}`.trim(),
+        displayName: `${firstName} ${lastName}`.trim(),
         phone,
         email,
         password,
+        acceptedTerms: isAcceptedTerms,
       });
 
       if (result.success) {
@@ -96,14 +101,24 @@ export default function RegisterForm() {
       )}
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <LoginTextField
-          id="fullName"
-          label="ชื่อ - นามสกุล"
-          placeholder="กรุณากรอกชื่อ - นามสกุล"
-          autoComplete="name"
-          value={fullName}
-          onChange={setFullName}
-        />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <LoginTextField
+            id="firstName"
+            label="ชื่อจริง"
+            placeholder="กรุณากรอกชื่อจริง"
+            autoComplete="given-name"
+            value={firstName}
+            onChange={setFirstName}
+          />
+          <LoginTextField
+            id="lastName"
+            label="นามสกุล"
+            placeholder="กรุณากรอกนามสกุล"
+            autoComplete="family-name"
+            value={lastName}
+            onChange={setLastName}
+          />
+        </div>
         <LoginTextField
           id="phone"
           label="เบอร์โทรศัพท์"

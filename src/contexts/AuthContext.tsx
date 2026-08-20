@@ -12,10 +12,14 @@ import {
 import apiClient from "@/services/apiClient";
 import { getAuthErrorMessage } from "@/utils/getAuthErrorMessage";
 
+
 export interface User {
   id: string | number;
   email: string;
   fullName: string;
+  displayName?: string;
+  firstName?: string | null;
+  lastName?: string | null;
   phone?: string | null;
   address?: string | null;
   avatarUrl?: string | null;
@@ -23,10 +27,14 @@ export interface User {
 }
 
 interface RegisterData {
-  fullName: string;
+  fullName?: string;
+  displayName?: string;
+  firstName?: string;
+  lastName?: string;
   phone?: string;
   email: string;
   password: string;
+  acceptedTerms?: boolean;
 }
 
 interface AuthResult {
@@ -50,6 +58,7 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
 
 function getAccessToken(data: unknown): string | null {
   if (typeof data !== "object" || data === null || !("session" in data)) {
