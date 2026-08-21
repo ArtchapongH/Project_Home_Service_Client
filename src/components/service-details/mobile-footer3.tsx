@@ -5,6 +5,7 @@ import ChevronLeftRoundedIcon from "@mui/icons-material/ChevronLeftRounded";
 import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
 import KeyboardArrowUpRoundedIcon from "@mui/icons-material/KeyboardArrowUpRounded";
+import { CardNumberElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import { PaymentContext } from "@/app/service-details/layout";
 import { useRouter } from "next/navigation";
 
@@ -13,13 +14,17 @@ import { useRouter } from "next/navigation";
 export default function MobileFooterTwo() {
     const payment = React.useContext(PaymentContext);
     const [summaryExpanded, setSummaryExpanded] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [paymentError, setPaymentError] = useState("");
     const router = useRouter();
+    const stripe = useStripe();
+    const elements = useElements();
 
     if (!payment) {
         throw new Error("MobileFooterTwo must be rendered inside PaymentProvider");
     }
 
-    const { serviceDetail, serviceFormData, paymentFormData, totAmount, isThirdPageCompleted } = payment;
+    const { serviceDetail, serviceFormData, paymentFormData, totAmount, paymentMethod, setIsThirdPageCompleted } = payment;
     const selectedServices = serviceDetail.filter((service) => service.quantity !== 0);
     const address = [
         serviceFormData.address,
@@ -30,20 +35,85 @@ export default function MobileFooterTwo() {
         .filter(Boolean)
         .join(" ");
 
-    // add function to check if all values in paymentFormData are filled except for promotionCode
+    // ตรวจสอบว่ากรอกข้อมูลชำระเงินครบตามวิธีที่เลือกหรือยัง
     function isPaymentFormComplete(): boolean {
-        return Object.entries(paymentFormData)
-            .filter(([formField]) => formField !== "promotionCode")
-            .every(([, formValue]) => formValue.trim().length > 0);
+        if (paymentMethod === "promptpay") {
+            return true;
+        }
+
+        return (
+            paymentFormData.creditCardNumberComplete &&
+            paymentFormData.creditCardName.trim().length > 0 &&
+            paymentFormData.creditCardExpiryComplete &&
+            paymentFormData.creditCardCVCComplete
+        );
     }
+
+    const isProcessing = isSubmitting || (paymentMethod === "card" && !stripe);
 
     function handleBack(): void {
         router.push("/service-details/userinfo");
     }
 
-    function handleNext(): void {
-        if (isPaymentFormComplete()) {
+    async function handleNext(): Promise<void> {
+        if (!isPaymentFormComplete() || isProcessing) {
+            return;
+        }
+
+        if (paymentMethod === "promptpay") {
             router.push("/service-details/payment-success");
+            return;
+        }
+
+        if (!stripe || !elements) {
+            return;
+        }
+
+        const cardNumberElement = elements.getElement(CardNumberElement);
+
+        if (!cardNumberElement) {
+            setPaymentError("ไม่พบข้อมูลบัตรเครดิต");
+            return;
+        }
+
+        setIsSubmitting(true);
+        setPaymentError("");
+
+        try {
+            const response = await fetch("http://localhost:3001/create-payment-intent", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ amount: totAmount }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || "ไม่สามารถสร้างรายการชำระเงินได้");
+            }
+
+            const result = await stripe.confirmCardPayment(data.clientSecret, {
+                payment_method: {
+                    card: cardNumberElement,
+                    billing_details: {
+                        name: paymentFormData.creditCardName,
+                    },
+                },
+            });
+
+            if (result.error) {
+                setPaymentError(result.error.message || "การชำระเงินไม่สำเร็จ");
+                return;
+            }
+
+            if (result.paymentIntent?.status === "succeeded") {
+                setIsThirdPageCompleted(true);
+                router.push("/service-details/payment-success");
+            }
+        } catch (error) {
+            setPaymentError(error instanceof Error ? error.message : "เกิดข้อผิดพลาดในการชำระเงิน");
+        } finally {
+            setIsSubmitting(false);
         }
     }
    
@@ -82,6 +152,7 @@ export default function MobileFooterTwo() {
                 <span className="text-gray-500">รวม</span>
                 <span className="font-semibold text-black">{totAmount.toFixed(2)} ฿</span>
             </div>
+            {paymentError && <p className="mt-2 text-xs text-red-500">{paymentError}</p>}
             <div className="mt-3 grid grid-cols-2 gap-3 border-t border-gray-200 pt-3">
                 <button type="button" onClick={handleBack} className="flex h-8 items-center justify-center gap-1 rounded-[7px] border border-blue-500 text-xs font-medium text-blue-600">
                     <ChevronLeftRoundedIcon className="text-[17px]" />
@@ -89,11 +160,11 @@ export default function MobileFooterTwo() {
                 </button>
                 <button
                     type="button"
-                    disabled={!isPaymentFormComplete()}
+                    disabled={!isPaymentFormComplete() || isProcessing}
                     onClick={handleNext}
-                    className={`flex h-8 items-center justify-center gap-1 rounded-[7px] text-xs font-medium text-white ${isPaymentFormComplete() ? "bg-blue-500" : "bg-[#d0d5df]"}`}
+                    className={`flex h-8 items-center justify-center gap-1 rounded-[7px] text-xs font-medium text-white ${isPaymentFormComplete() && !isProcessing ? "bg-blue-500" : "bg-[#d0d5df]"}`}
                 >
-                    ดำเนินการต่อ
+                    {isSubmitting ? "กำลังดำเนินการ..." : "ดำเนินการต่อ"}
                     <ChevronRightRoundedIcon className="text-[17px]" />
                 </button>
             </div>
@@ -127,15 +198,18 @@ export default function MobileFooterTwo() {
                         <ChevronLeftRoundedIcon className="text-[17px]" />
                         ย้อนกลับ
                     </button>
-                    <button
-                        type="button"
-                        disabled={!isPaymentFormComplete()}
-                        onClick={handleNext}
-                        className={`flex h-8 items-center justify-center gap-1 rounded-[7px] px-5 text-xs font-medium text-white ${isPaymentFormComplete() ? "bg-blue-500" : "bg-[#d0d5df]"}`}
-                    >
-                        ดำเนินการต่อ
-                        <ChevronRightRoundedIcon className="text-[17px]" />
-                    </button>
+                    <div className="flex items-center gap-3">
+                        {paymentError && <p className="text-xs text-red-500">{paymentError}</p>}
+                        <button
+                            type="button"
+                            disabled={!isPaymentFormComplete() || isProcessing}
+                            onClick={handleNext}
+                            className={`flex h-8 items-center justify-center gap-1 rounded-[7px] px-5 text-xs font-medium text-white ${isPaymentFormComplete() && !isProcessing ? "bg-blue-500" : "bg-[#d0d5df]"}`}
+                        >
+                            {isSubmitting ? "กำลังดำเนินการ..." : "ดำเนินการต่อ"}
+                            <ChevronRightRoundedIcon className="text-[17px]" />
+                        </button>
+                    </div>
                 </div>
             </footer>
         </>

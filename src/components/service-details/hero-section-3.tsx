@@ -1,6 +1,5 @@
 "use client";
 import React from "react";
-import { useState } from "react";
 import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import CreditCardOutlinedIcon from "@mui/icons-material/CreditCardOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
@@ -11,7 +10,11 @@ import serviceDetailBanner from "@/assets/images/service-detail-banner.png";
 import MobileFooterThree from "./mobile-footer3";
 import { PaymentContext } from "@/app/service-details/layout";
 
-type PaymentMethod = "promptpay" | "card";
+import {
+  CardNumberElement,
+  CardExpiryElement,
+  CardCvcElement,
+} from "@stripe/react-stripe-js";
 
 export default function HeroSectionThree() {
 	const payment = React.useContext(PaymentContext);
@@ -20,10 +23,7 @@ export default function HeroSectionThree() {
 		throw new Error("HeroSection must be rendered inside PaymentProvider");
 	}
 
-	const { paymentFormData, setPaymentFormData } = payment;
-		
-
-	const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
+	const { paymentFormData, setPaymentFormData, paymentMethod, setPaymentMethod } = payment;
 
 	function updateField(field: keyof typeof paymentFormData, value: string): void {
 		setPaymentFormData((currentForm) => ({ ...currentForm, [field]: value }));
@@ -61,16 +61,34 @@ export default function HeroSectionThree() {
 					{paymentMethod === "card" && (
 						<div className="mt-4 space-y-3 min-[801px]:grid min-[801px]:grid-cols-2 min-[801px]:gap-x-3 min-[801px]:gap-y-3 min-[801px]:space-y-0">
 						<Field label="หมายเลขบัตรเครดิต" required className="min-[801px]:col-span-2">
-							<input type="text" inputMode="numeric" value={paymentFormData.creditCardNumber} onChange={(event) => updateField("creditCardNumber", event.target.value)} placeholder="กรุณากรอกหมายเลขบัตรเครดิต" className={inputClass} />
+							<div className={`${inputClass} flex items-center`}>
+								<CardNumberElement
+									options={cardElementOptions}
+									className="w-full"
+									onChange={(event) => setPaymentFormData((currentForm) => ({ ...currentForm, creditCardNumberComplete: event.complete }))}
+								/>
+							</div>
 						</Field>
 						<Field label="ชื่อบนบัตร" required className="min-[801px]:col-span-2">
 							<input type="text" value={paymentFormData.creditCardName} onChange={(event) => updateField("creditCardName", event.target.value)} placeholder="กรุณากรอกชื่อบนบัตร" className={inputClass} />
 						</Field>
 						<Field label="วันหมดอายุ" required>
-							<input type="text" inputMode="numeric" value={paymentFormData.creditCardExpiry} onChange={(event) => updateField("creditCardExpiry", event.target.value)} placeholder="MM/YY" className={inputClass} />
+							<div className={`${inputClass} flex items-center`}>
+								<CardExpiryElement
+									options={cardElementOptions}
+									className="w-full"
+									onChange={(event) => setPaymentFormData((currentForm) => ({ ...currentForm, creditCardExpiryComplete: event.complete }))}
+								/>
+							</div>
 						</Field>
 						<Field label="รหัส CVC / CVV" required>
-							<input type="text" inputMode="numeric" value={paymentFormData.creditCardCVC} onChange={(event) => updateField("creditCardCVC", event.target.value)} placeholder="xxx" className={inputClass} />
+							<div className={`${inputClass} flex items-center`}>
+								<CardCvcElement
+									options={cardElementOptions}
+									className="w-full"
+									onChange={(event) => setPaymentFormData((currentForm) => ({ ...currentForm, creditCardCVCComplete: event.complete }))}
+								/>
+							</div>
 						</Field>
 					</div>
 				)}
@@ -91,6 +109,22 @@ export default function HeroSectionThree() {
 }
 
 const inputClass = "h-8 w-full rounded-[7px] border border-gray-300 bg-white px-3 text-sm text-gray-700 outline-none placeholder:text-gray-500 focus:border-blue-500";
+
+const cardElementOptions = {
+	style: {
+		base: {
+			fontSize: "14px",
+			color: "#374151",
+			fontFamily: "Arial, sans-serif",
+			"::placeholder": {
+				color: "#6b7280"
+			}
+		},
+		invalid: {
+			color: "#dc2626"
+		}
+	}
+};
 
 function Field({ children, className = "", label, required = false }: { children: React.ReactNode; className?: string; label: string; required?: boolean }) {
 	return (

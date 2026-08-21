@@ -2,6 +2,13 @@
 
 import React, { createContext, useEffect, useState } from "react";
 
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
+
+const stripePromise = loadStripe(
+  "pk_test_51U6NHm8UZtCUiZcR1GjhLTwXESirowiE82gRrCbkdoG9SUTc5G2DYHdRKu1rDsOGNcVaA1kazibS7rxAvKYXqpxv00ZZpaHN9c"
+);
+
 type PaymentContextValue = {
     serviceTitle: string;
     setServiceTitle: React.Dispatch<React.SetStateAction<string>>;
@@ -21,7 +28,11 @@ type PaymentContextValue = {
     setIsThirdPageCompleted: React.Dispatch<React.SetStateAction<boolean>>;
     totAmount: number;
     setTotAmount: React.Dispatch<React.SetStateAction<number>>;
+    paymentMethod: PaymentMethod;
+    setPaymentMethod: React.Dispatch<React.SetStateAction<PaymentMethod>>;
 };
+
+export type PaymentMethod = "promptpay" | "card";
 
 type ServiceDetail = {
   serviceDetail: string;
@@ -45,6 +56,7 @@ type SavedPayment = {
     paymentFormData?: PaymentFormData;
     totAmount?: number;
 };
+
 
 function getSavedPayment(): SavedPayment | null {
     if (typeof window === "undefined") {
@@ -84,10 +96,10 @@ interface ServiceFormData {
 
 
 interface PaymentFormData {
-  creditCardNumber: string;
+  creditCardNumberComplete: boolean;
   creditCardName: string;
-  creditCardExpiry: string;
-  creditCardCVC: string;
+  creditCardExpiryComplete: boolean;
+  creditCardCVCComplete: boolean;
     promotionCode: string;
 }
 
@@ -111,10 +123,10 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
     });
 
     const [paymentFormData, setPaymentFormData] = useState<PaymentFormData>({
-        creditCardNumber: "",
+        creditCardNumberComplete: false,
         creditCardName: "",
-        creditCardExpiry: "",
-        creditCardCVC: "",
+        creditCardExpiryComplete: false,
+        creditCardCVCComplete: false,
         promotionCode: "",
     });
 
@@ -125,6 +137,8 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
     const [isThirdPageCompleted, setIsThirdPageCompleted] = useState(false);
 
     const [totAmount, setTotAmount] = useState(0);
+
+    const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
 
     useEffect(() => {
         const savedPayment = getSavedPayment();
@@ -180,16 +194,23 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
         setIsThirdPageCompleted,
 
         totAmount,
-        setTotAmount
+        setTotAmount,
+
+        paymentMethod,
+        setPaymentMethod,
     };
 
 
     return(
-        <PaymentContext.Provider value={value}>
-            {children}
-        </PaymentContext.Provider>
+        <Elements stripe={stripePromise}>
+            <PaymentContext.Provider value={value}>
+                {children}
+            </PaymentContext.Provider>
+        </Elements>
     );
 }
 
-export default PaymentProvider;
+export default function ServiceDetailsLayout({ children }: { children: React.ReactNode }) {
+    return <PaymentProvider>{children}</PaymentProvider>;
+}
 
