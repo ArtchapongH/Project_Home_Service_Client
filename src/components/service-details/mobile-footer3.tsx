@@ -40,6 +40,12 @@ export default function MobileFooterTwo() {
     function handleBack(): void {
         router.push("/service-details/userinfo");
     }
+
+    function handleNext(): void {
+        if (isPaymentFormComplete()) {
+            router.push("/service-details/payment-success");
+        }
+    }
    
     return (
         <>
@@ -80,11 +86,16 @@ export default function MobileFooterTwo() {
                 <button type="button" onClick={handleBack} className="flex h-8 items-center justify-center gap-1 rounded-[7px] border border-blue-500 text-xs font-medium text-blue-600">
                     <ChevronLeftRoundedIcon className="text-[17px]" />
                     ย้อนกลับ
-                </Link>
-                <Link href="/payment/success" className="flex h-8 items-center justify-center gap-1 rounded-[7px] bg-blue-500 text-xs font-medium text-white">
+                </button>
+                <button
+                    type="button"
+                    disabled={!isPaymentFormComplete()}
+                    onClick={handleNext}
+                    className={`flex h-8 items-center justify-center gap-1 rounded-[7px] text-xs font-medium text-white ${isPaymentFormComplete() ? "bg-blue-500" : "bg-[#d0d5df]"}`}
+                >
                     ดำเนินการต่อ
                     <ChevronRightRoundedIcon className="text-[17px]" />
-                </Link>
+                </button>
             </div>
             </aside>
 
@@ -115,11 +126,16 @@ export default function MobileFooterTwo() {
                     <button type="button" onClick={handleBack} className="flex h-8 items-center justify-center gap-1 rounded-[7px] border border-blue-500 px-6 text-xs font-medium text-blue-600">
                         <ChevronLeftRoundedIcon className="text-[17px]" />
                         ย้อนกลับ
-                    </Link>
-                    <Link href="/payment/success" className="flex h-8 items-center justify-center gap-1 rounded-[7px] bg-blue-500 px-5 text-xs font-medium text-white">
+                    </button>
+                    <button
+                        type="button"
+                        disabled={!isPaymentFormComplete()}
+                        onClick={handleNext}
+                        className={`flex h-8 items-center justify-center gap-1 rounded-[7px] px-5 text-xs font-medium text-white ${isPaymentFormComplete() ? "bg-blue-500" : "bg-[#d0d5df]"}`}
+                    >
                         ดำเนินการต่อ
                         <ChevronRightRoundedIcon className="text-[17px]" />
-                    </Link>
+                    </button>
                 </div>
             </footer>
         </>
