@@ -59,7 +59,7 @@ export default function MobileFooterTwo() {
             <div className={summaryExpanded ? "block" : "hidden"}>
                 <div className="mt-2 space-y-2 border-b border-gray-200 pb-3 text-[10px] text-gray-700">
                     {selectedServices.map((service, index) => (
-                        <div key={`${service.serviceDetail}-${index}`} className="flex items-start justify-between gap-2">
+                        <div key={`${service.serviceDetail}-${service.unit}-${service.quantity}-${index}`} className="flex items-start justify-between gap-2">
                             <span>{service.serviceDetail}</span>
                             <span className="shrink-0">{service.quantity} {service.unit}</span>
                         </div>
@@ -92,7 +92,7 @@ export default function MobileFooterTwo() {
                 <h2 className="text-sm font-medium text-gray-500">สรุปรายการ</h2>
                 <div className="mt-2 space-y-2 border-b border-gray-200 pb-3 text-[10px] text-gray-700">
                     {selectedServices.map((service, index) => (
-                        <div key={`${service.serviceDetail}-${index}`} className="flex items-start justify-between gap-2">
+                        <div key={`${service.serviceDetail}-${service.unit}-${service.quantity}-${index}`} className="flex items-start justify-between gap-2">
                             <span>{service.serviceDetail}</span>
                             <span className="shrink-0">{service.quantity} {service.unit}</span>
                         </div>

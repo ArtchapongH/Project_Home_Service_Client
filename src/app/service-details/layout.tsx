@@ -95,63 +95,70 @@ interface PaymentFormData {
 export const PaymentContext = createContext<PaymentContextValue | undefined>(undefined);
 
 export function PaymentProvider({ children }: { children: React.ReactNode }) {
-    
-    
+    const [isHydrated, setIsHydrated] = useState(false);
     const [serviceTitle, setServiceTitle] = useState("");
     // ข้อมูล sevice datail มันจะต้องเป็น array ของ object ที่มี serviceDetail, pricePerUnit, quantity
-    const [serviceDetail, setServiceDetail] = useState<ServiceDetail[]>(
-        () => getSavedPayment()?.serviceDetail ?? serviceOptions,
-    );
+    const [serviceDetail, setServiceDetail] = useState<ServiceDetail[]>(serviceOptions);
 
-    const [serviceFormData, setServiceFormData] = useState<ServiceFormData>(
-        () => getSavedPayment()?.serviceFormData ?? {
-            address: "",
-            subdistrict: "",
-            district: "",
-            province: "",
-            serviceDate: "",
-            serviceTime: "",
-            information: "",
-        },
-    );
+    const [serviceFormData, setServiceFormData] = useState<ServiceFormData>({
+        address: "",
+        subdistrict: "",
+        district: "",
+        province: "",
+        serviceDate: "",
+        serviceTime: "",
+        information: "",
+    });
 
-    
-    const [paymentFormData, setPaymentFormData] = useState<PaymentFormData>(
-        () => getSavedPayment()?.paymentFormData ?? {
-            creditCardNumber: "",
-            creditCardName: "",
-            creditCardExpiry: "",
-            creditCardCVC: "",
-            promotionCode: "",
-        },
-    );
+    const [paymentFormData, setPaymentFormData] = useState<PaymentFormData>({
+        creditCardNumber: "",
+        creditCardName: "",
+        creditCardExpiry: "",
+        creditCardCVC: "",
+        promotionCode: "",
+    });
 
     const [promotionCode, setPromotionCode] = useState("");
 
     const [isFirstPageCompleted, setIsFirstPageCompleted] = useState(false);
-    const [isSecondPageCompleted, setIsSecondPageCompleted] = useState(() =>
-        hasRequiredServiceFormData(getSavedPayment()?.serviceFormData ?? {
-            address: "",
-            subdistrict: "",
-            district: "",
-            province: "",
-            serviceDate: "",
-            serviceTime: "",
-            information: "",
-        }),
-    );    
+    const [isSecondPageCompleted, setIsSecondPageCompleted] = useState(false);
     const [isThirdPageCompleted, setIsThirdPageCompleted] = useState(false);
 
-    const [totAmount, setTotAmount] = useState(
-        () => getSavedPayment()?.totAmount ?? 0,
-    );
+    const [totAmount, setTotAmount] = useState(0);
 
     useEffect(() => {
+        const savedPayment = getSavedPayment();
+
+        if (savedPayment?.serviceDetail) {
+            setServiceDetail(savedPayment.serviceDetail);
+        }
+
+        if (savedPayment?.serviceFormData) {
+            setServiceFormData(savedPayment.serviceFormData);
+            setIsSecondPageCompleted(hasRequiredServiceFormData(savedPayment.serviceFormData));
+        }
+
+        if (savedPayment?.paymentFormData) {
+            setPaymentFormData(savedPayment.paymentFormData);
+        }
+
+        if (savedPayment?.totAmount !== undefined) {
+            setTotAmount(savedPayment.totAmount);
+        }
+
+        setIsHydrated(true);
+    }, []);
+
+    useEffect(() => {
+        if (!isHydrated || typeof window === "undefined") {
+            return;
+        }
+
         window.sessionStorage.setItem(
             paymentStorageKey,
             JSON.stringify({ serviceDetail, serviceFormData, paymentFormData, totAmount }),
         );
-    }, [serviceDetail, serviceFormData, paymentFormData, totAmount]);
+    }, [isHydrated, serviceDetail, serviceFormData, paymentFormData, totAmount]);
 
     const value: PaymentContextValue = {
         serviceTitle,

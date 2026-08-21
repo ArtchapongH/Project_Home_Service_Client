@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 import Link from "next/link";
