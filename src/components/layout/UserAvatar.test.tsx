@@ -24,4 +24,10 @@ describe("UserAvatar", () => {
 
     expect(screen.getByLabelText("อักษรย่อของ Somchai Jaidee")).toHaveTextContent("SJ");
   });
+
+  it("renders with displayName when provided", () => {
+    render(<UserAvatar displayName="Dev Master" />);
+
+    expect(screen.getByLabelText("อักษรย่อของ Dev Master")).toHaveTextContent("DM");
+  });
 });

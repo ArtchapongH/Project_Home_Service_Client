@@ -18,29 +18,32 @@ export default function NavbarResponsive() {
 					</Link>
 				</div>
 
-				<div className="flex items-center gap-3 min-[801px]:gap-6">
-					<Link
-						href="/profile"
-						className="flex shrink-0 items-center gap-2 rounded-full outline-offset-2 transition hover:ring-2 hover:ring-blue-100 focus-visible:ring-2 focus-visible:ring-blue-500"
-						aria-label="โปรไฟล์ของฉัน"
-					>
-						<span className="hidden whitespace-nowrap text-sm font-medium text-gray-500 min-[801px]:inline">
-							สมศรี อิ่มรักบริการ
-						</span>
-						<span className="flex size-8 items-center justify-center overflow-hidden rounded-full bg-[#d6c1ab] text-xs font-semibold text-[#654432] min-[801px]:size-10 min-[801px]:text-sm">
-							HS
-						</span>
-					</Link>
+        <div className="flex items-center gap-3 min-[801px]:gap-5">
+          <Link
+            href="/profile"
+            className="flex shrink-0 items-center gap-2.5 rounded-full outline-offset-2 transition hover:opacity-90 focus-visible:ring-2 focus-visible:ring-blue-500"
+            aria-label="โปรไฟล์ของฉัน"
+          >
+            <span className="hidden whitespace-nowrap text-sm font-medium text-gray-700 min-[801px]:inline">
+              {displayName}
+            </span>
+            <UserAvatar
+              fullName={displayName}
+              email={user?.email}
+              avatarUrl={user?.avatarUrl}
+            />
+          </Link>
 
-					<Link
-						href="/notifications"
-						className="flex size-8 items-center justify-center rounded-full bg-[#eef1f7] text-gray-500 transition hover:bg-blue-100 hover:text-blue-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 min-[801px]:size-10"
-						aria-label="การแจ้งเตือน"
-					>
-						<NotificationsNoneRoundedIcon className="text-[18px] min-[801px]:text-[20px]" />
-					</Link>
-				</div>
-			</div>
-		</header>
-	);
+          <Link
+            href="/notifications"
+            className="flex size-9 items-center justify-center rounded-full bg-[#eef1f7] text-gray-600 transition hover:bg-blue-100 hover:text-blue-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 min-[801px]:size-10"
+            aria-label="การแจ้งเตือน"
+          >
+            <NotificationsNoneRoundedIcon className="text-[20px] min-[801px]:text-[22px]" />
+          </Link>
+        </div>
+      </div>
+    </header>
+  );
 }
+

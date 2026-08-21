@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Checkbox from "@mui/material/Checkbox";
@@ -12,7 +12,8 @@ import LoginTextField from "./LoginTextField";
 import OrDivider from "./OrDivider";
 
 export default function RegisterForm() {
-  const [fullName, setFullName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,9 +23,15 @@ export default function RegisterForm() {
   const [successMessage, setSuccessMessage] = useState("");
   const { register } = useAuth();
   const router = useRouter();
+  const isSubmittingRef = useRef(false);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (isSubmittingRef.current) {
+      return;
+    }
+
     setErrorMessage("");
     setSuccessMessage("");
 
@@ -38,26 +45,40 @@ export default function RegisterForm() {
       return;
     }
 
+    isSubmittingRef.current = true;
     setIsLoading(true);
-    const result = await register({
-      fullName,
-      phone,
-      email,
-      password,
-    });
-    setIsLoading(false);
 
-    if (result.success) {
-      setSuccessMessage(
-        result.requiresEmailConfirmation
-          ? "ลงทะเบียนสำเร็จ! กรุณายืนยันอีเมลก่อนเข้าสู่ระบบ"
-          : "ลงทะเบียนสำเร็จ! กำลังนำคุณเข้าสู่ระบบ...",
-      );
-      setTimeout(() => {
-        router.push(result.requiresEmailConfirmation ? "/login" : "/");
-      }, 1500);
-    } else {
+    try {
+      const result = await register({
+        firstName,
+        lastName,
+        fullName: `${firstName} ${lastName}`.trim(),
+        displayName: `${firstName} ${lastName}`.trim(),
+        phone,
+        email,
+        password,
+        acceptedTerms: isAcceptedTerms,
+      });
+
+      if (result.success) {
+        setSuccessMessage(
+          result.requiresEmailConfirmation
+            ? "ลงทะเบียนสำเร็จ! กรุณายืนยันอีเมลก่อนเข้าสู่ระบบ"
+            : "ลงทะเบียนสำเร็จ! กำลังนำคุณเข้าสู่ระบบ...",
+        );
+        setTimeout(() => {
+          router.push(result.requiresEmailConfirmation ? "/login" : "/");
+        }, 1500);
+        return;
+      }
+
       setErrorMessage(result.error || "เกิดข้อผิดพลาดในการลงทะเบียน");
+      isSubmittingRef.current = false;
+      setIsLoading(false);
+    } catch {
+      setErrorMessage("ไม่สามารถลงทะเบียนได้ กรุณาลองใหม่อีกครั้ง");
+      isSubmittingRef.current = false;
+      setIsLoading(false);
     }
   };
 
@@ -80,14 +101,24 @@ export default function RegisterForm() {
       )}
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <LoginTextField
-          id="fullName"
-          label="ชื่อ - นามสกุล"
-          placeholder="กรุณากรอกชื่อ - นามสกุล"
-          autoComplete="name"
-          value={fullName}
-          onChange={setFullName}
-        />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <LoginTextField
+            id="firstName"
+            label="ชื่อจริง"
+            placeholder="กรุณากรอกชื่อจริง"
+            autoComplete="given-name"
+            value={firstName}
+            onChange={setFirstName}
+          />
+          <LoginTextField
+            id="lastName"
+            label="นามสกุล"
+            placeholder="กรุณากรอกนามสกุล"
+            autoComplete="family-name"
+            value={lastName}
+            onChange={setLastName}
+          />
+        </div>
         <LoginTextField
           id="phone"
           label="เบอร์โทรศัพท์"

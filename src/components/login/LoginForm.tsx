@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,23 +17,38 @@ export default function LoginForm() {
   const [errorMessage, setErrorMessage] = useState("");
   const { login } = useAuth();
   const router = useRouter();
+  const isSubmittingRef = useRef(false);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (isSubmittingRef.current) {
+      return;
+    }
+
     setErrorMessage("");
+    isSubmittingRef.current = true;
     setIsLoading(true);
 
-    const result = await login(email, password);
-    setIsLoading(false);
+    try {
+      const result = await login(email, password);
 
-    if (result.success) {
-      if (result.user?.role?.toUpperCase() === "ADMIN") {
-        router.push("/admin/services");
-      } else {
-        router.push("/");
+      if (result.success) {
+        if (result.user?.role?.toUpperCase() === "ADMIN") {
+          router.push("/admin/services");
+        } else {
+          router.push("/");
+        }
+        return;
       }
-    } else {
+
       setErrorMessage(result.error || "อีเมลหรือรหัสผ่านไม่ถูกต้อง");
+      isSubmittingRef.current = false;
+      setIsLoading(false);
+    } catch {
+      setErrorMessage("ไม่สามารถเข้าสู่ระบบได้ กรุณาลองใหม่อีกครั้ง");
+      isSubmittingRef.current = false;
+      setIsLoading(false);
     }
   };
 

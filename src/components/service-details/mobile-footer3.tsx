@@ -80,11 +80,11 @@ export default function MobileFooterTwo() {
                 <button type="button" onClick={handleBack} className="flex h-8 items-center justify-center gap-1 rounded-[7px] border border-blue-500 text-xs font-medium text-blue-600">
                     <ChevronLeftRoundedIcon className="text-[17px]" />
                     ย้อนกลับ
-                </button>
-                <button type="button" className="flex h-8 items-center justify-center gap-1 rounded-[7px] bg-blue-500 text-xs font-medium text-white">
+                </Link>
+                <Link href="/payment/success" className="flex h-8 items-center justify-center gap-1 rounded-[7px] bg-blue-500 text-xs font-medium text-white">
                     ดำเนินการต่อ
                     <ChevronRightRoundedIcon className="text-[17px]" />
-                </button>
+                </Link>
             </div>
             </aside>
 
@@ -115,11 +115,11 @@ export default function MobileFooterTwo() {
                     <button type="button" onClick={handleBack} className="flex h-8 items-center justify-center gap-1 rounded-[7px] border border-blue-500 px-6 text-xs font-medium text-blue-600">
                         <ChevronLeftRoundedIcon className="text-[17px]" />
                         ย้อนกลับ
-                    </button>
-                    <button type="button" className="flex h-8 items-center justify-center gap-1 rounded-[7px] bg-blue-500 px-5 text-xs font-medium text-white">
+                    </Link>
+                    <Link href="/payment/success" className="flex h-8 items-center justify-center gap-1 rounded-[7px] bg-blue-500 px-5 text-xs font-medium text-white">
                         ดำเนินการต่อ
                         <ChevronRightRoundedIcon className="text-[17px]" />
-                    </button>
+                    </Link>
                 </div>
             </footer>
         </>
