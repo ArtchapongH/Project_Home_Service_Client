@@ -9,6 +9,7 @@ import Image from "next/image";
 import serviceDetailBanner from "@/assets/images/service-detail-banner.png";
 import MobileFooterThree from "./mobile-footer3";
 import { PaymentContext } from "@/app/service-details/layout";
+import apiClient from "@/services/apiClient";
 
 import {
   CardNumberElement,
@@ -23,7 +24,25 @@ export default function HeroSectionThree() {
 		throw new Error("HeroSection must be rendered inside PaymentProvider");
 	}
 
-	const { paymentFormData, setPaymentFormData, paymentMethod, setPaymentMethod } = payment;
+	const { paymentFormData, setPaymentFormData, paymentMethod, setPaymentMethod, discount, setDiscount, discountType, setDiscountType, newQuota, setNewQuota, totAmount,setTotAmount } = payment;
+	
+
+	async function handleClick(): Promise<void> {
+		const data = { promotionCode: paymentFormData.promotionCode.trim() }
+		const result = await apiClient.get("/promotions", { params: data });
+
+		
+		setDiscountType(result.data.type);
+		setNewQuota(result.data.quota_used+1);
+
+		if(result.data.type === "Percent") {
+			const discountAmount = (result.data.discount / 100) * totAmount;
+			setDiscount(discountAmount);
+		}else{
+			setDiscount(result.data.discount);
+		}
+
+	}
 
 	function updateField(field: keyof typeof paymentFormData, value: string): void {
 		setPaymentFormData((currentForm) => ({ ...currentForm, [field]: value }));
@@ -97,7 +116,7 @@ export default function HeroSectionThree() {
 					<label className="block text-sm font-medium text-gray-700">Promotion Code</label>
 					<div className="mt-1 grid grid-cols-[1fr_69px] gap-3">
 						<input type="text" value={paymentFormData.promotionCode} onChange={(event) => updateField("promotionCode", event.target.value)} placeholder="กรุณากรอกโค้ดส่วนลด (ถ้ามี)" className={`${inputClass} h-10`} />
-						<button type="button" className="h-10 rounded-[7px] bg-blue-500 text-sm font-medium text-white">ใช้โค้ด</button>
+						<button type="button" onClick={handleClick} className="h-10 rounded-[7px] bg-blue-500 text-sm font-medium text-white">ใช้โค้ด</button>
 					</div>
 					</div>
 				</form>

@@ -18,8 +18,7 @@ type PaymentContextValue = {
     setServiceFormData: React.Dispatch<React.SetStateAction<ServiceFormData>>;
     paymentFormData: PaymentFormData;
     setPaymentFormData: React.Dispatch<React.SetStateAction<PaymentFormData>>;
-    promotionCode: string;
-    setPromotionCode: React.Dispatch<React.SetStateAction<string>>;
+    
     isFirstPageCompleted: boolean;
     setIsFirstPageCompleted: React.Dispatch<React.SetStateAction<boolean>>;
     isSecondPageCompleted: boolean;
@@ -30,6 +29,13 @@ type PaymentContextValue = {
     setTotAmount: React.Dispatch<React.SetStateAction<number>>;
     paymentMethod: PaymentMethod;
     setPaymentMethod: React.Dispatch<React.SetStateAction<PaymentMethod>>;
+    discount: number; 
+    setDiscount: React.Dispatch<React.SetStateAction<number>>;
+    discountType: string;
+    setDiscountType: React.Dispatch<React.SetStateAction<string>>;
+    newQuota: number;
+    setNewQuota: React.Dispatch<React.SetStateAction<number>>;
+
 };
 
 export type PaymentMethod = "promptpay" | "card";
@@ -139,6 +145,9 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
     const [totAmount, setTotAmount] = useState(0);
 
     const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
+    const [discount, setDiscount] = useState(0);
+    const [discountType, setDiscountType] = useState("");
+    const [newQuota, setNewQuota] = useState(0);
 
     useEffect(() => {
         const savedPayment = getSavedPayment();
@@ -183,9 +192,14 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
         setServiceFormData,
         paymentFormData,
         setPaymentFormData,
-        promotionCode,
-        setPromotionCode,
         
+        discount, 
+        setDiscount, 
+        discountType,
+        setDiscountType,
+        newQuota,
+        setNewQuota,
+
         isFirstPageCompleted,
         setIsFirstPageCompleted,
         isSecondPageCompleted,
