@@ -34,7 +34,7 @@ export default function HeroSectionThree() {
 		throw new Error("HeroSection must be rendered inside PaymentProvider");
 	}
 
-	const { paymentFormData, setPaymentFormData, paymentMethod, setPaymentMethod, setDiscount, setDiscountType, setNewQuota, totAmount } = payment;
+	const { paymentFormData, setPaymentFormData, paymentMethod, setPaymentMethod, setDiscount, setDiscountType, setNewQuota, totAmount, setTotAmount } = payment;
 
 
 	async function handleClick(): Promise<void> {
@@ -81,12 +81,18 @@ export default function HeroSectionThree() {
 			setDiscountType(type);
 			setNewQuota(quota_used + 1);
 
+			let discountAmount = 0;
 			if (type === "Percent") {
-				const discountAmount = (discountNum / 100) * totAmount;
+				discountAmount = (discountNum / 100) * totAmount;
 				setDiscount(discountAmount);
 			} else {
+				discountAmount = discountNum;
 				setDiscount(discountNum);
 			}
+
+			// Update totAmount by subtracting discount
+			const newTotAmount = totAmount - discountAmount;
+			setTotAmount(newTotAmount);
 			
 			alert("ใช้โค้ดส่วนลดสำเร็จ!");
 		} catch (error) {

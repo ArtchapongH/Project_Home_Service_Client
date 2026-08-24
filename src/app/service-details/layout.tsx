@@ -36,6 +36,13 @@ type PaymentContextValue = {
     newQuota: number;
     setNewQuota: React.Dispatch<React.SetStateAction<number>>;
 
+
+    provincesList: string;
+    setProvincesList: React.Dispatch<React.SetStateAction<string>>;
+    districtList: string;
+    setDistrictList: React.Dispatch<React.SetStateAction<string>>;
+    subdistrictList: string;
+    setSubdistrictList: React.Dispatch<React.SetStateAction<string>>;
 };
 
 export type PaymentMethod = "promptpay" | "card";
@@ -149,6 +156,12 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
     const [discountType, setDiscountType] = useState("");
     const [newQuota, setNewQuota] = useState(0);
 
+    const [provincesList, setProvincesList] = useState("");
+    const [districtList, setDistrictList] = useState("");
+    const [subdistrictList, setSubdistrictList] = useState("");
+    
+    
+
     useEffect(() => {
         const savedPayment = getSavedPayment();
 
@@ -212,6 +225,13 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
 
         paymentMethod,
         setPaymentMethod,
+
+        provincesList,
+        setProvincesList,
+        districtList,
+        setDistrictList,
+        subdistrictList,
+        setSubdistrictList
     };
 
 
