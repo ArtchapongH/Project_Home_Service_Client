@@ -24,7 +24,7 @@ export default function HeroSectionThree() {
 		throw new Error("HeroSection must be rendered inside PaymentProvider");
 	}
 
-	const { paymentFormData, setPaymentFormData, paymentMethod, setPaymentMethod, discount, setDiscount, discountType, setDiscountType, newQuota, setNewQuota, totAmount,setTotAmount } = payment;
+	const { paymentFormData, setPaymentFormData, paymentMethod, setPaymentMethod, setDiscount, setDiscountType, setNewQuota, totAmount } = payment;
 	
 
 	async function handleClick(): Promise<void> {

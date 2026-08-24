@@ -92,7 +92,18 @@ export default function MobileFooterTwo() {
                 throw new Error(data.error || "ไม่สามารถสร้างรายการชำระเงินได้");
             }
 
-            const result = await stripe.confirmCardPayment(data.clientSecret, {
+            const paymentIntentId = data.paymentIntentId ?? data.paymentIntent?.id;
+            const clientSecret = data.clientSecret ?? data.client_secret;
+
+            if (typeof paymentIntentId !== "string" || paymentIntentId.length === 0) {
+                throw new Error("ไม่พบรหัสรายการชำระเงิน");
+            }
+
+            if (typeof clientSecret !== "string" || clientSecret.length === 0) {
+                throw new Error("ไม่พบข้อมูลสำหรับยืนยันการชำระเงิน");
+            }
+
+            const result = await stripe.confirmCardPayment(clientSecret, {
                 payment_method: {
                     card: cardNumberElement,
                     billing_details: {
@@ -106,9 +117,23 @@ export default function MobileFooterTwo() {
                 return;
             }
 
-            if (result.paymentIntent?.status === "succeeded") {
+            const statusResponse = await fetch(
+                `http://localhost:3001/payment-status/${encodeURIComponent(paymentIntentId)}`,
+                { method: "GET" },
+            );
+            const statusData = await statusResponse.json();
+
+            if (!statusResponse.ok) {
+                throw new Error(statusData.error || "ไม่สามารถตรวจสอบสถานะการชำระเงินได้");
+            }
+
+            const paymentStatus = statusData.status ?? statusData.paymentIntent?.status ?? statusData.data?.status;
+
+            if (paymentStatus === "succeeded") {
                 setIsThirdPageCompleted(true);
                 router.push("/service-details/payment-success");
+            } else {
+                throw new Error("การชำระเงินยังไม่เสร็จสมบูรณ์");
             }
         } catch (error) {
             setPaymentError(error instanceof Error ? error.message : "เกิดข้อผิดพลาดในการชำระเงิน");
