@@ -141,7 +141,7 @@ export default function MobileFooterTwo() {
             setIsSubmitting(false);
         }
     }
-   
+
     return (
         <>
             <aside className="fixed inset-x-0 bottom-0 z-30 h-fit rounded-t-lg border border-gray-200 bg-white p-3 shadow-[0_-2px_10px_rgb(23_51_109/10%)] min-[801px]:hidden">
@@ -157,42 +157,42 @@ export default function MobileFooterTwo() {
                         {summaryExpanded ? <KeyboardArrowDownRoundedIcon className="text-[18px]" /> : <KeyboardArrowUpRoundedIcon className="text-[18px]" />}
                     </button>
                 </div>
-            <div className={summaryExpanded ? "block" : "hidden"}>
-                <div className="mt-2 space-y-2 border-b border-gray-200 pb-3 text-[10px] text-gray-700">
-                    {selectedServices.map((service, index) => (
-                        <div key={`${service.serviceDetail}-${service.unit}-${service.quantity}-${index}`} className="flex items-start justify-between gap-2">
-                            <span>{service.serviceDetail}</span>
-                            <span className="shrink-0">{service.quantity} {service.unit}</span>
-                        </div>
-                    ))}
+                <div className={summaryExpanded ? "block" : "hidden"}>
+                    <div className="mt-2 space-y-2 border-b border-gray-200 pb-3 text-[10px] text-gray-700">
+                        {selectedServices.map((service, index) => (
+                            <div key={`${service.serviceDetail}-${service.unit}-${service.quantity}-${index}`} className="flex items-start justify-between gap-2">
+                                <span>{service.serviceDetail}</span>
+                                <span className="shrink-0">{service.quantity} {service.unit}</span>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="space-y-2 border-b border-gray-200 py-3 text-[10px]">
+                        <SummaryRow label="วันที่" value={serviceFormData.serviceDate} />
+                        <SummaryRow label="เวลา" value={serviceFormData.serviceTime} />
+                        <SummaryRow label="สถานที่" value={address} />
+                    </div>
+                    <SummaryRow className="mt-3 text-xs" label="Promotion Code" value={<span className="text-red-500">{discount > 0 ? `-${discount.toFixed(2)} ฿` : "-"}</span>} />
                 </div>
-                <div className="space-y-2 border-b border-gray-200 py-3 text-[10px]">
-                    <SummaryRow label="วันที่" value={serviceFormData.serviceDate} />
-                    <SummaryRow label="เวลา" value={serviceFormData.serviceTime} />
-                    <SummaryRow label="สถานที่" value={address} />
+                <div className="mt-3 flex items-center justify-between text-xs">
+                    <span className="text-gray-500">รวม</span>
+                    <span className="font-semibold text-black">{totAmount.toFixed(2)} ฿</span>
                 </div>
-                <SummaryRow className="mt-3 text-xs" label="Promotion Code" value={<span className="text-red-500">{discount > 0 ? `-${discount.toFixed(2)} ฿` : "-"}</span>} />
-            </div>
-            <div className="mt-3 flex items-center justify-between text-xs">
-                <span className="text-gray-500">รวม</span>
-                <span className="font-semibold text-black">{totAmount.toFixed(2)} ฿</span>
-            </div>
-            {paymentError && <p className="mt-2 text-xs text-red-500">{paymentError}</p>}
-            <div className="mt-3 grid grid-cols-2 gap-3 border-t border-gray-200 pt-3">
-                <button type="button" onClick={handleBack} className="flex h-8 items-center justify-center gap-1 rounded-[7px] border border-blue-500 text-xs font-medium text-blue-600">
-                    <ChevronLeftRoundedIcon className="text-[17px]" />
-                    ย้อนกลับ
-                </button>
-                <button
-                    type="button"
-                    disabled={!isPaymentFormComplete() || isProcessing}
-                    onClick={handleNext}
-                    className={`flex h-8 items-center justify-center gap-1 rounded-[7px] text-xs font-medium text-white ${isPaymentFormComplete() && !isProcessing ? "bg-blue-500" : "bg-[#d0d5df]"}`}
-                >
-                    {isSubmitting ? "กำลังดำเนินการ..." : "ดำเนินการต่อ"}
-                    <ChevronRightRoundedIcon className="text-[17px]" />
-                </button>
-            </div>
+                {paymentError && <p className="mt-2 text-xs text-red-500">{paymentError}</p>}
+                <div className="mt-3 grid grid-cols-2 gap-3 border-t border-gray-200 pt-3">
+                    <button type="button" onClick={handleBack} className="flex h-8 items-center justify-center gap-1 rounded-[7px] border border-blue-500 text-xs font-medium text-blue-600">
+                        <ChevronLeftRoundedIcon className="text-[17px]" />
+                        ย้อนกลับ
+                    </button>
+                    <button
+                        type="button"
+                        disabled={!isPaymentFormComplete() || isProcessing}
+                        onClick={handleNext}
+                        className={`flex h-8 items-center justify-center gap-1 rounded-[7px] text-xs font-medium text-white ${isPaymentFormComplete() && !isProcessing ? "bg-blue-500" : "bg-[#d0d5df]"}`}
+                    >
+                        {isSubmitting ? "กำลังดำเนินการ..." : "ดำเนินการต่อ"}
+                        <ChevronRightRoundedIcon className="text-[17px]" />
+                    </button>
+                </div>
             </aside>
 
             <aside className="hidden h-fit rounded-lg border border-gray-200 bg-white p-3 min-[801px]:block">

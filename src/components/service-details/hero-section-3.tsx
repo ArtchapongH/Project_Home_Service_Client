@@ -9,13 +9,14 @@ import Image from "next/image";
 import serviceDetailBanner from "@/assets/images/service-detail-banner.png";
 import MobileFooterThree from "./mobile-footer3";
 import { PaymentContext } from "@/app/service-details/layout";
-import apiClient from "@/services/apiClient";
 
 import {
 	CardNumberElement,
 	CardExpiryElement,
 	CardCvcElement,
 } from "@stripe/react-stripe-js";
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
 
 interface PromotionResponse {
 	promotion_id: number;
@@ -44,13 +45,37 @@ export default function HeroSectionThree() {
 		}
 
 		try {
-			const result = await apiClient.request<PromotionResponse>({
-				method: "get",
-				url: "/promotion",
-				data: { promotionCode },
+			const token = typeof window !== "undefined" ? window.localStorage.getItem("token") : null;
+
+			const url = new URL(`${API_BASE_URL}/api/promotions`);
+			url.searchParams.set("promotionCode", promotionCode);
+
+			const response = await fetch(url.toString(), {
+				method: "GET",
+				headers: {
+					"Content-Type": "application/json",
+					...(token ? { Authorization: `Bearer ${token}` } : {}),
+				},
 			});
 
-			const { type, discount, quota_used } = result.data;
+			if (!response.ok) {
+				const errorData = await response.json().catch(() => ({}));
+				const errorMessage = errorData.message || `Request failed with status ${response.status}`;
+				
+				if (response.status === 404) {
+					alert("ไม่พบโค้ดส่วนลดนี้ กรุณาตรวจสอบอีกครั้ง");
+				} else if (response.status === 400) {
+					alert("โค้ดส่วนลดนี้ถูกใช้งานหมดแล้ว");
+				} else {
+					alert(`เกิดข้อผิดพลาด: ${errorMessage}`);
+				}
+				console.error("Failed to apply promotion code:", errorMessage);
+				return;
+			}
+
+			const result: PromotionResponse = await response.json();
+
+			const { type, discount, quota_used } = result;
 			const discountNum = Number(discount);
 
 			setDiscountType(type);
@@ -62,8 +87,11 @@ export default function HeroSectionThree() {
 			} else {
 				setDiscount(discountNum);
 			}
+			
+			alert("ใช้โค้ดส่วนลดสำเร็จ!");
 		} catch (error) {
 			console.error("Failed to apply promotion code:", error);
+			alert("เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์");
 		}
 	}
 
