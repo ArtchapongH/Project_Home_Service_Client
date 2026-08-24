@@ -12,36 +12,59 @@ import { PaymentContext } from "@/app/service-details/layout";
 import apiClient from "@/services/apiClient";
 
 import {
-  CardNumberElement,
-  CardExpiryElement,
-  CardCvcElement,
+	CardNumberElement,
+	CardExpiryElement,
+	CardCvcElement,
 } from "@stripe/react-stripe-js";
+
+interface PromotionResponse {
+	promotion_id: number;
+	promotion_code: string;
+	quota: number;
+	quota_used: number;
+	type: "Percent" | "Fixed";
+	discount: number;
+}
 
 export default function HeroSectionThree() {
 	const payment = React.useContext(PaymentContext);
-	
+
 	if (!payment) {
 		throw new Error("HeroSection must be rendered inside PaymentProvider");
 	}
 
 	const { paymentFormData, setPaymentFormData, paymentMethod, setPaymentMethod, setDiscount, setDiscountType, setNewQuota, totAmount } = payment;
-	
+
 
 	async function handleClick(): Promise<void> {
-		const data = { promotionCode: paymentFormData.promotionCode.trim() }
-		const result = await apiClient.get("/promotions", { params: data });
+		const promotionCode = paymentFormData.promotionCode.trim();
 
-		
-		setDiscountType(result.data.type);
-		setNewQuota(result.data.quota_used+1);
-
-		if(result.data.type === "Percent") {
-			const discountAmount = (result.data.discount / 100) * totAmount;
-			setDiscount(discountAmount);
-		}else{
-			setDiscount(result.data.discount);
+		if (!promotionCode) {
+			return;
 		}
 
+		try {
+			const result = await apiClient.request<PromotionResponse>({
+				method: "get",
+				url: "/promotion",
+				data: { promotionCode },
+			});
+
+			const { type, discount, quota_used } = result.data;
+			const discountNum = Number(discount);
+
+			setDiscountType(type);
+			setNewQuota(quota_used + 1);
+
+			if (type === "Percent") {
+				const discountAmount = (discountNum / 100) * totAmount;
+				setDiscount(discountAmount);
+			} else {
+				setDiscount(discountNum);
+			}
+		} catch (error) {
+			console.error("Failed to apply promotion code:", error);
+		}
 	}
 
 	function updateField(field: keyof typeof paymentFormData, value: string): void {
@@ -73,51 +96,51 @@ export default function HeroSectionThree() {
 				<form className="rounded-lg border border-gray-200 bg-white p-3 min-[801px]:p-3.5" onSubmit={(event) => event.preventDefault()}>
 					<h1 className="text-base font-semibold text-gray-500">ชำระเงิน</h1>
 					<div className="mt-3 grid grid-cols-2 gap-3">
-					<PaymentOption icon={<QrCode2RoundedIcon className="text-[28px]" />} label="พร้อมเพย์" selected={paymentMethod === "promptpay"} onClick={() => setPaymentMethod("promptpay")} />
-					<PaymentOption icon={<CreditCardOutlinedIcon className="text-[28px]" />} label="บัตรเครดิต" selected={paymentMethod === "card"} onClick={() => setPaymentMethod("card")} />
-				</div>
+						<PaymentOption icon={<QrCode2RoundedIcon className="text-[28px]" />} label="พร้อมเพย์" selected={paymentMethod === "promptpay"} onClick={() => setPaymentMethod("promptpay")} />
+						<PaymentOption icon={<CreditCardOutlinedIcon className="text-[28px]" />} label="บัตรเครดิต" selected={paymentMethod === "card"} onClick={() => setPaymentMethod("card")} />
+					</div>
 
 					{paymentMethod === "card" && (
 						<div className="mt-4 space-y-3 min-[801px]:grid min-[801px]:grid-cols-2 min-[801px]:gap-x-3 min-[801px]:gap-y-3 min-[801px]:space-y-0">
-						<Field label="หมายเลขบัตรเครดิต" required className="min-[801px]:col-span-2">
-							<div className={`${inputClass} flex items-center`}>
-								<CardNumberElement
-									options={cardElementOptions}
-									className="w-full"
-									onChange={(event) => setPaymentFormData((currentForm) => ({ ...currentForm, creditCardNumberComplete: event.complete }))}
-								/>
-							</div>
-						</Field>
-						<Field label="ชื่อบนบัตร" required className="min-[801px]:col-span-2">
-							<input type="text" value={paymentFormData.creditCardName} onChange={(event) => updateField("creditCardName", event.target.value)} placeholder="กรุณากรอกชื่อบนบัตร" className={inputClass} />
-						</Field>
-						<Field label="วันหมดอายุ" required>
-							<div className={`${inputClass} flex items-center`}>
-								<CardExpiryElement
-									options={cardElementOptions}
-									className="w-full"
-									onChange={(event) => setPaymentFormData((currentForm) => ({ ...currentForm, creditCardExpiryComplete: event.complete }))}
-								/>
-							</div>
-						</Field>
-						<Field label="รหัส CVC / CVV" required>
-							<div className={`${inputClass} flex items-center`}>
-								<CardCvcElement
-									options={cardElementOptions}
-									className="w-full"
-									onChange={(event) => setPaymentFormData((currentForm) => ({ ...currentForm, creditCardCVCComplete: event.complete }))}
-								/>
-							</div>
-						</Field>
-					</div>
-				)}
+							<Field label="หมายเลขบัตรเครดิต" required className="min-[801px]:col-span-2">
+								<div className={`${inputClass} flex items-center`}>
+									<CardNumberElement
+										options={cardElementOptions}
+										className="w-full"
+										onChange={(event) => setPaymentFormData((currentForm) => ({ ...currentForm, creditCardNumberComplete: event.complete }))}
+									/>
+								</div>
+							</Field>
+							<Field label="ชื่อบนบัตร" required className="min-[801px]:col-span-2">
+								<input type="text" value={paymentFormData.creditCardName} onChange={(event) => updateField("creditCardName", event.target.value)} placeholder="กรุณากรอกชื่อบนบัตร" className={inputClass} />
+							</Field>
+							<Field label="วันหมดอายุ" required>
+								<div className={`${inputClass} flex items-center`}>
+									<CardExpiryElement
+										options={cardElementOptions}
+										className="w-full"
+										onChange={(event) => setPaymentFormData((currentForm) => ({ ...currentForm, creditCardExpiryComplete: event.complete }))}
+									/>
+								</div>
+							</Field>
+							<Field label="รหัส CVC / CVV" required>
+								<div className={`${inputClass} flex items-center`}>
+									<CardCvcElement
+										options={cardElementOptions}
+										className="w-full"
+										onChange={(event) => setPaymentFormData((currentForm) => ({ ...currentForm, creditCardCVCComplete: event.complete }))}
+									/>
+								</div>
+							</Field>
+						</div>
+					)}
 
 					<div className="mt-4 border-t border-gray-200 pt-4">
-					<label className="block text-sm font-medium text-gray-700">Promotion Code</label>
-					<div className="mt-1 grid grid-cols-[1fr_69px] gap-3">
-						<input type="text" value={paymentFormData.promotionCode} onChange={(event) => updateField("promotionCode", event.target.value)} placeholder="กรุณากรอกโค้ดส่วนลด (ถ้ามี)" className={`${inputClass} h-10`} />
-						<button type="button" onClick={handleClick} className="h-10 rounded-[7px] bg-blue-500 text-sm font-medium text-white">ใช้โค้ด</button>
-					</div>
+						<label className="block text-sm font-medium text-gray-700">Promotion Code</label>
+						<div className="mt-1 grid grid-cols-[1fr_69px] gap-3">
+							<input type="text" value={paymentFormData.promotionCode} onChange={(event) => updateField("promotionCode", event.target.value)} placeholder="กรุณากรอกโค้ดส่วนลด (ถ้ามี)" className={`${inputClass} h-10`} />
+							<button type="button" onClick={handleClick} className="h-10 rounded-[7px] bg-blue-500 text-sm font-medium text-white">ใช้โค้ด</button>
+						</div>
 					</div>
 				</form>
 

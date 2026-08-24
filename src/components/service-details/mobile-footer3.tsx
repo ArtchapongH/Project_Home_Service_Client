@@ -24,7 +24,7 @@ export default function MobileFooterTwo() {
         throw new Error("MobileFooterTwo must be rendered inside PaymentProvider");
     }
 
-    const { serviceDetail, serviceFormData, paymentFormData, totAmount, paymentMethod, setIsThirdPageCompleted } = payment;
+    const { serviceDetail, serviceFormData, paymentFormData, totAmount, paymentMethod, setIsThirdPageCompleted, discount } = payment;
     const selectedServices = serviceDetail.filter((service) => service.quantity !== 0);
     const address = [
         serviceFormData.address,
@@ -171,7 +171,7 @@ export default function MobileFooterTwo() {
                     <SummaryRow label="เวลา" value={serviceFormData.serviceTime} />
                     <SummaryRow label="สถานที่" value={address} />
                 </div>
-                <SummaryRow className="mt-3 text-xs" label="Promotion Code" value={<span className="text-red-500">{paymentFormData.promotionCode || "-"}</span>} />
+                <SummaryRow className="mt-3 text-xs" label="Promotion Code" value={<span className="text-red-500">{discount > 0 ? `-${discount.toFixed(2)} ฿` : "-"}</span>} />
             </div>
             <div className="mt-3 flex items-center justify-between text-xs">
                 <span className="text-gray-500">รวม</span>
@@ -210,7 +210,7 @@ export default function MobileFooterTwo() {
                     <SummaryRow label="เวลา" value={serviceFormData.serviceTime} />
                     <SummaryRow label="สถานที่" value={address} />
                 </div>
-                <SummaryRow className="mt-3 text-xs" label="Promotion Code" value={<span className="text-red-500">{paymentFormData.promotionCode || "-"}</span>} />
+                <SummaryRow className="mt-3 text-xs" label="Promotion Code" value={<span className="text-red-500">{discount > 0 ? `-${discount.toFixed(2)} ฿` : "-"}</span>} />
                 <div className="mt-3 flex items-center justify-between text-xs">
                     <span className="text-gray-500">รวม</span>
                     <span className="font-semibold text-black">{totAmount.toFixed(2)} ฿</span>
