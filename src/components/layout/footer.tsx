@@ -84,8 +84,8 @@ export function Footer() {
         <div className="mx-auto flex min-h-[46px] w-[min(1140px,calc(100%-32px))] flex-col-reverse items-center justify-between gap-4 py-[18px] text-center text-[9px] min-[801px]:w-[min(1140px,calc(100%-48px))] min-[801px]:flex-row min-[801px]:gap-0 min-[801px]:py-0 min-[801px]:text-left">
           <small>copyright © 2026 HomeServices.com All rights reserved</small>
           <div className="flex flex-col gap-2 min-[801px]:flex-row min-[801px]:gap-[30px]">
-            <a href="#terms">เงื่อนไขและข้อตกลงการใช้งานเว็บไซต์</a>
-            <a href="#privacy">นโยบายความเป็นส่วนตัว</a>
+            <Link href="/terms">เงื่อนไขและข้อตกลงการใช้งานเว็บไซต์</Link>
+            <Link href="/privacy">นโยบายความเป็นส่วนตัว</Link>
           </div>
         </div>
       </div>
