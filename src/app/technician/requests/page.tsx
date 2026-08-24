@@ -25,6 +25,7 @@ export default function TechnicianRequestsPage() {
   const [actionId, setActionId] = useState<string | null>(null);
   const [selected, setSelected] = useState<TechnicianJob | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const loadRequests = useCallback(async () => {
     if (!profile?.isAvailable) {
@@ -55,9 +56,11 @@ export default function TechnicianRequestsPage() {
     if (!selected) return;
     setActionId(selected.orderId);
     setError(null);
+    setSuccess(null);
     try {
       await acceptTechnicianRequest(selected.orderId);
       setSelected(null);
+      setSuccess(`รับงาน ${selected.orderCode} เรียบร้อยแล้ว`);
       await loadRequests();
     } catch (requestError) {
       const apiError = getTechnicianApiError(requestError);
@@ -72,8 +75,10 @@ export default function TechnicianRequestsPage() {
   const decline = async (job: TechnicianJob) => {
     setActionId(job.orderId);
     setError(null);
+    setSuccess(null);
     try {
       await declineTechnicianRequest(job.orderId);
+      setSuccess(`ปฏิเสธงาน ${job.orderCode} เรียบร้อยแล้ว`);
       await loadRequests();
     } catch (requestError) {
       setError(getTechnicianApiError(requestError).message);
@@ -100,6 +105,7 @@ export default function TechnicianRequestsPage() {
       </TechnicianPageHeader>
       <section className="p-8">
         {error && <div role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">{error}</div>}
+        {success && <div role="status" className="mb-4 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-700">{success}</div>}
         {!profile?.isAvailable ? (
           <div className="flex min-h-72 flex-col items-center justify-center rounded-lg border border-gray-200 bg-white p-8 text-center">
             <Bell size={42} className="text-blue-500" />
