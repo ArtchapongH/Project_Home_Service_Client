@@ -12,11 +12,11 @@ import TelephoneIcon from "@/assets/icons/Telephone.png";
 import EmailIcon from "@/assets/icons/Email.png";
 
 const socialLinks = [
-  { href: "https://linkedin.com", label: "LinkedIn", Icon: LinkedinIcon },
-  { href: "https://github.com", label: "GitHub", Icon: GithubIcon },
-  { href: "https://facebook.com", label: "Facebook", Icon: FacebookIcon },
-  { href: "https://line.me", label: "LINE", Icon: LineIcon },
-  { href: "mailto:contact@homeservices.co", label: "Gmail", Icon: GmailIcon },
+  { href: "https://linkedin.com", label: "LinkedIn", className: "linkedin", Icon: LinkedinIcon },
+  { href: "https://github.com", label: "GitHub", className: "github", Icon: GithubIcon },
+  { href: "https://facebook.com", label: "Facebook", className: "facebook", Icon: FacebookIcon },
+  { href: "https://line.me", label: "LINE", className: "line", Icon: LineIcon },
+  { href: "mailto:contact@homeservices.co", label: "Gmail", className: "gmail", Icon: GmailIcon },
 ] as const;
 
 export function Footer() {
@@ -27,12 +27,12 @@ export function Footer() {
           <Link href="/" className="w-fit" aria-label="กลับไปหน้าแรก">
             <HomeServicesLogo />
           </Link>
-          <nav aria-label="โซเชียลมีเดีย">
+          <nav className="footer-social" aria-label="โซเชียลมีเดีย">
             <ul className="ml-0 flex flex-wrap gap-3 p-0 min-[801px]:ml-5">
-              {socialLinks.map(({ href, label, Icon }) => (
+              {socialLinks.map(({ href, label, className, Icon }) => (
                 <li key={label}>
                   <a
-                    className="flex text-[#336df2] [&_svg]:size-6"
+                    className={className}
                     href={href}
                     aria-label={label}
                     rel="noreferrer"
