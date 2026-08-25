@@ -20,7 +20,17 @@ export default function HeroSection({ serviceId }: { serviceId?: string | number
 		throw new Error("HeroSection must be rendered inside PaymentProvider");
 	}
 
-	const { serviceDetail, setServiceDetail } = payment;
+	const { serviceDetail, setServiceDetail, setServiceId } = payment;
+
+	// Store serviceId in context and log for debugging
+	React.useEffect(() => {
+		if (serviceId) {
+			setServiceId(Number(serviceId));
+			console.log("Service ID received:", serviceId);
+			// TODO: Fetch service details using this serviceId
+			// Example: fetchServiceDetails(serviceId);
+		}
+	}, [serviceId, setServiceId]);
 
 	function changeQuantity(index: number, amount: number): void {
 		setServiceDetail((currentServiceDetails) =>
