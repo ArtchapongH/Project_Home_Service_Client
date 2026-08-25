@@ -11,7 +11,7 @@ const INITIAL_REQUESTS: TechnicianJob[] = [
     orderId: "101",
     orderCode: "HS-2026-0101",
     orderStatus: "PENDING_TECHNICIAN",
-    scheduledAt: "2026-08-25T03:00:00.000Z",
+    scheduledAt: "2026-08-22T03:00:00.000Z",
     address: "88/12 ถนนสุขุมวิท 71 เขตวัฒนา กรุงเทพมหานคร",
     serviceLatitude: 13.7317,
     serviceLongitude: 100.5842,
@@ -38,7 +38,7 @@ const INITIAL_REQUESTS: TechnicianJob[] = [
     orderId: "102",
     orderCode: "HS-2026-0102",
     orderStatus: "PENDING_TECHNICIAN",
-    scheduledAt: "2026-08-25T06:30:00.000Z",
+    scheduledAt: "2026-08-23T06:30:00.000Z",
     address: "45 ซอยลาดพร้าว 101 เขตบางกะปิ กรุงเทพมหานคร",
     serviceLatitude: 13.7791,
     serviceLongitude: 100.6356,
@@ -65,7 +65,7 @@ const INITIAL_REQUESTS: TechnicianJob[] = [
     orderId: "103",
     orderCode: "HS-2026-0103",
     orderStatus: "PENDING_TECHNICIAN",
-    scheduledAt: "2026-08-26T02:00:00.000Z",
+    scheduledAt: "2026-08-24T02:00:00.000Z",
     address: "120/9 ถนนรัชดาภิเษก เขตดินแดง กรุงเทพมหานคร",
     serviceLatitude: 13.7663,
     serviceLongitude: 100.5695,
@@ -197,7 +197,10 @@ function matchesSearch(job: TechnicianJob, search?: string): boolean {
   );
 }
 
-function filterJobs(jobs: TechnicianJob[], filters: TechnicianListFilters): TechnicianJob[] {
+function filterJobs(
+  jobs: TechnicianJob[],
+  filters: TechnicianListFilters,
+): TechnicianJob[] {
   return jobs.filter((job) => {
     if (filters.serviceId && job.serviceId !== filters.serviceId) return false;
     if (filters.status && job.assignmentStatus !== filters.status) return false;
@@ -205,7 +208,10 @@ function filterJobs(jobs: TechnicianJob[], filters: TechnicianListFilters): Tech
   });
 }
 
-function sortJobs(jobs: TechnicianJob[], sort: TechnicianListFilters["sort"]): TechnicianJob[] {
+function sortJobs(
+  jobs: TechnicianJob[],
+  sort: TechnicianListFilters["sort"],
+): TechnicianJob[] {
   if (!sort) return jobs;
 
   return [...jobs].sort((left, right) => {
@@ -219,8 +225,12 @@ function sortJobs(jobs: TechnicianJob[], sort: TechnicianListFilters["sort"]): T
       return leftSchedule - rightSchedule;
     }
 
-    const leftAssignedAt = left.assignedAt ? new Date(left.assignedAt).getTime() : 0;
-    const rightAssignedAt = right.assignedAt ? new Date(right.assignedAt).getTime() : 0;
+    const leftAssignedAt = left.assignedAt
+      ? new Date(left.assignedAt).getTime()
+      : 0;
+    const rightAssignedAt = right.assignedAt
+      ? new Date(right.assignedAt).getTime()
+      : 0;
     return sort === "oldest"
       ? leftAssignedAt - rightAssignedAt
       : rightAssignedAt - leftAssignedAt;
@@ -232,10 +242,15 @@ export async function getMockTechnicianRequests(
 ): Promise<{ data: TechnicianJob[]; meta: ApiListMeta }> {
   await waitForMock();
   const data = filterJobs(availableRequests, filters);
-  return { data: structuredClone(data), meta: { total: data.length, isAvailable: true } };
+  return {
+    data: structuredClone(data),
+    meta: { total: data.length, isAvailable: true },
+  };
 }
 
-export async function acceptMockTechnicianRequest(orderId: string): Promise<TechnicianJob> {
+export async function acceptMockTechnicianRequest(
+  orderId: string,
+): Promise<TechnicianJob> {
   await waitForMock();
 
   if (acceptedJobs.some((job) => job.orderId === orderId)) {
@@ -245,7 +260,9 @@ export async function acceptMockTechnicianRequest(orderId: string): Promise<Tech
     );
   }
 
-  const requestIndex = availableRequests.findIndex((job) => job.orderId === orderId);
+  const requestIndex = availableRequests.findIndex(
+    (job) => job.orderId === orderId,
+  );
   if (requestIndex === -1) {
     throw new TechnicianMockError("ORDER_NOT_FOUND", "ไม่พบคำขอบริการ");
   }
@@ -264,9 +281,13 @@ export async function acceptMockTechnicianRequest(orderId: string): Promise<Tech
   return structuredClone(acceptedJob);
 }
 
-export async function declineMockTechnicianRequest(orderId: string): Promise<void> {
+export async function declineMockTechnicianRequest(
+  orderId: string,
+): Promise<void> {
   await waitForMock();
-  const requestIndex = availableRequests.findIndex((job) => job.orderId === orderId);
+  const requestIndex = availableRequests.findIndex(
+    (job) => job.orderId === orderId,
+  );
   if (requestIndex === -1) {
     throw new TechnicianMockError("ORDER_NOT_FOUND", "ไม่พบคำขอบริการ");
   }
@@ -282,10 +303,13 @@ export async function getMockTechnicianJobs(
   return { data: structuredClone(data), meta: { total: data.length } };
 }
 
-export async function getMockTechnicianJob(assignmentId: string): Promise<TechnicianJob> {
+export async function getMockTechnicianJob(
+  assignmentId: string,
+): Promise<TechnicianJob> {
   await waitForMock();
   const job = acceptedJobs.find((item) => item.assignmentId === assignmentId);
-  if (!job) throw new TechnicianMockError("JOB_NOT_FOUND", "ไม่พบงานที่ต้องการ");
+  if (!job)
+    throw new TechnicianMockError("JOB_NOT_FOUND", "ไม่พบงานที่ต้องการ");
   return structuredClone(job);
 }
 

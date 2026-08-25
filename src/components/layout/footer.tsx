@@ -28,7 +28,7 @@ export function Footer() {
             <HomeServicesLogo />
           </Link>
           <nav className="footer-social" aria-label="โซเชียลมีเดีย">
-            <ul className="ml-0 flex flex-wrap gap-3 p-0 min-[801px]:ml-5">
+            <ul>
               {socialLinks.map(({ href, label, className, Icon }) => (
                 <li key={label}>
                   <a
