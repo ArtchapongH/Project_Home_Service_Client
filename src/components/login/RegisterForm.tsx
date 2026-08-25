@@ -17,6 +17,7 @@ export default function RegisterForm() {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isAcceptedTerms, setIsAcceptedTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -42,6 +43,11 @@ export default function RegisterForm() {
 
     if (password.length < 6) {
       setErrorMessage("รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setErrorMessage("รหัสผ่านและยืนยันรหัสผ่านไม่ตรงกัน");
       return;
     }
 
@@ -83,7 +89,7 @@ export default function RegisterForm() {
   };
 
   return (
-    <LoginCard>
+    <LoginCard isWide>
       <h1 className="mb-6 text-center text-xl font-semibold text-blue-900 sm:mb-8 sm:text-2xl">
         ลงทะเบียน
       </h1>
@@ -146,6 +152,15 @@ export default function RegisterForm() {
           value={password}
           onChange={setPassword}
         />
+        <LoginTextField
+          id="confirmPassword"
+          label="ยืนยันรหัสผ่าน"
+          type="password"
+          placeholder="กรุณากรอกรหัสผ่านอีกครั้ง"
+          autoComplete="new-password"
+          value={confirmPassword}
+          onChange={setConfirmPassword}
+        />
 
         <div className="flex items-start gap-1">
           <Checkbox
@@ -156,13 +171,23 @@ export default function RegisterForm() {
           />
           <p className="pt-1 text-xs text-gray-700 sm:text-sm">
             ยอมรับ{" "}
-            <a href="#terms" className="text-blue-500 underline">
+            <Link
+              href="/terms"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 underline"
+            >
               ข้อตกลงและเงื่อนไข
-            </a>{" "}
+            </Link>{" "}
             และ{" "}
-            <a href="#privacy" className="text-blue-500 underline">
+            <Link
+              href="/privacy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 underline"
+            >
               นโยบายความเป็นส่วนตัว
-            </a>
+            </Link>
           </p>
         </div>
 
