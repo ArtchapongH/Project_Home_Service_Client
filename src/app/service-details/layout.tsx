@@ -10,6 +10,8 @@ const stripePromise = loadStripe(
 );
 
 type PaymentContextValue = {
+    userId: string | number | null;
+    setUserId: React.Dispatch<React.SetStateAction<string | number | null>>;
     serviceId: number;
     setServiceId: React.Dispatch<React.SetStateAction<number>>;
     serviceTitle: string;
@@ -123,6 +125,7 @@ export const PaymentContext = createContext<PaymentContextValue | undefined>(und
 
 export function PaymentProvider({ children }: { children: React.ReactNode }) {
     const [isHydrated, setIsHydrated] = useState(false);
+    const [userId, setUserId] = useState<string | number | null>(null);
     const [serviceId, setServiceId] = useState(0);
     const [serviceTitle, setServiceTitle] = useState("");
     // ข้อมูล sevice datail มันจะต้องเป็น array ของ object ที่มี serviceDetail, pricePerUnit, quantity
@@ -200,6 +203,8 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
     }, [isHydrated, serviceDetail, serviceFormData, paymentFormData, totAmount]);
 
     const value: PaymentContextValue = {
+        userId,
+        setUserId,
         serviceId,
         setServiceId,
         serviceTitle,

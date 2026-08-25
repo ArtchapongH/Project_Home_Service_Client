@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import CreditCardOutlinedIcon from "@mui/icons-material/CreditCardOutlined";
@@ -12,15 +12,28 @@ import Image from "next/image";
 import serviceDetailBanner from "@/assets/images/service-detail-banner.png";
 import MobileFooter from "./mobile-footer";
 import { PaymentContext } from "@/app/service-details/layout";
+import { useAuth } from "@/contexts/AuthContext";
+import axios from "axios";
 
 export default function HeroSection({ serviceId }: { serviceId?: string | number }) {
 	const payment = React.useContext(PaymentContext);
+	//const { user } = useAuth();
 
 	if (!payment) {
 		throw new Error("HeroSection must be rendered inside PaymentProvider");
 	}
 
-	const { serviceDetail, setServiceDetail, setServiceId } = payment;
+	const { serviceDetail, setServiceDetail, setServiceId, setUserId } = payment;
+
+	// Store userId from AuthContext => may be not used
+	/*
+	React.useEffect(() => {
+		if (user?.id) {
+			setUserId(user.id);
+			console.log("User ID set in PaymentContext:", user.id);
+		}
+	}, [user, setUserId]);
+	*/
 
 	// Store serviceId in context and log for debugging
 	React.useEffect(() => {
@@ -31,6 +44,19 @@ export default function HeroSection({ serviceId }: { serviceId?: string | number
 			// Example: fetchServiceDetails(serviceId);
 		}
 	}, [serviceId, setServiceId]);
+
+	async function getServiceOption(serviceId:string) {
+		const response = await axios.get(`http://localhost:3001/api/services/options/${serviceId}`)
+		const result = response.data.map(item => ({
+							...item,
+							quantity: 0
+						}));
+
+		setServiceDetail(result);
+	}
+	useEffect(()=>{
+		getServiceOption(serviceId)
+	},[])
 
 	function changeQuantity(index: number, amount: number): void {
 		setServiceDetail((currentServiceDetails) =>

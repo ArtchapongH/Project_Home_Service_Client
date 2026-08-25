@@ -9,6 +9,7 @@ import Image from "next/image";
 import serviceDetailBanner from "@/assets/images/service-detail-banner.png";
 import MobileFooterThree from "./mobile-footer3";
 import { PaymentContext } from "@/app/service-details/layout";
+import { useAuth } from "@/contexts/AuthContext";
 
 import {
 	CardNumberElement,
@@ -29,12 +30,21 @@ interface PromotionResponse {
 
 export default function HeroSectionThree() {
 	const payment = React.useContext(PaymentContext);
+	const { user } = useAuth();
 
 	if (!payment) {
 		throw new Error("HeroSection must be rendered inside PaymentProvider");
 	}
 
-	const { paymentFormData, setPaymentFormData, paymentMethod, setPaymentMethod, setDiscount, setDiscountType, setNewQuota, totAmount, setTotAmount } = payment;
+	const { paymentFormData, setPaymentFormData, paymentMethod, setPaymentMethod, setDiscount, setDiscountType, setNewQuota, totAmount, setTotAmount, setUserId } = payment;
+
+	// Store userId from AuthContext
+	React.useEffect(() => {
+		if (user?.id) {
+			setUserId(user.id);
+			console.log("User ID set in PaymentContext:", user.id);
+		}
+	}, [user, setUserId]);
 
 
 	async function handleClick(): Promise<void> {

@@ -8,7 +8,7 @@ import KeyboardArrowUpRoundedIcon from "@mui/icons-material/KeyboardArrowUpRound
 import { CardNumberElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import { PaymentContext } from "@/app/service-details/layout";
 import { useRouter } from "next/navigation";
-
+import { useAuth } from "@/contexts/AuthContext";
 
 
 export default function MobileFooterTwo() {
@@ -20,11 +20,22 @@ export default function MobileFooterTwo() {
     const stripe = useStripe();
     const elements = useElements();
 
+    const { user } = useAuth();
+
     if (!payment) {
         throw new Error("MobileFooterTwo must be rendered inside PaymentProvider");
     }
 
-    const { serviceDetail, serviceFormData, paymentFormData, totAmount, paymentMethod, setIsThirdPageCompleted, discount } = payment;
+    const { serviceDetail, serviceFormData, paymentFormData, totAmount, paymentMethod, setIsThirdPageCompleted, discount, setUserId  } = payment;
+
+    // Store userId from AuthContext
+        React.useEffect(() => {
+            if (user?.id) {
+                setUserId(user.id);
+                console.log("User ID set in PaymentContext:", user.id);
+            }
+        }, [user, setUserId]);
+
     const selectedServices = serviceDetail.filter((service) => service.quantity !== 0);
     const address = [
         serviceFormData.address,

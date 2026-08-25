@@ -9,6 +9,7 @@ import serviceDetailBanner from "@/assets/images/service-detail-banner.png";
 import MobileFooterTwo from "./mobile-footer2";
 import { PaymentContext } from "@/app/service-details/layout";
 import apiClient from "@/services/apiClient";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Province {
 	id: number;
@@ -34,12 +35,23 @@ interface Subdistrict {
 export default function HeroSectionTwo() {
 	
 	const payment = React.useContext(PaymentContext);
+	//const { user } = useAuth();
 	
 	if (!payment) {
 		throw new Error("HeroSection must be rendered inside PaymentProvider");
 	}
 	
-	const { serviceFormData, setServiceFormData, setIsSecondPageCompleted } = payment;
+	const { serviceFormData, setServiceFormData, setIsSecondPageCompleted, setUserId } = payment;
+
+	// Store userId from AuthContext
+	/*
+	React.useEffect(() => {
+		if (user?.id) {
+			setUserId(user.id);
+			console.log("User ID set in PaymentContext:", user.id);
+		}
+	}, [user, setUserId]);
+	*/
 	
 	const [provinces, setProvinces] = React.useState<Province[]>([]);
 	const [districts, setDistricts] = React.useState<District[]>([]);
