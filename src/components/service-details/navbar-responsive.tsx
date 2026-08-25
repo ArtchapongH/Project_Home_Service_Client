@@ -1,29 +1,22 @@
-"use client";
-
+import React from "react";
 import Link from "next/link";
 import NotificationsNoneRoundedIcon from "@mui/icons-material/NotificationsNoneRounded";
 import { HomeServicesLogo } from "../layout/home-services-logo";
-import { UserAvatar } from "../layout/UserAvatar";
-import { useAuth } from "@/contexts/AuthContext";
+import { PaymentContext } from "@/app/service-details/layout";
 
 export default function NavbarResponsive() {
-  const { user, isAuthenticated } = useAuth();
-  const displayName = isAuthenticated && user?.fullName ? user.fullName : "สมศรี จันทร์อังคารพุธ";
-
-  return (
-    <header className="relative z-10 h-16 border-b border-gray-200 bg-white shadow-[0_2px_12px_rgb(23_51_109/7%)] min-[801px]:h-[72px]">
-      <div className="mx-auto flex h-full w-[min(1140px,calc(100%-28px))] items-center justify-between min-[801px]:w-[min(1140px,calc(100%-48px))]">
-        <div className="flex items-center gap-6 min-[801px]:gap-10">
-          <Link href="/" className="w-fit" aria-label="กลับไปหน้าแรก">
-            <HomeServicesLogo />
-          </Link>
-          <Link
-            href="/services"
-            className="text-sm font-semibold text-gray-700 hover:text-blue-600 transition-colors"
-          >
-            บริการของเรา
-          </Link>
-        </div>
+	const payment = React.useContext(PaymentContext);
+	return (
+		<header className="relative z-10 h-14 border-b border-gray-200 bg-white shadow-[0_2px_12px_rgb(23_51_109/7%)] min-[801px]:h-18">
+			<div className="mx-auto flex h-full w-[min(1140px,calc(100%-28px))] items-center justify-between min-[801px]:w-[min(1140px,calc(100%-48px))]">
+				<div className="flex items-center gap-6 min-[801px]:gap-10">
+					<Link href="/" className="w-fit" aria-label="กลับไปหน้าแรก">
+						<HomeServicesLogo />
+					</Link>
+					<Link href="/services" className="text-sm font-medium text-gray-700">
+						บริการของเรา
+					</Link>
+				</div>
 
         <div className="flex items-center gap-3 min-[801px]:gap-5">
           <Link

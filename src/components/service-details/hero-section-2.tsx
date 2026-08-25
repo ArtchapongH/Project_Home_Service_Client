@@ -1,6 +1,5 @@
 "use client";
-
-import { useState } from "react";
+import React from "react";
 import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import CreditCardOutlinedIcon from "@mui/icons-material/CreditCardOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
@@ -8,21 +7,30 @@ import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import Image from "next/image";
 import serviceDetailBanner from "@/assets/images/service-detail-banner.png";
 import MobileFooterTwo from "./mobile-footer2";
+import { PaymentContext } from "@/app/service-details/layout";
 
 export default function HeroSectionTwo() {
-	const [form, setForm] = useState({
-		date: "",
-		time: "",
-		address: "",
-		subdistrict: "",
-		district: "",
-		province: "",
-		notes: "",
-	});
+	
+	const payment = React.useContext(PaymentContext);
+	
+		if (!payment) {
+			throw new Error("HeroSection must be rendered inside PaymentProvider");
+		}
+	
+	const { serviceFormData, setServiceFormData, setIsSecondPageCompleted } = payment;
 
-	function updateField(field: keyof typeof form, value: string): void {
-		setForm((currentForm) => ({ ...currentForm, [field]: value }));
+	function updateField(field: keyof typeof serviceFormData, value: string): void {
+		setServiceFormData((currentForm) => {
+			const nextForm = { ...currentForm, [field]: value };
+			const isComplete = Object.entries(nextForm)
+				.filter(([formField]) => formField !== "information")
+				.every(([, formValue]) => formValue.trim().length > 0);
+
+			setIsSecondPageCompleted(isComplete);
+			return nextForm;
+		});
 	}
+
 
 	return (
 		<section className="min-h-screen bg-utility-bg pb-24 min-[801px]:pb-10">
@@ -56,25 +64,25 @@ export default function HeroSectionTwo() {
 					<h1 className="text-base font-semibold text-gray-500">กรอกข้อมูลบริการ</h1>
 					<div className="mt-3 space-y-3 min-[801px]:grid min-[801px]:grid-cols-2 min-[801px]:gap-x-3 min-[801px]:gap-y-3 min-[801px]:space-y-0">
 					<Field label="วันที่สะดวกใช้บริการ" required>
-						<input type="date" value={form.date} onChange={(event) => updateField("date", event.target.value)} className={inputClass} />
+						<input type="date" value={serviceFormData.serviceDate} onChange={(event) => updateField("serviceDate", event.target.value)} className={inputClass} />
 					</Field>
 					<Field label="เวลาที่สะดวกใช้บริการ" required>
-						<input type="time" value={form.time} onChange={(event) => updateField("time", event.target.value)} className={inputClass} />
+						<input type="time" value={serviceFormData.serviceTime} onChange={(event) => updateField("serviceTime", event.target.value)} className={inputClass} />
 					</Field>
 					<Field label="ที่อยู่" required>
-						<input type="text" value={form.address} onChange={(event) => updateField("address", event.target.value)} placeholder="กรุณากรอกที่อยู่" className={inputClass} />
+						<input type="text" value={serviceFormData.address} onChange={(event) => updateField("address", event.target.value)} placeholder="กรุณากรอกที่อยู่" className={inputClass} />
 					</Field>
 					<Field label="แขวง / ตำบล" required>
-						<Select value={form.subdistrict} onChange={(value) => updateField("subdistrict", value)} placeholder="เลือกแขวง / ตำบล" />
+						<Select value={serviceFormData.subdistrict} onChange={(value) => updateField("subdistrict", value)} placeholder="เลือกแขวง / ตำบล" />
 					</Field>
 					<Field label="เขต / อำเภอ" required>
-						<Select value={form.district} onChange={(value) => updateField("district", value)} placeholder="เลือกเขต / อำเภอ" />
+						<Select value={serviceFormData.district} onChange={(value) => updateField("district", value)} placeholder="เลือกเขต / อำเภอ" />
 					</Field>
 					<Field label="จังหวัด" required>
-						<Select value={form.province} onChange={(value) => updateField("province", value)} placeholder="เลือกจังหวัด" />
+						<Select value={serviceFormData.province} onChange={(value) => updateField("province", value)} placeholder="เลือกจังหวัด" />
 					</Field>
 					<Field label="ระบุข้อมูลเพิ่มเติม" className="min-[801px]:col-span-2">
-						<textarea value={form.notes} onChange={(event) => updateField("notes", event.target.value)} placeholder="กรุณาระบุข้อมูลเพิ่มเติม" className={`${inputClass} h-17.25 resize-none py-2`} />
+						<textarea value={serviceFormData.information} onChange={(event) => updateField("information", event.target.value)} placeholder="กรุณาระบุข้อมูลเพิ่มเติม" className={`${inputClass} h-17.25 resize-none py-2`} />
 					</Field>
 				</div>
 				</form>
