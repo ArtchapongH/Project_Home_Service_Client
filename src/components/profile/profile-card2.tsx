@@ -15,6 +15,34 @@ import {
   uploadMyAvatar,
 } from "@/services/profile.service";
 import { useAuth } from "@/contexts/AuthContext";
+import type { UserProfile } from "@/types/user";
+
+const MAX_PROFILE_IMAGE_SIZE = 5 * 1024 * 1024;
+const ALLOWED_PROFILE_IMAGE_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+];
+const PHONE_PATTERN = /^0[0-9]{8,9}$/;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const NAME_PATTERN = /^[\p{Letter}\p{Mark}]+(?:[ '\-][\p{Letter}\p{Mark}]+)*$/u;
+
+function getErrorMessage(reason: unknown, fallback: string): string {
+  if (typeof reason !== "object" || reason === null) return fallback;
+  if (
+    "response" in reason &&
+    typeof reason.response === "object" &&
+    reason.response !== null &&
+    "data" in reason.response &&
+    typeof reason.response.data === "object" &&
+    reason.response.data !== null &&
+    "message" in reason.response.data
+  ) {
+    return String(reason.response.data.message);
+  }
+  return "message" in reason ? String(reason.message) : fallback;
+}
 
 const inputClass =
   "w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 outline-none focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500";
@@ -27,7 +55,7 @@ export function ProfileCard2() {
   const { fetchCurrentUser } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [displayName, setDisplayName] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -38,18 +66,22 @@ export function ProfileCard2() {
   const [error, setError] = useState("");
   const [ok, setOk] = useState("");
 
+  function syncProfile(data: UserProfile) {
+    setProfile(data);
+    setDisplayName(data.displayName || data.fullName || "");
+    setFirstName(data.firstName || "");
+    setLastName(data.lastName || "");
+    setEmail(data.email || "");
+    setPhone(data.phone || "");
+  }
+
   useEffect(() => {
     getMyProfile()
       .then((data) => {
-        setProfile(data);
-        setDisplayName(data.displayName || data.fullName || "");
-        setFirstName(data.firstName || "");
-        setLastName(data.lastName || "");
-        setEmail(data.email || "");
-        setPhone(data.phone || "");
+        syncProfile(data);
       })
-      .catch((e: any) =>
-        setError(e?.response?.data?.message || "โหลดโปรไฟล์ไม่สำเร็จ"),
+      .catch((reason: unknown) =>
+        setError(getErrorMessage(reason, "โหลดโปรไฟล์ไม่สำเร็จ")),
       );
   }, []);
 
@@ -57,23 +89,28 @@ export function ProfileCard2() {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
-    if (!file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) {
-      setError("ใช้รูป JPEG/PNG/GIF/WebP ไม่เกิน 5MB");
+    if (!ALLOWED_PROFILE_IMAGE_TYPES.includes(file.type)) {
+      setError("กรุณาเลือกรูป JPEG, PNG, GIF หรือ WebP");
+      return;
+    }
+    if (file.size > MAX_PROFILE_IMAGE_SIZE) {
+      setError("รูปโปรไฟล์ต้องมีขนาดไม่เกิน 5MB");
       return;
     }
     const url = URL.createObjectURL(file);
     setPreview(url);
     try {
       const data = await uploadMyAvatar(file);
-      setProfile(data);
+      syncProfile(data);
       await fetchCurrentUser();
       setOk("อัปโหลดรูปโปรไฟล์สำเร็จ");
       setError("");
-    } catch (err: any) {
-      setError(err?.response?.data?.message || "อัปโหลดรูปไม่สำเร็จ");
+    } catch (reason: unknown) {
+      setError(getErrorMessage(reason, "อัปโหลดรูปไม่สำเร็จ"));
+    } finally {
+      URL.revokeObjectURL(url);
+      setPreview("");
     }
-    URL.revokeObjectURL(url);
-    setPreview("");
   }
 
   function handleUploadClick() {
@@ -103,10 +140,21 @@ export function ProfileCard2() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!profile) return;
-    if (displayName.trim().length < 2)
-      return setError("กรอกชื่อที่แสดงอย่างน้อย 2 ตัวอักษร");
-    if (!email.includes("@")) return setError("กรอกอีเมลให้ถูกต้อง");
-    if (phone && !/^0[0-9]{8,9}$/.test(phone))
+    const trimmedDisplayName = displayName.trim();
+    const trimmedFirstName = firstName.trim();
+    const trimmedLastName = lastName.trim();
+    const trimmedEmail = email.trim().toLowerCase();
+    const trimmedPhone = phone.trim();
+    if (trimmedDisplayName.length < 2 || trimmedDisplayName.length > 80)
+      return setError("กรุณากรอกชื่อที่แสดง 2 ถึง 80 ตัวอักษร");
+    if (!NAME_PATTERN.test(trimmedDisplayName))
+      return setError("ชื่อต้องเป็นตัวอักษรภาษาไทยหรืออังกฤษเท่านั้น");
+    if (trimmedFirstName && (trimmedFirstName.length < 2 || !NAME_PATTERN.test(trimmedFirstName)))
+      return setError("กรุณากรอกชื่อจริงให้ถูกต้อง");
+    if (trimmedLastName && (trimmedLastName.length < 2 || !NAME_PATTERN.test(trimmedLastName)))
+      return setError("กรุณากรอกนามสกุลให้ถูกต้อง");
+    if (!EMAIL_PATTERN.test(trimmedEmail)) return setError("กรอกอีเมลให้ถูกต้อง");
+    if (trimmedPhone && !PHONE_PATTERN.test(trimmedPhone))
       return setError("กรอกเบอร์โทรให้ถูกต้อง");
 
     setSaving(true);
@@ -114,21 +162,22 @@ export function ProfileCard2() {
     setOk("");
     try {
       const data = await updateMyProfile({
-        displayName: displayName.trim(),
-        firstName: firstName.trim() || null,
-        lastName: lastName.trim() || null,
-        fullName: displayName.trim(),
-        email: email.trim().toLowerCase(),
-        phone: phone.trim() || null,
+        displayName: trimmedDisplayName,
+        firstName: trimmedFirstName || null,
+        lastName: trimmedLastName || null,
+        fullName: trimmedDisplayName,
+        email: trimmedEmail,
+        phone: trimmedPhone || null,
         avatarUrl: profile.avatarUrl,
       });
-      setProfile(data);
+      syncProfile(data);
       await fetchCurrentUser();
       setOk("บันทึกข้อมูลโปรไฟล์สำเร็จ");
-    } catch (err: any) {
-      setError(err?.response?.data?.message || "บันทึกไม่สำเร็จ");
+    } catch (reason: unknown) {
+      setError(getErrorMessage(reason, "บันทึกไม่สำเร็จ"));
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   }
 
   function handleCancel() {
@@ -152,7 +201,6 @@ export function ProfileCard2() {
       </p>
     );
   }
-
   if (!profile) {
     return (
       <p className="m-0 text-sm text-gray-500">กำลังโหลดข้อมูลโปรไฟล์...</p>
@@ -318,7 +366,7 @@ export function ProfileCard2() {
             <dt className="text-sm font-medium text-gray-500">
               สิทธิ์ผู้ใช้งาน
             </dt>
-            <dd className="m-0 text-mid font-medium text-gray-900">
+            <dd className="m-0 text-sm font-medium text-gray-900">
               {profile.role || "-"}
             </dd>
           </div>

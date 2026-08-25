@@ -55,7 +55,7 @@ export function LocationControl({
   return (
     <div>
       <div className="flex flex-wrap items-center gap-3">
-        <button type="button" onClick={locate} disabled={loading} className="inline-flex h-11 items-center rounded-lg border border-blue-600 px-4 text-sm font-medium text-blue-600 disabled:opacity-50">
+        <button type="button" onClick={locate} disabled={loading} className="inline-flex h-11 w-full items-center justify-center rounded-lg border border-blue-600 px-4 text-sm font-medium text-blue-600 disabled:opacity-50 md:w-auto">
           {loading ? "กำลังรีเฟรช..." : "รีเฟรช"}
         </button>
       </div>

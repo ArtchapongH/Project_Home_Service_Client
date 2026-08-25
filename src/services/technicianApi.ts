@@ -42,6 +42,14 @@ export async function updateTechnicianSettings(
 export async function updateTechnicianLocation(
   input: TechnicianLocationInput,
 ): Promise<Pick<TechnicianProfile, "latitude" | "longitude" | "locationUpdatedAt">> {
+  if (isTechnicianMockEnabled) {
+    return {
+      latitude: input.latitude,
+      longitude: input.longitude,
+      locationUpdatedAt: new Date().toISOString(),
+    };
+  }
+
   const response = await apiClient.patch<
     ApiResponse<Pick<TechnicianProfile, "latitude" | "longitude" | "locationUpdatedAt">>
   >("/api/technicians/me/location", input);
@@ -98,9 +106,29 @@ export async function getTechnicianJob(assignmentId: string): Promise<Technician
 
 export function getTechnicianApiError(error: unknown): { message: string; code?: string } {
   if (typeof error === "object" && error !== null) {
+    const responseData =
+      "response" in error &&
+      typeof error.response === "object" &&
+      error.response !== null &&
+      "data" in error.response &&
+      typeof error.response.data === "object" &&
+      error.response.data !== null
+        ? error.response.data
+        : null;
+
     return {
-      message: "message" in error ? String(error.message) : "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",
-      code: "code" in error ? String(error.code) : undefined,
+      message:
+        responseData && "message" in responseData
+          ? String(responseData.message)
+          : "message" in error
+            ? String(error.message)
+            : "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",
+      code:
+        responseData && "code" in responseData
+          ? String(responseData.code)
+          : "code" in error
+            ? String(error.code)
+            : undefined,
     };
   }
   return { message: "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง" };

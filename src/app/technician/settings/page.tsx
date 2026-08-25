@@ -76,26 +76,26 @@ export default function TechnicianSettingsPage() {
   return (
     <>
       <TechnicianPageHeader title="ตั้งค่าบัญชีผู้ใช้">
-        <div className="flex items-center gap-4">
+        <div className="grid grid-cols-2 gap-3 md:flex md:items-center md:gap-4">
           <button
             type="button"
             onClick={cancelChanges}
             disabled={saving}
-            className="rounded-lg border border-blue-600 bg-white px-6 py-2.5 text-sm text-blue-600 transition-colors hover:bg-blue-50 disabled:opacity-50"
+            className="min-h-11 rounded-lg border border-blue-600 bg-white px-4 py-2.5 text-sm text-blue-600 transition-colors hover:bg-blue-50 disabled:opacity-50 md:px-6"
           >
             ยกเลิก
           </button>
-          <button type="button" onClick={() => void save()} disabled={saving} className="rounded-lg bg-blue-600 px-6 py-2.5 text-sm text-white disabled:opacity-50">
+          <button type="button" onClick={() => void save()} disabled={saving} className="min-h-11 rounded-lg bg-blue-600 px-4 py-2.5 text-sm text-white disabled:opacity-50 md:px-6">
             {saving ? "กำลังบันทึก..." : "ยืนยัน"}
           </button>
         </div>
       </TechnicianPageHeader>
-      <section className="p-8">
-        <div className="mx-auto max-w-4xl rounded-lg bg-white p-8 shadow-sm">
+      <section className="p-4 md:p-8">
+        <div className="mx-auto max-w-4xl rounded-lg bg-white p-4 shadow-sm md:p-8">
           {message && <div role="status" className="mb-5 rounded-lg bg-blue-50 p-3 text-sm text-blue-700">{message}</div>}
           <h2 className="font-semibold">รายละเอียดบัญชี</h2>
           <div className="mt-5 space-y-6">
-            <div className="grid gap-2 sm:grid-cols-[130px_268px_1fr] sm:items-center sm:gap-4">
+            <div className="grid gap-2 md:grid-cols-[130px_268px_1fr] md:items-center md:gap-4">
               <label htmlFor="firstName" className="text-sm text-gray-600">
                 ชื่อ<span className="text-red-500">*</span>
               </label>
@@ -104,11 +104,11 @@ export default function TechnicianSettingsPage() {
                 value={firstName}
                 onChange={(event) => setFirstName(event.target.value)}
                 required
-                className="h-11 w-full rounded-lg border border-gray-200 px-4 text-sm outline-none focus:border-blue-500"
+                className="min-h-11 w-full min-w-0 rounded-lg border border-gray-200 px-4 text-sm outline-none focus:border-blue-500"
               />
             </div>
 
-            <div className="grid gap-2 sm:grid-cols-[130px_268px_1fr] sm:items-center sm:gap-4">
+            <div className="grid gap-2 md:grid-cols-[130px_268px_1fr] md:items-center md:gap-4">
               <label htmlFor="lastName" className="text-sm text-gray-600">
                 นามสกุล<span className="text-red-500">*</span>
               </label>
@@ -121,7 +121,7 @@ export default function TechnicianSettingsPage() {
               />
             </div>
 
-            <div className="grid gap-2 sm:grid-cols-[130px_268px_1fr] sm:items-center sm:gap-4">
+            <div className="grid gap-2 md:grid-cols-[130px_268px_1fr] md:items-center md:gap-4">
               <label htmlFor="phone" className="text-sm text-gray-600">
                 เบอร์ติดต่อ<span className="text-red-500">*</span>
               </label>
@@ -134,8 +134,8 @@ export default function TechnicianSettingsPage() {
               />
             </div>
 
-            <div className="grid gap-2 sm:grid-cols-[130px_268px_1fr] sm:items-start sm:gap-4">
-              <label htmlFor="address" className="pt-3 text-sm text-gray-600">
+            <div className="grid gap-2 md:grid-cols-[130px_268px_1fr] md:items-start md:gap-4">
+              <label htmlFor="address" className="text-sm text-gray-600 md:pt-3">
                 ตำแหน่งที่อยู่ปัจจุบัน<span className="text-red-500">*</span>
               </label>
               <input
@@ -155,9 +155,9 @@ export default function TechnicianSettingsPage() {
           </div>
 
           <hr className="my-7 border-gray-100" />
-          <div className="flex items-start gap-4">
-            <span className="w-32.5 shrink-0 text-sm font-medium">สถานะบัญชี</span>
-            <label className="flex cursor-pointer items-start gap-3">
+          <div className="grid gap-3 md:flex md:items-start md:gap-4">
+            <span className="text-sm font-medium md:w-32.5 md:shrink-0">สถานะบัญชี</span>
+            <label className="flex min-h-11 cursor-pointer items-start gap-3">
               <span className="relative mt-0.5 inline-flex">
                 <input
                   type="checkbox"
@@ -177,11 +177,11 @@ export default function TechnicianSettingsPage() {
           </div>
 
           <hr className="my-7 border-gray-100" />
-          <div className="flex items-start gap-4">
-            <span className="w-32.5 shrink-0 text-sm font-medium">บริการที่รับซ่อม</span>
+          <div className="grid gap-3 md:flex md:items-start md:gap-4">
+            <span className="text-sm font-medium md:w-32.5 md:shrink-0">บริการที่รับซ่อม</span>
             <div className="grid flex-1 grid-cols-1 gap-3">
               {services.map((service) => (
-                <label key={service.id} className="flex items-center gap-3 text-sm">
+                <label key={service.id} className="flex min-h-11 items-center gap-3 text-sm">
                   <input type="checkbox" checked={serviceIds.includes(service.id)} onChange={() => toggleService(service.id)} className="h-4 w-4 accent-blue-600" />
                   {service.name}
                 </label>
