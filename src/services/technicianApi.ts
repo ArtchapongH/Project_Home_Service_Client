@@ -1,4 +1,11 @@
 import apiClient from "@/services/apiClient";
+import {
+  acceptMockTechnicianRequest,
+  declineMockTechnicianRequest,
+  getMockTechnicianJob,
+  getMockTechnicianJobs,
+  getMockTechnicianRequests,
+} from "@/mocks/technicianRequests";
 import type {
   ApiListMeta,
   TechnicianJob,
@@ -13,6 +20,9 @@ interface ApiResponse<T> {
   message?: string;
   meta?: ApiListMeta;
 }
+
+export const isTechnicianMockEnabled =
+  process.env.NEXT_PUBLIC_USE_TECHNICIAN_MOCKS === "true";
 
 export async function getTechnicianProfile(): Promise<TechnicianProfile> {
   const response = await apiClient.get<ApiResponse<TechnicianProfile>>("/api/technicians/me");
@@ -41,6 +51,8 @@ export async function updateTechnicianLocation(
 export async function getTechnicianRequests(
   filters: TechnicianListFilters = {},
 ): Promise<{ data: TechnicianJob[]; meta: ApiListMeta }> {
+  if (isTechnicianMockEnabled) return getMockTechnicianRequests(filters);
+
   const response = await apiClient.get<ApiResponse<TechnicianJob[]>>(
     "/api/technicians/me/requests",
     { params: filters },
@@ -49,6 +61,8 @@ export async function getTechnicianRequests(
 }
 
 export async function acceptTechnicianRequest(orderId: string): Promise<TechnicianJob> {
+  if (isTechnicianMockEnabled) return acceptMockTechnicianRequest(orderId);
+
   const response = await apiClient.post<ApiResponse<TechnicianJob>>(
     `/api/technicians/me/requests/${orderId}/accept`,
   );
@@ -56,12 +70,16 @@ export async function acceptTechnicianRequest(orderId: string): Promise<Technici
 }
 
 export async function declineTechnicianRequest(orderId: string): Promise<void> {
+  if (isTechnicianMockEnabled) return declineMockTechnicianRequest(orderId);
+
   await apiClient.post(`/api/technicians/me/requests/${orderId}/decline`);
 }
 
 export async function getTechnicianJobs(
   filters: TechnicianListFilters = {},
 ): Promise<{ data: TechnicianJob[]; meta: ApiListMeta }> {
+  if (isTechnicianMockEnabled) return getMockTechnicianJobs(filters);
+
   const response = await apiClient.get<ApiResponse<TechnicianJob[]>>(
     "/api/technicians/me/jobs",
     { params: filters },
@@ -70,6 +88,8 @@ export async function getTechnicianJobs(
 }
 
 export async function getTechnicianJob(assignmentId: string): Promise<TechnicianJob> {
+  if (isTechnicianMockEnabled) return getMockTechnicianJob(assignmentId);
+
   const response = await apiClient.get<ApiResponse<TechnicianJob>>(
     `/api/technicians/me/jobs/${assignmentId}`,
   );

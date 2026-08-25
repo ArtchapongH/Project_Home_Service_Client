@@ -104,4 +104,71 @@
   animation: successContentFadeIn 0.6s cubic-bezier(0.2, 0.9, 0.3, 1) 0.45s forwards;
 }
 
+.footer-social ul {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.footer-social a {
+  display: flex;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: #eef2f7;
+  color: #666;
+  box-shadow: -4px -4px 8px #fff, 4px 4px 8px #cfd5df;
+  transition: 0.35s cubic-bezier(0.2, 0.8, 0.2, 1.1);
+}
+
+.footer-social a:hover {
+  transform: translateY(-2px);
+  box-shadow: inset -3px -3px 6px #fff, inset 3px 3px 6px #cfd5df;
+}
+
+.footer-social a.linkedin:hover {
+  color: #0a66c2;
+}
+
+.footer-social a.github:hover {
+  color: #181717;
+}
+
+.footer-social a.facebook:hover {
+  color: #1877f2;
+}
+
+.footer-social a.line:hover {
+  color: #06c755;
+}
+
+.footer-social a.gmail:hover {
+  color: #ea4335;
+}
+
+.footer-social svg {
+  width: 16px;
+  height: 16px;
+}
+
+@media (max-width: 800px) {
+  .footer-social a {
+    width: 28px;
+    height: 28px;
+    border-radius: 10px;
+  }
+
+  .footer-social svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
 
