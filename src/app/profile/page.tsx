@@ -1,6 +1,6 @@
-import { ProfileCard } from "@/components/profile/profile-card";
 import { CustomerServicesSideNav } from "@/components/customer-services/CustomerServicesSideNav";
 import { ProtectedRoute } from "@/components/common/ProtectedRoute";
+import { ProfileCard2 } from "@/components/profile/profile-card2";
 
 export const metadata = {
   title: "ข้อมูลผู้ใช้งาน | HomeServices",
@@ -27,7 +27,7 @@ export default function ProfilePage() {
 
               {/* 2. User Profile Card */}
               <div className="flex-1 min-w-0">
-                <ProfileCard />
+                <ProfileCard2 />
               </div>
             </div>
           </div>

@@ -62,6 +62,8 @@ export interface TechnicianListFilters {
   search?: string;
   sort?: "newest" | "oldest" | "nearest";
   status?: TechnicianJobStatus;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface TechnicianSettingsInput {

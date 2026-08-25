@@ -34,7 +34,7 @@ describe("technician request mock store", () => {
     const jobs = await getMockTechnicianJobs();
     const detail = await getMockTechnicianJob(accepted.assignmentId ?? "");
 
-    expect(requests.meta.total).toBe(5);
+    expect(requests.meta.total).toBe(9);
     expect(requests.data.some((job) => job.orderId === "101")).toBe(false);
     expect(accepted).toMatchObject({
       assignmentId: "MOCK-ASG-101",
@@ -68,7 +68,21 @@ describe("technician request mock store", () => {
 
     const requests = await getMockTechnicianRequests();
     const jobs = await getMockTechnicianJobs();
-    expect(requests.meta.total).toBe(6);
+    expect(requests.meta.total).toBe(10);
     expect(jobs.meta.total).toBe(0);
+  });
+
+  it("keeps only jobs within 4km of the technician", async () => {
+    const nearby = await getMockTechnicianRequests({
+      latitude: 13.8285,
+      longitude: 100.5596,
+    });
+    const farAway = await getMockTechnicianRequests({
+      latitude: 18.7964,
+      longitude: 98.9673,
+    });
+
+    expect(nearby.data.map((job) => job.orderId)).toEqual(["105"]);
+    expect(farAway.data.map((job) => job.orderId)).toEqual(["107"]);
   });
 });
