@@ -52,18 +52,15 @@ type PaymentContextValue = {
 export type PaymentMethod = "promptpay" | "card";
 
 type ServiceDetail = {
-  serviceDetail: string;
-  pricePerUnit: number;
+  service_id: number;
+  service_name: string;
+  option_name: string;
+  price: number;
   quantity: number;
-    unit: string;
+  unit: string;
 };
 
-const serviceOptions: ServiceDetail[] = [
-        { serviceDetail: "9,000 - 18,000 BTU, แบบติดผนัง", quantity: 0, pricePerUnit: 800, unit: "เครื่อง" },
-        { serviceDetail: "9,000 - 18,000 BTU, แบบติดผนัง", quantity: 0, pricePerUnit: 800, unit: "เครื่อง" },
-        { serviceDetail: "9,000 - 18,000 BTU, แบบติดผนัง", quantity: 0, pricePerUnit: 800, unit: "เครื่อง" },
-        { serviceDetail: "9,000 - 18,000 BTU, แบบติดผนัง", quantity: 0, pricePerUnit: 800, unit: "เครื่อง" },
-];
+const serviceOptions: ServiceDetail[] = [];
 
 const paymentStorageKey = "home-service-payment";
 
