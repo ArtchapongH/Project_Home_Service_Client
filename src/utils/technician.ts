@@ -16,7 +16,7 @@ export function formatBaht(value: number | null): string {
 }
 
 // งานที่ไกลกว่านี้จะไม่โชว์ให้ช่างเห็น
-export const MAX_JOB_RADIUS_KM = 2000;
+export const MAX_JOB_RADIUS_KM = 4;
 
 function toRadians(value: number): number {
   return (value * Math.PI) / 180;
