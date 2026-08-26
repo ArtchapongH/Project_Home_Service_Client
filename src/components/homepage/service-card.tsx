@@ -9,7 +9,13 @@ export type ServiceItem = {
   image: string;
 };
 
-export function ServiceCard({ service }: { service: ServiceItem }) {
+export function ServiceCard({
+  service,
+  selectLabel,
+}: {
+  service: ServiceItem;
+  selectLabel: string;
+}) {
   return (
     <article className="overflow-hidden rounded-[7px] border border-[#dfe3ea] bg-white text-left shadow-[0_2px_5px_rgb(23_51_109/3%)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_12px_26px_rgb(23_51_109/12%)] max-[800px]:mx-auto max-[800px]:w-full max-[800px]:max-w-[430px]">
       <div className="relative h-[205px] overflow-hidden">
@@ -27,7 +33,7 @@ export function ServiceCard({ service }: { service: ServiceItem }) {
         <p className="mb-4 text-xs text-gray-500">
           <span aria-hidden="true">◇</span> {service.price}
         </p>
-        <Link className="text-[13px] font-semibold text-blue-600 underline underline-offset-2" href={`/services/${service.slug}`}>เลือกบริการ</Link>
+        <Link className="text-[13px] font-semibold text-blue-600 underline underline-offset-2" href={`/services/${service.slug}`}>{selectLabel}</Link>
       </div>
     </article>
   );

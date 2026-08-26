@@ -1,0 +1,72 @@
+{
+  "Meta": {
+    "title": "HomeServices | Professional home care services",
+    "description": "Appliance repair, air conditioner cleaning, and house cleaning by professional technicians"
+  },
+  "Common": {
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "language": "Language",
+    "thai": "TH",
+    "english": "EN"
+  },
+  "Nav": {
+    "homeAria": "Back to home",
+    "mainMenu": "Main menu",
+    "services": "Our services",
+    "profile": "Profile",
+    "admin": "Admin dashboard",
+    "technician": "Technician workspace",
+    "openProfile": "Open profile",
+    "notifications": "Notifications",
+    "logout": "Log out",
+    "login": "Log in",
+    "register": "Register"
+  },
+  "Footer": {
+    "homeAria": "Back to home",
+    "socialAria": "Social media",
+    "company": "HomeServices Co., Ltd.",
+    "address": "452 Soi Sukhumvit 79, Phra Khanong Nuea, Watthana, Bangkok 10260",
+    "copyright": "copyright © 2026 HomeServices.com All rights reserved",
+    "terms": "Terms of use",
+    "privacy": "Privacy policy"
+  },
+  "Landing": {
+    "hero": {
+      "imageAlt": "HomeServices technician ready to take care of your home",
+      "title": "Let us take care of your home",
+      "subtitle": "“Convenient, good value, and reliable”",
+      "description": "Appliance repair, air conditioner service, and house cleaning<newline></newline>by professional housekeepers and technicians",
+      "cta": "Check service prices"
+    },
+    "popularServices": {
+      "title": "Our most popular services",
+      "viewAll": "View all services",
+      "select": "Select service",
+      "items": {
+        "cleaning": {
+          "category": "General service",
+          "name": "General cleaning",
+          "price": "Estimated ฿500.00 - 1,000.00"
+        },
+        "aircon": {
+          "category": "General service",
+          "name": "Air conditioner cleaning",
+          "price": "Estimated ฿500.00 - 1,000.00"
+        },
+        "washingMachine": {
+          "category": "General service",
+          "name": "Washing machine repair",
+          "price": "Estimated ฿500.00"
+        }
+      }
+    },
+    "recruitment": {
+      "imageAlt": "HomeServices professional technician",
+      "title": "Join our repair team<newline></newline>at HomeServices",
+      "body": "Get standardized training for free!<newline></newline>And earn a better income than before",
+      "contact": "Contact us at: job@homeservices.co"
+    }
+  }
+}

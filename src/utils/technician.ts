@@ -15,6 +15,46 @@ export function formatBaht(value: number | null): string {
   }).format(value ?? 0);
 }
 
+// งานที่ไกลกว่านี้จะไม่โชว์ให้ช่างเห็น
+export const MAX_JOB_RADIUS_KM = 2000;
+
+function toRadians(value: number): number {
+  return (value * Math.PI) / 180;
+}
+
+/** หาระยะทางระหว่าง 2 จุดบนแผนที่ หน่วยเป็นกิโลเมตร */
+export function getDistanceKm(
+  fromLat: number,
+  fromLng: number,
+  toLat: number,
+  toLng: number,
+): number {
+  const earthRadiusKm = 6371;
+  const dLat = toRadians(toLat - fromLat);
+  const dLng = toRadians(toLng - fromLng);
+  const lat1 = toRadians(fromLat);
+  const lat2 = toRadians(toLat);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return earthRadiusKm * c;
+}
+
+/** งานที่ไม่มีพิกัด หรือไกลเกิน 4 กม. จะไม่แสดง */
+export function isJobWithinRadius(
+  technicianLat: number,
+  technicianLng: number,
+  jobLat: number | null,
+  jobLng: number | null,
+  maxKm: number = MAX_JOB_RADIUS_KM,
+): boolean {
+  if (jobLat === null || jobLng === null) return false;
+  return getDistanceKm(technicianLat, technicianLng, jobLat, jobLng) <= maxKm;
+}
+
 export function getDirectionsUrl({
   latitude,
   longitude,

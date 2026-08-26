@@ -3,10 +3,12 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
+import PasswordVisibilityToggle from "@/components/login/PasswordVisibilityToggle";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const { login, logout } = useAuth();
@@ -71,15 +73,23 @@ const LoginPage = () => {
           >
             Password<span className="text-[#ea3d3d]">*</span>
           </label>
-          <input
-            id="password"
-            type="password"
-            required
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            placeholder="••••••••"
-            className="h-11 w-full rounded-md border border-[#d8dde7] px-3 text-base text-[#222] outline-none transition focus:border-[#2d63f6]"
-          />
+          <div className="relative">
+            <input
+              id="password"
+              type={isPasswordVisible ? "text" : "password"}
+              required
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="••••••••"
+              className="h-11 w-full rounded-md border border-[#d8dde7] px-3 pr-11 text-base text-[#222] outline-none transition focus:border-[#2d63f6]"
+            />
+            <div className="absolute top-1/2 right-1 -translate-y-1/2">
+              <PasswordVisibilityToggle
+                isPasswordVisible={isPasswordVisible}
+                onToggle={() => setIsPasswordVisible((previous) => !previous)}
+              />
+            </div>
+          </div>
         </div>
 
         <button
