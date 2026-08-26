@@ -12,22 +12,37 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
 
-export default function MobileFooterTwo() {
+interface MobileFooterThreeProps {
+    promotion: {
+        promotion_id: string;
+        promotion_code: string;
+        quota: number;
+        quota_used: number;
+        type: "Percent" | "Fixed";
+        discount: number;
+    } | null;
+}
+
+export default function MobileFooterThree({promotion}: MobileFooterThreeProps) {
     const payment = React.useContext(PaymentContext);
     const [summaryExpanded, setSummaryExpanded] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [paymentError, setPaymentError] = useState("");
+    const [paymentStatus, setPaymentStatus] = useState("");
     const router = useRouter();
     const stripe = useStripe();
     const elements = useElements();
 
     const { user } = useAuth();
 
+    const promotionId = promotion?.promotion_id || null;
+    const newQuotaUsed = promotion ? promotion.quota_used + 1 : null;
+
     if (!payment) {
         throw new Error("MobileFooterTwo must be rendered inside PaymentProvider");
     }
 
-    const { serviceDetail, serviceFormData, paymentFormData, totAmount, paymentMethod, setIsThirdPageCompleted, discount, setUserId  } = payment;
+    const { serviceDetail, serviceFormData, paymentFormData, totAmount, paymentMethod, setIsThirdPageCompleted, discount, userId ,setUserId, serviceId  } = payment;
 
     // Store userId from AuthContext
         React.useEffect(() => {
@@ -139,9 +154,11 @@ export default function MobileFooterTwo() {
                 throw new Error(statusData.error || "ไม่สามารถตรวจสอบสถานะการชำระเงินได้");
             }
 
-            const paymentStatus = statusData.status ?? statusData.paymentIntent?.status ?? statusData.data?.status;
+            const verifiedPaymentStatus =
+                statusData.status ?? statusData.paymentIntent?.status ?? statusData.data?.status;
+            setPaymentStatus(verifiedPaymentStatus);
 
-            if (paymentStatus === "succeeded") {
+            if (verifiedPaymentStatus === "succeeded") {
                 setIsThirdPageCompleted(true);
                 router.push("/service-details/payment-success");
             } else {
@@ -151,6 +168,77 @@ export default function MobileFooterTwo() {
             setPaymentError(error instanceof Error ? error.message : "เกิดข้อผิดพลาดในการชำระเงิน");
         } finally {
             setIsSubmitting(false);
+        }
+
+
+        // update payment, order, and promotion's quota in the database
+        try{
+            const ordersData = {
+                userId: userId,
+                serviceId: serviceId,
+                status: "pending",
+                totAmount: totAmount+discount,
+                serviceDate: serviceFormData.serviceDate,
+                serviceTime: serviceFormData.serviceTime,
+                adress: serviceFormData.address,
+                province: serviceFormData.province,
+                district: serviceFormData.district,
+                subdistrict: serviceFormData.subdistrict,
+                information: serviceFormData.information,
+                promotionCode: paymentFormData.promotionCode,
+                discount: discount
+            }
+
+            // Send the order data to the backend
+            const orderResponse = await fetch(`${API_BASE_URL}/api/orders`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(ordersData),
+            });
+
+
+            const orderItemData = {
+                option_id: serviceDetail.map((service) => service.option_id),
+                order_id: orderResponse.ok ? (await orderResponse.json()).order_id : null,
+                quantity: serviceDetail.map((service) => service.quantity),
+                price: serviceDetail.map((service) => service.price),
+            }
+
+            // Send the order item data to the backend
+            const orderItemResponse = await fetch(`${API_BASE_URL}/api/order-items`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(orderItemData),
+            });
+
+            const paymentData = {
+                order_id: orderResponse.ok ? (await orderResponse.json()).order_id : null,
+                paymentMethod: paymentMethod,
+                paymentStatus: paymentStatus,
+                amount: totAmount
+            }
+
+            // Send the payment data to the backend
+            const paymentResponse = await fetch(`${API_BASE_URL}/api/payments/post`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(paymentData),
+            });
+
+            const promotionData = {
+                newQuata: newQuotaUsed
+            }
+
+            // Send the promotion data to the backend
+            const promotionResponse = await fetch(`${API_BASE_URL}/api/promotions/${promotionId}/quota`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(promotionData),
+            });
+
+
+        } catch (error) {
+            console.error("Error updating payment/order/promotion:", error);
         }
     }
 

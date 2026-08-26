@@ -20,7 +20,7 @@ import {
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
 
 interface PromotionResponse {
-	promotion_id: number;
+	promotion_id: string;
 	promotion_code: string;
 	quota: number;
 	quota_used: number;
@@ -31,6 +31,8 @@ interface PromotionResponse {
 export default function HeroSectionThree() {
 	const payment = React.useContext(PaymentContext);
 	const { user } = useAuth();
+
+	const [promotion, setPromotion] = React.useState<PromotionResponse | null>(null);
 
 	if (!payment) {
 		throw new Error("HeroSection must be rendered inside PaymentProvider");
@@ -81,7 +83,10 @@ export default function HeroSectionThree() {
 			}
 
 			const result: PromotionResponse = await response.json();
+			
+			setPromotion(result);
 
+			// ทำไมไม่มี promotion_code
 			const { type, discount, quota_used } = result;
 			const discountNum = Number(discount);
 
@@ -185,7 +190,7 @@ export default function HeroSectionThree() {
 					</div>
 				</form>
 
-				<MobileFooterThree />
+				<MobileFooterThree promotion={promotion}/>
 			</div>
 		</section>
 	);
