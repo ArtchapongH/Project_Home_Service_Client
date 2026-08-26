@@ -66,6 +66,7 @@ const serviceOptions: ServiceDetail[] = [];
 const paymentStorageKey = "home-service-payment";
 
 type SavedPayment = {
+    serviceId?: number;
     serviceDetail?: ServiceDetail[];
     serviceFormData?: ServiceFormData;
     paymentFormData?: PaymentFormData;
@@ -123,7 +124,7 @@ export const PaymentContext = createContext<PaymentContextValue | undefined>(und
 
 export function PaymentProvider({ children }: { children: React.ReactNode }) {
     const [isHydrated, setIsHydrated] = useState(false);
-    const [userId, setUserId] = useState<string | number | null>(null);
+    const [userId, setUserId] = useState<string | number | null>("1");
     const [serviceId, setServiceId] = useState(0);
     const [serviceTitle, setServiceTitle] = useState("");
     // ข้อมูล sevice datail มันจะต้องเป็น array ของ object ที่มี serviceDetail, pricePerUnit, quantity
@@ -173,6 +174,10 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
             setServiceDetail(savedPayment.serviceDetail);
         }
 
+        if (savedPayment?.serviceId && Number.isSafeInteger(savedPayment.serviceId)) {
+            setServiceId(savedPayment.serviceId);
+        }
+
         if (savedPayment?.serviceFormData) {
             setServiceFormData(savedPayment.serviceFormData);
             setIsSecondPageCompleted(hasRequiredServiceFormData(savedPayment.serviceFormData));
@@ -196,9 +201,9 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
 
         window.sessionStorage.setItem(
             paymentStorageKey,
-            JSON.stringify({ serviceDetail, serviceFormData, paymentFormData, totAmount }),
+            JSON.stringify({ serviceId, serviceDetail, serviceFormData, paymentFormData, totAmount }),
         );
-    }, [isHydrated, serviceDetail, serviceFormData, paymentFormData, totAmount]);
+    }, [isHydrated, serviceId, serviceDetail, serviceFormData, paymentFormData, totAmount]);
 
     const value: PaymentContextValue = {
         userId,

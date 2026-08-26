@@ -23,26 +23,34 @@ interface MobileFooterThreeProps {
     } | null;
 }
 
+type ApiResponse = {
+    stage?: string;
+    message?: string;
+    error?: string;
+    paymentIntentId?: string;
+    paymentIntent?: { id?: string; status?: string };
+    clientSecret?: string;
+    client_secret?: string;
+    status?: string;
+    data?: { status?: string };
+};
+
 export default function MobileFooterThree({promotion}: MobileFooterThreeProps) {
     const payment = React.useContext(PaymentContext);
     const [summaryExpanded, setSummaryExpanded] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [paymentError, setPaymentError] = useState("");
-    const [paymentStatus, setPaymentStatus] = useState("");
     const router = useRouter();
     const stripe = useStripe();
     const elements = useElements();
 
     const { user } = useAuth();
 
-    const promotionId = promotion?.promotion_id || null;
-    const newQuotaUsed = promotion ? promotion.quota_used + 1 : null;
-
     if (!payment) {
         throw new Error("MobileFooterTwo must be rendered inside PaymentProvider");
     }
 
-    const { serviceDetail, serviceFormData, paymentFormData, totAmount, paymentMethod, setIsThirdPageCompleted, discount, userId ,setUserId, serviceId  } = payment;
+    const { serviceDetail, serviceFormData, paymentFormData, totAmount, paymentMethod, setIsThirdPageCompleted, discount, userId, setUserId, serviceId } = payment;
 
     // Store userId from AuthContext
         React.useEffect(() => {
@@ -82,13 +90,82 @@ export default function MobileFooterThree({promotion}: MobileFooterThreeProps) {
         router.push("/service-details/userinfo");
     }
 
+    async function readResponse(response: Response, task: string): Promise<ApiResponse> {
+        const body = await response.json().catch(() => ({})) as ApiResponse;
+
+        if (!response.ok) {
+            const stage = typeof body.stage === "string" ? body.stage : task;
+            const message = typeof body.message === "string"
+                ? body.message
+                : typeof body.error === "string"
+                    ? body.error
+                    : `Request failed with status ${response.status}`;
+            throw new Error(`[${stage}] ${message}`);
+        }
+
+        return body;
+    }
+
+    async function recordCheckout(paymentStatus: string): Promise<void> {
+        // AuthContext is the source of truth. PaymentContext is updated in an
+        // effect and may still contain null during the first checkout click.
+        const checkoutUserId = user?.id ?? userId;
+        const checkoutServiceId = serviceId || Number(selectedServices[0]?.service_id);
+
+        if (!Number.isSafeInteger(Number(checkoutUserId)) || Number(checkoutUserId) <= 0) {
+            throw new Error("[validation] Please sign in with a valid customer account before checkout");
+        }
+
+        if (!Number.isSafeInteger(checkoutServiceId) || checkoutServiceId <= 0) {
+            throw new Error("[validation] A valid service must be selected before checkout");
+        }
+
+        const response = await fetch(`${API_BASE_URL}/api/orders/checkout`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                userId: Number(checkoutUserId),
+                serviceId: checkoutServiceId,
+                totalAmount: totAmount,
+                discount,
+                serviceDate: serviceFormData.serviceDate,
+                serviceTime: serviceFormData.serviceTime,
+                address: serviceFormData.address,
+                province: serviceFormData.province,
+                district: serviceFormData.district,
+                subdistrict: serviceFormData.subdistrict,
+                information: serviceFormData.information,
+                promotionCode: promotion?.promotion_code || "",
+                paymentMethod,
+                paymentStatus,
+                items: selectedServices.map((service) => ({
+                    optionId: Number(service.option_id),
+                    quantity: service.quantity,
+                    unitPrice: Number(service.price),
+                })),
+            }),
+        });
+
+        await readResponse(response, "checkout");
+    }
+
     async function handleNext(): Promise<void> {
         if (!isPaymentFormComplete() || isProcessing) {
             return;
         }
 
         if (paymentMethod === "promptpay") {
-            router.push("/service-details/payment-success");
+            setIsSubmitting(true);
+            setPaymentError("");
+            try {
+                await recordCheckout("pending");
+                setIsThirdPageCompleted(true);
+                router.push("/service-details/payment-success");
+            } catch (error) {
+                setPaymentError(error instanceof Error ? error.message : "[checkout] Booking could not be recorded");
+            } finally {
+                setIsSubmitting(false);
+            }
             return;
         }
 
@@ -156,9 +233,8 @@ export default function MobileFooterThree({promotion}: MobileFooterThreeProps) {
 
             const verifiedPaymentStatus =
                 statusData.status ?? statusData.paymentIntent?.status ?? statusData.data?.status;
-            setPaymentStatus(verifiedPaymentStatus);
-
             if (verifiedPaymentStatus === "succeeded") {
+                await recordCheckout(verifiedPaymentStatus);
                 setIsThirdPageCompleted(true);
                 router.push("/service-details/payment-success");
             } else {
@@ -168,77 +244,6 @@ export default function MobileFooterThree({promotion}: MobileFooterThreeProps) {
             setPaymentError(error instanceof Error ? error.message : "เกิดข้อผิดพลาดในการชำระเงิน");
         } finally {
             setIsSubmitting(false);
-        }
-
-
-        // update payment, order, and promotion's quota in the database
-        try{
-            const ordersData = {
-                userId: userId,
-                serviceId: serviceId,
-                status: "pending",
-                totAmount: totAmount+discount,
-                serviceDate: serviceFormData.serviceDate,
-                serviceTime: serviceFormData.serviceTime,
-                adress: serviceFormData.address,
-                province: serviceFormData.province,
-                district: serviceFormData.district,
-                subdistrict: serviceFormData.subdistrict,
-                information: serviceFormData.information,
-                promotionCode: paymentFormData.promotionCode,
-                discount: discount
-            }
-
-            // Send the order data to the backend
-            const orderResponse = await fetch(`${API_BASE_URL}/api/orders`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(ordersData),
-            });
-
-
-            const orderItemData = {
-                option_id: serviceDetail.map((service) => service.option_id),
-                order_id: orderResponse.ok ? (await orderResponse.json()).order_id : null,
-                quantity: serviceDetail.map((service) => service.quantity),
-                price: serviceDetail.map((service) => service.price),
-            }
-
-            // Send the order item data to the backend
-            const orderItemResponse = await fetch(`${API_BASE_URL}/api/order-items`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(orderItemData),
-            });
-
-            const paymentData = {
-                order_id: orderResponse.ok ? (await orderResponse.json()).order_id : null,
-                paymentMethod: paymentMethod,
-                paymentStatus: paymentStatus,
-                amount: totAmount
-            }
-
-            // Send the payment data to the backend
-            const paymentResponse = await fetch(`${API_BASE_URL}/api/payments/post`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(paymentData),
-            });
-
-            const promotionData = {
-                newQuata: newQuotaUsed
-            }
-
-            // Send the promotion data to the backend
-            const promotionResponse = await fetch(`${API_BASE_URL}/api/promotions/${promotionId}/quota`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(promotionData),
-            });
-
-
-        } catch (error) {
-            console.error("Error updating payment/order/promotion:", error);
         }
     }
 
