@@ -55,8 +55,6 @@ export default function HeroSectionThree() {
 		}
 
 		try {
-			const token = typeof window !== "undefined" ? window.localStorage.getItem("token") : null;
-
 			const url = new URL(`${API_BASE_URL}/api/promotions`);
 			url.searchParams.set("promotionCode", promotionCode);
 
@@ -64,7 +62,6 @@ export default function HeroSectionThree() {
 				method: "GET",
 				headers: {
 					"Content-Type": "application/json",
-					...(token ? { Authorization: `Bearer ${token}` } : {}),
 				},
 			});
 
