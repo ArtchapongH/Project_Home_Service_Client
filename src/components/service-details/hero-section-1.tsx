@@ -49,6 +49,8 @@ export default function HeroSection({ serviceId }: { serviceId?: string | number
 		try {
 			const response = await axios.get(`http://localhost:3001/api/services/options/${id}`);
 			console.log("API Response:", response.data);
+			console.log("API Response Type:", typeof response.data);
+			console.log("Is Array?", Array.isArray(response.data));
 			
 			// Handle different response structures
 			let dataArray;
@@ -63,15 +65,20 @@ export default function HeroSection({ serviceId }: { serviceId?: string | number
 				return;
 			}
 
+			console.log("Data Array:", dataArray);
+			console.log("First item:", dataArray[0]);
+
 			const result = dataArray.map((item: any) => ({
-				service_id: item.service_id,
-				service_name: item.service_name,
-				option_name: item.option_name,
-				price: item.price,
-				unit: item.unit,
+				service_id: item.service_id || "0",
+				service_name: item.service_name || '',
+				option_id: item.option_id || item.id || "0",
+				option_name: item.option_name || item.name || '',
+				price: Number(item.price) || 0,
+				unit: item.unit || '',
 				quantity: 0
 			}));
 
+			console.log("Mapped result:", result);
 			setServiceDetail(result);
 			console.log("Service options loaded:", result);
 		} catch (error) {
@@ -79,6 +86,7 @@ export default function HeroSection({ serviceId }: { serviceId?: string | number
 			if (axios.isAxiosError(error)) {
 				console.error("Response data:", error.response?.data);
 				console.error("Response status:", error.response?.status);
+				console.error("Request URL:", error.config?.url);
 			}
 		}
 	}
@@ -132,7 +140,7 @@ export default function HeroSection({ serviceId }: { serviceId?: string | number
 					<div className="mt-2">
 					{serviceDetail.map((service, index) => (
 						<div
-							key={`${service.service_id}-${service.option_name}-${index}`}
+							key={`service-${service.service_id || "0"}-${service.option_id || "0"}-${index}`}
 							className="flex items-center justify-between border-b border-gray-200 py-3 last:border-b-0 last:pb-0"
 						>
 							<div className="pr-3">

@@ -52,8 +52,9 @@ type PaymentContextValue = {
 export type PaymentMethod = "promptpay" | "card";
 
 type ServiceDetail = {
-  service_id: number;
+  service_id: string;
   service_name: string;
+  option_id: string;
   option_name: string;
   price: number;
   quantity: number;
