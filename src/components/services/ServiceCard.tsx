@@ -99,7 +99,7 @@ export function ServiceCard({ service, sortBy, onCategoryClick }: ServiceCardPro
   const categoryStyle = getCategoryStyles(service.category);
   const formattedPrice = formatServicePrice(service.minPrice, service.maxPrice);
   const imageSrc = service.imageUrl || "/images/landing/service-aircon.png";
-  const serviceLink = `/services/${service.id}`;
+  const serviceLink = `/service-details/${service.id}`;
   const { rating, reviewCount, bookingsCount, isPopular, isRecommended } = getServiceMetrics(service);
 
   // ปรับ Badge ตามโหมดการเรียงลำดับที่ผู้ใช้เลือก (เพื่อไม่ให้ป้าย แนะนำ ติดมาในโหมดยอดนิยม)

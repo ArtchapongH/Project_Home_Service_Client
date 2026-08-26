@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import CreditCardOutlinedIcon from "@mui/icons-material/CreditCardOutlined";
@@ -12,15 +12,90 @@ import Image from "next/image";
 import serviceDetailBanner from "@/assets/images/service-detail-banner.png";
 import MobileFooter from "./mobile-footer";
 import { PaymentContext } from "@/app/service-details/layout";
+import { useAuth } from "@/contexts/AuthContext";
+import axios from "axios";
 
 export default function HeroSection({ serviceId }: { serviceId?: string | number }) {
 	const payment = React.useContext(PaymentContext);
+	//const { user } = useAuth();
 
 	if (!payment) {
 		throw new Error("HeroSection must be rendered inside PaymentProvider");
 	}
 
-	const { serviceDetail, setServiceDetail } = payment;
+	const { serviceDetail, setServiceDetail, setServiceId, setUserId } = payment;
+
+	// Store userId from AuthContext => may be not used
+	/*
+	React.useEffect(() => {
+		if (user?.id) {
+			setUserId(user.id);
+			console.log("User ID set in PaymentContext:", user.id);
+		}
+	}, [user, setUserId]);
+	*/
+
+	// Store serviceId in context and log for debugging
+	React.useEffect(() => {
+		if (serviceId) {
+			setServiceId(Number(serviceId));
+			console.log("Service ID received:", serviceId);
+			// TODO: Fetch service details using this serviceId
+			// Example: fetchServiceDetails(serviceId);
+		}
+	}, [serviceId, setServiceId]);
+
+	async function getServiceOption(id: string | number) {
+		try {
+			const response = await axios.get(`http://localhost:3001/api/services/options/${id}`);
+			console.log("API Response:", response.data);
+			console.log("API Response Type:", typeof response.data);
+			console.log("Is Array?", Array.isArray(response.data));
+			
+			// Handle different response structures
+			let dataArray;
+			if (Array.isArray(response.data)) {
+				dataArray = response.data;
+			} else if (response.data.data && Array.isArray(response.data.data)) {
+				dataArray = response.data.data;
+			} else if (response.data.options && Array.isArray(response.data.options)) {
+				dataArray = response.data.options;
+			} else {
+				console.error("Unexpected API response structure:", response.data);
+				return;
+			}
+
+			console.log("Data Array:", dataArray);
+			console.log("First item:", dataArray[0]);
+
+			const result = dataArray.map((item: any) => ({
+				service_id: item.service_id || "0",
+				service_name: item.service_name || '',
+				option_id: item.option_id || item.id || "0",
+				option_name: item.option_name || item.name || '',
+				price: Number(item.price) || 0,
+				unit: item.unit || '',
+				quantity: 0
+			}));
+
+			console.log("Mapped result:", result);
+			setServiceDetail(result);
+			console.log("Service options loaded:", result);
+		} catch (error) {
+			console.error("Error fetching service options:", error);
+			if (axios.isAxiosError(error)) {
+				console.error("Response data:", error.response?.data);
+				console.error("Response status:", error.response?.status);
+				console.error("Request URL:", error.config?.url);
+			}
+		}
+	}
+
+	useEffect(() => {
+		if (serviceId) {
+			getServiceOption(serviceId);
+		}
+	}, [serviceId])
 
 	function changeQuantity(index: number, amount: number): void {
 		setServiceDetail((currentServiceDetails) =>
@@ -46,7 +121,7 @@ export default function HeroSection({ serviceId }: { serviceId?: string | number
 				<div className="absolute left-3 top-11 flex h-10 items-center rounded-[7px] bg-white px-3 text-sm shadow-sm min-[801px]:left-1/2 min-[801px]:top-10 min-[801px]:-translate-x-1/2">
 					<span className="text-gray-500">บริการของเรา</span>
 					<ChevronRightRoundedIcon className="mx-1 text-[17px] text-gray-500" />
-					<span className="font-semibold text-blue-600">ล้างแอร์</span>
+					<span className="font-semibold text-blue-600">{serviceDetail[0]?.service_name || "กำลังโหลด..."}</span>
 				</div>
 			</div>
 
@@ -65,14 +140,14 @@ export default function HeroSection({ serviceId }: { serviceId?: string | number
 					<div className="mt-2">
 					{serviceDetail.map((service, index) => (
 						<div
-							key={`${service.serviceDetail}-${index}`}
+							key={`service-${service.service_id || "0"}-${service.option_id || "0"}-${index}`}
 							className="flex items-center justify-between border-b border-gray-200 py-3 last:border-b-0 last:pb-0"
 						>
 							<div className="pr-3">
-								<p className="text-sm font-semibold leading-5 text-black">{service.serviceDetail}</p>
+								<p className="text-sm font-semibold leading-5 text-black">{service.option_name}</p>
 								<p className="mt-1 flex items-center gap-1 text-xs text-gray-500">
 									<LocalOfferOutlinedIcon className="text-[14px]" />
-									{service.pricePerUnit} ฿ / {service.unit}
+									{service.price} ฿ / {service.unit}
 								</p>
 							</div>
 							<div className="flex shrink-0 items-center gap-3">
