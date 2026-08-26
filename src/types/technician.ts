@@ -79,6 +79,7 @@ export interface TechnicianSettingsInput {
 export interface TechnicianLocationInput {
   latitude: number;
   longitude: number;
+  address?: string;
 }
 
 export interface ApiListMeta {

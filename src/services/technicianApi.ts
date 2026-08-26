@@ -41,17 +41,20 @@ export async function updateTechnicianSettings(
 
 export async function updateTechnicianLocation(
   input: TechnicianLocationInput,
-): Promise<Pick<TechnicianProfile, "latitude" | "longitude" | "locationUpdatedAt">> {
+): Promise<Pick<TechnicianProfile, "latitude" | "longitude" | "locationUpdatedAt" | "address">> {
   if (isTechnicianMockEnabled) {
     return {
       latitude: input.latitude,
       longitude: input.longitude,
       locationUpdatedAt: new Date().toISOString(),
+      ...(input.address !== undefined ? { address: input.address } : {}),
     };
   }
 
   const response = await apiClient.patch<
-    ApiResponse<Pick<TechnicianProfile, "latitude" | "longitude" | "locationUpdatedAt">>
+    ApiResponse<
+      Pick<TechnicianProfile, "latitude" | "longitude" | "locationUpdatedAt" | "address">
+    >
   >("/api/technicians/me/location", input);
   return response.data.data;
 }

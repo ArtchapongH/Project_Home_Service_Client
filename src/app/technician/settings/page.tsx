@@ -148,7 +148,12 @@ export default function TechnicianSettingsPage() {
               <div>
                 <LocationControl
                   profile={profile}
-                  onUpdated={(location) => setProfile({ ...profile, ...location })}
+                  onUpdated={(location) => {
+                    setProfile({ ...profile, ...location });
+                    if (location.address != null) {
+                      setAddress(location.address);
+                    }
+                  }}
                 />
               </div>
             </div>

@@ -55,7 +55,7 @@ export function RequestListContent({
   if (!hasCoordinates) {
     return (
       <InformationState>
-        กดรีเฟรชตำแหน่งเพื่อดูคำขอบริการในรัศมี 4 กิโลเมตร
+        ยังไม่มีพิกัดในระบบ กรุณากดรับพิกัดที่หน้าตั้งค่าบัญชีผู้ใช้
       </InformationState>
     );
   }

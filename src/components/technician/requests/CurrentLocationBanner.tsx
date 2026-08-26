@@ -27,7 +27,7 @@ export function CurrentLocationBanner({
         <div>
           <h2 className="text-sm font-semibold text-blue-700">ตำแหน่งที่อยู่ปัจจุบัน</h2>
           <p className="mt-0.5 text-sm text-blue-700">
-            {address?.trim() || (hasCoordinates ? "อัปเดตพิกัดแล้ว" : "ยังไม่มีตำแหน่ง กรุณากดรีเฟรช")}
+            {address?.trim() || (hasCoordinates ? "อัปเดตพิกัดแล้ว" : "ยังไม่มีที่อยู่ในบัญชี กรุณาบันทึกที่หน้าตั้งค่า")}
           </p>
         </div>
       </div>

@@ -8,8 +8,7 @@ const mocks = vi.hoisted(() => ({
   acceptRequest: vi.fn(),
   declineRequest: vi.fn(),
   getRequests: vi.fn(),
-  updateLocation: vi.fn(),
-  readLocation: vi.fn(),
+  getProfile: vi.fn(),
   setProfile: vi.fn(),
   setRequestCount: vi.fn(),
   context: {
@@ -29,15 +28,11 @@ vi.mock("@/services/technicianApi", () => ({
   acceptTechnicianRequest: mocks.acceptRequest,
   declineTechnicianRequest: mocks.declineRequest,
   getTechnicianRequests: mocks.getRequests,
-  updateTechnicianLocation: mocks.updateLocation,
+  getTechnicianProfile: mocks.getProfile,
   getTechnicianApiError: (error: unknown) =>
     typeof error === "object" && error !== null
       ? error
       : { message: "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง" },
-}));
-
-vi.mock("@/utils/technicianLocation", () => ({
-  readBrowserLocation: mocks.readLocation,
 }));
 
 const availableProfile: TechnicianProfile = {
@@ -73,12 +68,7 @@ describe("useTechnicianRequests", () => {
     mocks.getRequests.mockResolvedValue({ data: [request], meta: { total: 1 } });
     mocks.acceptRequest.mockResolvedValue(request);
     mocks.declineRequest.mockResolvedValue(undefined);
-    mocks.readLocation.mockResolvedValue({ latitude: 13.7, longitude: 100.5 });
-    mocks.updateLocation.mockResolvedValue({
-      latitude: 13.7,
-      longitude: 100.5,
-      locationUpdatedAt: "2026-08-26T00:00:00.000Z",
-    });
+    mocks.getProfile.mockResolvedValue(availableProfile);
   });
 
   afterEach(() => {
@@ -97,7 +87,6 @@ describe("useTechnicianRequests", () => {
 
   it("does not load requests without coordinates", async () => {
     mocks.context.profile = { ...availableProfile, latitude: null, longitude: null };
-    mocks.readLocation.mockReturnValue(new Promise(() => undefined));
 
     renderHook(() => useTechnicianRequests());
     await runDebounce();
@@ -141,20 +130,32 @@ describe("useTechnicianRequests", () => {
     });
   });
 
-  it("automatically reads and saves location once when coordinates are missing", async () => {
+  it("does not read browser location when coordinates are missing", async () => {
     mocks.context.profile = { ...availableProfile, latitude: null, longitude: null };
 
     renderHook(() => useTechnicianRequests());
+    await runDebounce();
 
-    await act(async () => {
-      await Promise.resolve();
-    });
+    expect(mocks.getProfile).not.toHaveBeenCalled();
+    expect(mocks.getRequests).not.toHaveBeenCalled();
+  });
 
-    expect(mocks.readLocation).toHaveBeenCalledTimes(1);
-    expect(mocks.updateLocation).toHaveBeenCalledWith({ latitude: 13.7, longitude: 100.5 });
-    expect(mocks.setProfile).toHaveBeenCalledWith(
-      expect.objectContaining({ latitude: 13.7, longitude: 100.5 }),
-    );
+  it("reloads the saved profile from the API when refresh is pressed", async () => {
+    const refreshedProfile = {
+      ...availableProfile,
+      address: "เชียงใหม่",
+      latitude: 18.7964,
+      longitude: 98.9673,
+    };
+    mocks.getProfile.mockResolvedValue(refreshedProfile);
+    const { result } = renderHook(() => useTechnicianRequests());
+    await runDebounce();
+
+    await act(async () => result.current.refreshLocation());
+
+    expect(mocks.getProfile).toHaveBeenCalledTimes(1);
+    expect(mocks.setProfile).toHaveBeenCalledWith(refreshedProfile);
+    expect(result.current.locationMessage).toBe("อัปเดตตำแหน่งจากบัญชีแล้ว");
   });
 
   it("accepts the selected request, closes the dialog, and refreshes the list", async () => {
@@ -204,7 +205,7 @@ describe("useTechnicianRequests", () => {
 
   it("shows API and location errors and restores loading states", async () => {
     mocks.getRequests.mockRejectedValue({ message: "โหลดรายการไม่สำเร็จ" });
-    mocks.readLocation.mockRejectedValue(new Error("ไม่พบตำแหน่ง"));
+    mocks.getProfile.mockRejectedValue({ message: "โหลดโปรไฟล์ไม่สำเร็จ" });
     const { result } = renderHook(() => useTechnicianRequests());
 
     await runDebounce();
@@ -212,7 +213,7 @@ describe("useTechnicianRequests", () => {
     expect(result.current.isLoadingRequests).toBe(false);
 
     await act(async () => result.current.refreshLocation());
-    expect(result.current.locationMessage).toBe("ไม่พบตำแหน่ง");
+    expect(result.current.locationMessage).toBe("โหลดโปรไฟล์ไม่สำเร็จ");
     expect(result.current.isUpdatingLocation).toBe(false);
   });
 });

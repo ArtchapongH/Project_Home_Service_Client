@@ -1,16 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTechnician } from "@/contexts/TechnicianContext";
 import {
   acceptTechnicianRequest,
   declineTechnicianRequest,
   getTechnicianApiError,
+  getTechnicianProfile,
   getTechnicianRequests,
-  updateTechnicianLocation,
 } from "@/services/technicianApi";
 import type { TechnicianJob, TechnicianProfile } from "@/types/technician";
-import { readBrowserLocation } from "@/utils/technicianLocation";
 
 const SEARCH_DEBOUNCE_MS = 250;
 
@@ -48,7 +47,6 @@ export function useTechnicianRequests(): UseTechnicianRequestsResult {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isUpdatingLocation, setIsUpdatingLocation] = useState(false);
   const [locationMessage, setLocationMessage] = useState<string | null>(null);
-  const didAutoLocate = useRef(false);
 
   const technicianLatitude = profile?.latitude ?? null;
   const technicianLongitude = profile?.longitude ?? null;
@@ -101,33 +99,26 @@ export function useTechnicianRequests(): UseTechnicianRequestsResult {
   }, [loadRequests]);
 
   const refreshLocation = useCallback(async () => {
-    if (!profile) return;
-
     setIsUpdatingLocation(true);
     setLocationMessage(null);
 
     try {
-      const coordinates = await readBrowserLocation();
-      const updatedLocation = await updateTechnicianLocation(coordinates);
-      setProfile({ ...profile, ...updatedLocation });
-    } catch (locationError) {
+      const nextProfile = await getTechnicianProfile();
+      setProfile(nextProfile);
+
+      const hasSavedCoordinates =
+        nextProfile.latitude !== null && nextProfile.longitude !== null;
       setLocationMessage(
-        locationError instanceof Error
-          ? locationError.message
-          : "ไม่สามารถอัปเดตตำแหน่งได้",
+        hasSavedCoordinates
+          ? "อัปเดตตำแหน่งจากบัญชีแล้ว"
+          : "ยังไม่มีพิกัดในระบบ กรุณากดรับพิกัดที่หน้าตั้งค่าบัญชีผู้ใช้",
       );
+    } catch (locationError) {
+      setLocationMessage(getTechnicianApiError(locationError).message);
     } finally {
       setIsUpdatingLocation(false);
     }
-  }, [profile, setProfile]);
-
-  // ขอ Location อัตโนมัติเพียงครั้งแรก เมื่อช่างพร้อมรับงานแต่ยังไม่มีพิกัด
-  useEffect(() => {
-    if (!profile?.isAvailable || didAutoLocate.current || hasCoordinates) return;
-
-    didAutoLocate.current = true;
-    void refreshLocation();
-  }, [hasCoordinates, profile?.isAvailable, refreshLocation]);
+  }, [setProfile]);
 
   const selectRequestToAccept = (request: TechnicianJob): void => {
     setSelectedRequest(request);

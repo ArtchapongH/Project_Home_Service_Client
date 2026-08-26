@@ -31,7 +31,7 @@ describe("RequestListContent", () => {
 
   it("asks for location when coordinates are missing", () => {
     renderContent({ hasCoordinates: false });
-    expect(screen.getByText(/กดรีเฟรชตำแหน่ง/)).toBeInTheDocument();
+    expect(screen.getByText(/กดรับพิกัดที่หน้าตั้งค่าบัญชีผู้ใช้/)).toBeInTheDocument();
   });
 
   it("shows loading and empty states", () => {
