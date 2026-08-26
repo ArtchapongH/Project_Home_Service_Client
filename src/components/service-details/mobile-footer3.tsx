@@ -10,6 +10,7 @@ import { PaymentContext } from "@/app/service-details/layout";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
 
 export default function MobileFooterTwo() {
     const payment = React.useContext(PaymentContext);
@@ -91,10 +92,10 @@ export default function MobileFooterTwo() {
         setPaymentError("");
 
         try {
-            const response = await fetch("http://localhost:3001/create-payment-intent", {
+            const response = await fetch(`${API_BASE_URL}/api/payments/intent`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ amount: totAmount }),
+                body: JSON.stringify({ amount: Math.round(totAmount * 100) }),
             });
 
             const data = await response.json();
@@ -129,7 +130,7 @@ export default function MobileFooterTwo() {
             }
 
             const statusResponse = await fetch(
-                `http://localhost:3001/payment-status/${encodeURIComponent(paymentIntentId)}`,
+                `${API_BASE_URL}/api/payments/status/${encodeURIComponent(paymentIntentId)}`,
                 { method: "GET" },
             );
             const statusData = await statusResponse.json();

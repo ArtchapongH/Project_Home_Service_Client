@@ -6,7 +6,7 @@ import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 
 const stripePromise = loadStripe(
-  "pk_test_51U6NHm8UZtCUiZcR1GjhLTwXESirowiE82gRrCbkdoG9SUTc5G2DYHdRKu1rDsOGNcVaA1kazibS7rxAvKYXqpxv00ZZpaHN9c"
+  "pk_test_51U8I9tEcKQ4tElnOs6okgrxrdwBjLm1FIbeOt6xks4BzJ58YUH1OIOUlAsgJyUqUtNEzOHAYQSayXLV41hKrEoYO00YdOhLRrj"
 );
 
 type PaymentContextValue = {
