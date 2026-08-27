@@ -3,6 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
 import {
   Card,
   CardContent,
@@ -82,22 +83,33 @@ function getServiceMetrics(service: PublicService) {
  * - ถ้ามีช่วงราคา (minPrice & maxPrice ที่ต่างกัน): แสดง "ค่าบริการประมาณ min - max ฿"
  * - ถ้ามีราคาเดียว: แสดง "ค่าบริการประมาณ min ฿"
  */
-export function formatServicePrice(minPrice: number = 0, maxPrice?: number): string {
+export function formatServicePrice(
+  minPrice: number = 0,
+  maxPrice?: number,
+  locale: string = "th",
+): { min: string; max?: string; isRange: boolean } {
   const formatNumber = (num: number) =>
-    num.toLocaleString("th-TH", {
+    num.toLocaleString(locale, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
 
   if (maxPrice && maxPrice > minPrice) {
-    return `ค่าบริการประมาณ ${formatNumber(minPrice)} - ${formatNumber(maxPrice)} ฿`;
+    return {
+      min: formatNumber(minPrice),
+      max: formatNumber(maxPrice),
+      isRange: true,
+    };
   }
-  return `ค่าบริการประมาณ ${formatNumber(minPrice)} ฿`;
+
+  return { min: formatNumber(minPrice), isRange: false };
 }
 
 export function ServiceCard({ service, sortBy, onCategoryClick }: ServiceCardProps) {
+  const t = useTranslations("Services");
+  const locale = useLocale();
   const categoryStyle = getCategoryStyles(service.category);
-  const formattedPrice = formatServicePrice(service.minPrice, service.maxPrice);
+  const formattedPrice = formatServicePrice(service.minPrice, service.maxPrice, locale);
   const imageSrc = service.imageUrl || "/images/landing/service-aircon.png";
   const serviceLink = `/service-details/${service.id}`;
   const { rating, reviewCount, bookingsCount, isPopular, isRecommended } = getServiceMetrics(service);
@@ -183,12 +195,12 @@ export function ServiceCard({ service, sortBy, onCategoryClick }: ServiceCardPro
             {activeBadgeType === "recommended" ? (
               <>
                 <StarRoundedIcon sx={{ fontSize: 16, color: "#F59E0B" }} />
-                <span>แนะนำ</span>
+                <span>{t("recommended")}</span>
               </>
             ) : (
               <>
                 <LocalFireDepartmentRoundedIcon sx={{ fontSize: 16, color: "#EF4444" }} />
-                <span>ยอดนิยม</span>
+                <span>{t("popular")}</span>
               </>
             )}
           </Box>
@@ -284,7 +296,7 @@ export function ServiceCard({ service, sortBy, onCategoryClick }: ServiceCardPro
             component="span"
             sx={{ color: "#64748B", fontSize: "0.75rem", fontWeight: 500 }}
           >
-            จองแล้ว {bookingsCount.toLocaleString()}+ ครั้ง
+            {t("bookings", { count: bookingsCount.toLocaleString(locale) })}
           </Typography>
         </Box>
 
@@ -311,7 +323,12 @@ export function ServiceCard({ service, sortBy, onCategoryClick }: ServiceCardPro
               color: "#64748B",
             }}
           >
-            {formattedPrice}
+            {formattedPrice.isRange
+              ? t("priceRange", {
+                  min: formattedPrice.min,
+                  max: formattedPrice.max ?? formattedPrice.min,
+                })
+              : t("priceEstimate", { price: formattedPrice.min })}
           </Typography>
         </Box>
 
@@ -321,7 +338,7 @@ export function ServiceCard({ service, sortBy, onCategoryClick }: ServiceCardPro
             href={serviceLink}
             className="text-[13px] font-semibold text-[#3366FF] underline underline-offset-4 transition hover:text-[#1E40AF]"
           >
-            เลือกบริการ
+            {t("select")}
           </Link>
         </Box>
       </CardContent>

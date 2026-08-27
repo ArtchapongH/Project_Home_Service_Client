@@ -4,6 +4,7 @@ import { useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Checkbox from "@mui/material/Checkbox";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/contexts/AuthContext";
 import FacebookLoginButton from "./FacebookLoginButton";
 import LoginCard from "./LoginCard";
@@ -12,6 +13,7 @@ import LoginTextField from "./LoginTextField";
 import OrDivider from "./OrDivider";
 
 export default function RegisterForm() {
+  const t = useTranslations("Register");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
@@ -37,17 +39,17 @@ export default function RegisterForm() {
     setSuccessMessage("");
 
     if (!isAcceptedTerms) {
-      setErrorMessage("กรุณายอมรับข้อตกลงและเงื่อนไขก่อนลงทะเบียน");
+      setErrorMessage(t("errors.termsAndConditions"));
       return;
     }
 
     if (password.length < 6) {
-      setErrorMessage("รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร");
+      setErrorMessage(t("errors.passwordLength"));
       return;
     }
 
     if (password !== confirmPassword) {
-      setErrorMessage("รหัสผ่านและยืนยันรหัสผ่านไม่ตรงกัน");
+      setErrorMessage(t("errors.passwordMatch"));
       return;
     }
 
@@ -69,8 +71,8 @@ export default function RegisterForm() {
       if (result.success) {
         setSuccessMessage(
           result.requiresEmailConfirmation
-            ? "ลงทะเบียนสำเร็จ! กรุณายืนยันอีเมลก่อนเข้าสู่ระบบ"
-            : "ลงทะเบียนสำเร็จ! กำลังนำคุณเข้าสู่ระบบ...",
+            ? t("success.emailConfirmation")
+            : t("success.registrationSuccess"),
         );
         setTimeout(() => {
           router.push(result.requiresEmailConfirmation ? "/login" : "/");
@@ -78,11 +80,11 @@ export default function RegisterForm() {
         return;
       }
 
-      setErrorMessage(result.error || "เกิดข้อผิดพลาดในการลงทะเบียน");
+      setErrorMessage(result.error || t("errors.registrationError"));
       isSubmittingRef.current = false;
       setIsLoading(false);
     } catch {
-      setErrorMessage("ไม่สามารถลงทะเบียนได้ กรุณาลองใหม่อีกครั้ง");
+      setErrorMessage(t("errors.generic"));
       isSubmittingRef.current = false;
       setIsLoading(false);
     }
@@ -91,7 +93,7 @@ export default function RegisterForm() {
   return (
     <LoginCard isWide>
       <h1 className="mb-6 text-center text-xl font-semibold text-blue-900 sm:mb-8 sm:text-2xl">
-        ลงทะเบียน
+        {t("title")}
       </h1>
 
       {errorMessage && (
@@ -110,16 +112,16 @@ export default function RegisterForm() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <LoginTextField
             id="firstName"
-            label="ชื่อจริง"
-            placeholder="กรุณากรอกชื่อจริง"
+            label={t("firstName")}
+            placeholder={t("firstNamePlaceholder")}
             autoComplete="given-name"
             value={firstName}
             onChange={setFirstName}
           />
           <LoginTextField
             id="lastName"
-            label="นามสกุล"
-            placeholder="กรุณากรอกนามสกุล"
+            label={t("lastName")}
+            placeholder={t("lastNamePlaceholder")}
             autoComplete="family-name"
             value={lastName}
             onChange={setLastName}
@@ -127,36 +129,36 @@ export default function RegisterForm() {
         </div>
         <LoginTextField
           id="phone"
-          label="เบอร์โทรศัพท์"
+          label={t("phone")}
           type="tel"
-          placeholder="กรุณากรอกเบอร์โทรศัพท์"
+          placeholder={t("phonePlaceholder")}
           autoComplete="tel"
           value={phone}
           onChange={setPhone}
         />
         <LoginTextField
           id="email"
-          label="อีเมล"
+          label={t("email")}
           type="email"
-          placeholder="กรุณากรอกอีเมล"
+          placeholder={t("emailPlaceholder")}
           autoComplete="email"
           value={email}
           onChange={setEmail}
         />
         <LoginTextField
           id="password"
-          label="รหัสผ่าน"
+          label={t("password")}
           type="password"
-          placeholder="กรุณากรอกรหัสผ่าน (อย่างน้อย 6 ตัวอักษร)"
+          placeholder={t("passwordPlaceholder")}
           autoComplete="new-password"
           value={password}
           onChange={setPassword}
         />
         <LoginTextField
           id="confirmPassword"
-          label="ยืนยันรหัสผ่าน"
+          label={t("confirmPassword")}
           type="password"
-          placeholder="กรุณากรอกรหัสผ่านอีกครั้ง"
+          placeholder={t("confirmPasswordPlaceholder")}
           autoComplete="new-password"
           value={confirmPassword}
           onChange={setConfirmPassword}
@@ -170,40 +172,40 @@ export default function RegisterForm() {
             sx={{ pt: 0.25 }}
           />
           <p className="pt-1 text-xs text-gray-700 sm:text-sm">
-            ยอมรับ{" "}
+            {t("acceptTerms")}{" "}
             <Link
               href="/terms"
               target="_blank"
               rel="noopener noreferrer"
               className="text-blue-500 underline"
             >
-              ข้อตกลงและเงื่อนไข
+              {t("termsAndConditions")}
             </Link>{" "}
-            และ{" "}
+            {t("and")}{" "}
             <Link
               href="/privacy"
               target="_blank"
               rel="noopener noreferrer"
               className="text-blue-500 underline"
             >
-              นโยบายความเป็นส่วนตัว
+              {t("privacyPolicy")}
             </Link>
           </p>
         </div>
 
         <LoginSubmitButton isDisabled={!isAcceptedTerms || isLoading}>
-          {isLoading ? "กำลังลงทะเบียน..." : "ลงทะเบียน"}
+          {isLoading ? t("submitting") : t("submit")}
         </LoginSubmitButton>
       </form>
 
-      <OrDivider />
-      <FacebookLoginButton />
+      <OrDivider label={t("orDivider")} />
+      <FacebookLoginButton label={t("facebook")} />
 
       <Link
         href="/login"
         className="mt-5 block text-center text-xs text-blue-500 underline sm:mt-6 sm:text-sm"
       >
-        กลับไปหน้าเข้าสู่ระบบ
+        {t("backToLogin")}
       </Link>
     </LoginCard>
   );
