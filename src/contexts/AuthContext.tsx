@@ -121,7 +121,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string): Promise<AuthResult> => {
     try {
-      const response = await apiClient.post("/auth/login", { email, password });
+      const response = await apiClient.post("/api/auth/login", { email, password });
       const accessToken = getAccessToken(response.data?.data);
       if (!accessToken) {
         return {
@@ -154,7 +154,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const request = (async (): Promise<AuthResult> => {
       try {
-        const response = await apiClient.post("/auth/register", data);
+        const response = await apiClient.post("/api/auth/register", data);
         const responseData = response.data?.data;
         const accessToken = getAccessToken(responseData);
         const registeredUser = responseData?.user as User | undefined;
@@ -196,7 +196,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      await apiClient.post("/auth/logout");
+      await apiClient.post("/api/auth/logout");
     } catch {
       // The browser session is still cleared even when the server is unavailable.
     } finally {
