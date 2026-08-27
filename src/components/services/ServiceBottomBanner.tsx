@@ -3,12 +3,15 @@
 import React from "react";
 import Image from "next/image";
 import { Typography } from "@mui/material";
+import { useTranslations } from "next-intl";
 
 export function ServiceBottomBanner() {
+  const t = useTranslations("Services");
+
   return (
     <section
       className="relative flex min-h-[320px] items-center justify-center overflow-hidden bg-blue-500 px-4 py-[64px] text-center text-white min-[801px]:min-h-[370px] min-[801px]:py-[76px]"
-      aria-label="เกี่ยวกับบริการ HomeServices"
+      aria-label={t("bottomBannerAria")}
     >
       <div className="relative z-10 mx-auto w-[min(1140px,calc(100%-32px))] min-[801px]:w-[min(1140px,calc(100%-48px))]">
         <Typography
@@ -22,15 +25,12 @@ export function ServiceBottomBanner() {
             mx: "auto",
             letterSpacing: "-0.01em",
             fontFamily: "inherit",
+            "& br": { display: { xs: "none", sm: "inline" } },
           }}
         >
-          เพราะเราคือช่าง ผู้ให้บริการเรื่องบ้านอันดับ 1 แบบครบวงจร โดยทีมช่างมืออาชีพมากกว่า 100 ทีม
-          <br className="hidden sm:inline" />
-          {" "}สามารถตอบโจทย์ด้านการบริการเรื่องบ้านของคุณ และสร้าง
-          <br className="hidden sm:inline" />
-          {" "}ความสะดวกสบายในการติดต่อกับทีมช่าง ได้ทุกที่ ทุกเวลา ตลอด 24 ชม.
-          <br className="hidden sm:inline" />
-          {" "}มั่นใจ ช่างไม่ทิ้งงาน พร้อมรับประกันคุณภาพงาน
+          {t.rich("bottomBanner", {
+            newline: () => <br />,
+          })}
         </Typography>
       </div>
 
