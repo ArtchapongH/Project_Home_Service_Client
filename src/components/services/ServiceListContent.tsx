@@ -16,8 +16,11 @@ import type {
   PublicService,
   PublicServiceSort,
 } from "@/types/public-service";
+import { useTranslations, useLocale } from "next-intl";
 
-export function ServiceListContent() {
+export function ServiceListContent() {  
+  const t = useTranslations("Services");
+  const locale = useLocale();
   const [services, setServices] = useState<PublicService[]>([]);
   const [categories, setCategories] = useState<PublicCategory[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,9 +59,9 @@ export function ServiceListContent() {
       if (sortBy === "recommended") return Number(b.isFeatured) - Number(a.isFeatured) || a.displayOrder - b.displayOrder;
       if (sortBy === "popular") return b.popularityScore - a.popularityScore;
       return sortBy === "asc"
-        ? a.name.localeCompare(b.name, "th")
-        : b.name.localeCompare(a.name, "th");
-    }), [services, appliedSearchQuery, category, priceRange, sortBy]);
+        ? a.name.localeCompare(b.name, locale)
+        : b.name.localeCompare(a.name, locale);
+    }), [services, appliedSearchQuery, category, priceRange, sortBy, locale]);
 
   const handleSearchSubmit = (queryOverride?: string) => {
     setAppliedSearchQuery(typeof queryOverride === "string" ? queryOverride : searchInput);
@@ -100,7 +103,7 @@ export function ServiceListContent() {
       <Box id="services-grid-section" component="section" sx={{ py: { xs: 4, sm: 6, md: 8 }, px: { xs: 2, sm: 3, md: 0 } }}>
         <div className="mx-auto w-[min(1140px,calc(100%-32px))] min-[801px]:w-[min(1140px,calc(100%-48px))]">
           {loading ? (
-            <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}><CircularProgress aria-label="กำลังโหลดบริการ" /></Box>
+            <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}><CircularProgress aria-label={t("loading")} /></Box>
           ) : error ? (
             <Box role="alert" sx={{ textAlign: "center", py: 8, bgcolor: "#FEF2F2", color: "#B91C1C", borderRadius: "14px" }}>{error}</Box>
           ) : filteredServices.length > 0 ? (
@@ -122,8 +125,8 @@ export function ServiceListContent() {
             <Fade in timeout={400}>
               <Box sx={{ textAlign: "center", py: 10, px: 3, bgcolor: "#FFFFFF", borderRadius: "14px", border: "1px dashed #CBD5E1" }}>
                 <SearchOffIcon sx={{ fontSize: 48, color: "#94A3B8", mb: 2 }} />
-                <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>ไม่พบบริการที่คุณค้นหา</Typography>
-                <Button variant="outlined" onClick={handleResetFilters}>ล้างตัวกรองทั้งหมด</Button>
+                <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>{t("emptyTitle")}</Typography>
+                <Button variant="outlined" onClick={handleResetFilters}>{t("resetFilters")}</Button>
               </Box>
             </Fade>
           )}

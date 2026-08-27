@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Geist_Mono } from "next/font/google";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import AppProviders from "@/components/providers/AppProviders";
 import { SiteChrome } from "@/components/layout/SiteChrome";
 import "./globals.css";
@@ -9,19 +11,27 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "HomeServices | บริการดูแลบ้านโดยมืออาชีพ",
-  description:
-    "บริการซ่อมเครื่องใช้ไฟฟ้า ล้างแอร์ และทำความสะอาดบ้านโดยช่างมืออาชีพ",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Meta");
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+  return {
+    title: t("title"),
+    description: t("description"),
+  };
+}
+
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
-    <html lang="th" className={`${geistMono.variable} h-full antialiased`}>
+    <html lang={locale} className={`${geistMono.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col bg-white font-sans text-[#171b24]">
-        <AppProviders>
-          <SiteChrome>{children}</SiteChrome>
-        </AppProviders>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <AppProviders>
+            <SiteChrome>{children}</SiteChrome>
+          </AppProviders>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

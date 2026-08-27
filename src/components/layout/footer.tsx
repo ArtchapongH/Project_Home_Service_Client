@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { HomeServicesLogo } from "./home-services-logo";
 import {
   FacebookIcon,
@@ -12,27 +15,29 @@ import TelephoneIcon from "@/assets/icons/Telephone.png";
 import EmailIcon from "@/assets/icons/Email.png";
 
 const socialLinks = [
-  { href: "https://linkedin.com", label: "LinkedIn", Icon: LinkedinIcon },
-  { href: "https://github.com", label: "GitHub", Icon: GithubIcon },
-  { href: "https://facebook.com", label: "Facebook", Icon: FacebookIcon },
-  { href: "https://line.me", label: "LINE", Icon: LineIcon },
-  { href: "mailto:contact@homeservices.co", label: "Gmail", Icon: GmailIcon },
+  { href: "https://linkedin.com", label: "LinkedIn", className: "linkedin", Icon: LinkedinIcon },
+  { href: "https://github.com", label: "GitHub", className: "github", Icon: GithubIcon },
+  { href: "https://facebook.com", label: "Facebook", className: "facebook", Icon: FacebookIcon },
+  { href: "https://line.me", label: "LINE", className: "line", Icon: LineIcon },
+  { href: "mailto:contact@homeservices.co", label: "Gmail", className: "gmail", Icon: GmailIcon },
 ] as const;
 
 export function Footer() {
+  const t = useTranslations("Footer");
+
   return (
     <footer className="bg-white">
       <div className="mx-auto grid min-h-[122px] w-[min(1140px,calc(100%-32px))] grid-cols-1 items-center gap-[22px] py-10 text-center min-[801px]:w-[min(1140px,calc(100%-48px))] min-[801px]:grid-cols-[1.2fr_1.8fr_1fr] min-[801px]:gap-9 min-[801px]:py-0 min-[801px]:text-left">
         <div className="flex flex-col items-center gap-3 min-[801px]:items-start">
-          <Link href="/" className="w-fit" aria-label="กลับไปหน้าแรก">
+          <Link href="/" className="w-fit" aria-label={t("homeAria")}>
             <HomeServicesLogo />
           </Link>
-          <nav aria-label="โซเชียลมีเดีย">
-            <ul className="ml-0 flex flex-wrap gap-3 p-0 min-[801px]:ml-5">
-              {socialLinks.map(({ href, label, Icon }) => (
+          <nav className="footer-social" aria-label={t("socialAria")}>
+            <ul>
+              {socialLinks.map(({ href, label, className, Icon }) => (
                 <li key={label}>
                   <a
-                    className="flex text-[#336df2] [&_svg]:size-6"
+                    className={className}
                     href={href}
                     aria-label={label}
                     rel="noreferrer"
@@ -48,10 +53,10 @@ export function Footer() {
 
         <div>
           <strong className="mb-[7px] block text-sm">
-            บริษัท โฮมเซอร์วิส จำกัด
+            {t("company")}
           </strong>
           <p className="m-0 text-[11px] leading-[1.7] text-[#667085]">
-            452 ซอยสุขุมวิท 79 แขวงพระโขนงเหนือ เขตวัฒนา กรุงเทพมหานคร 10260
+            {t("address")}
           </p>
         </div>
         <address className="mx-auto flex flex-col gap-[5px] text-[11px] leading-[1.7] text-[#667085] not-italic min-[801px]:mx-0">
@@ -82,10 +87,10 @@ export function Footer() {
       </div>
       <div className="bg-[#f1f2f4] text-[#949aaa]">
         <div className="mx-auto flex min-h-[46px] w-[min(1140px,calc(100%-32px))] flex-col-reverse items-center justify-between gap-4 py-[18px] text-center text-[9px] min-[801px]:w-[min(1140px,calc(100%-48px))] min-[801px]:flex-row min-[801px]:gap-0 min-[801px]:py-0 min-[801px]:text-left">
-          <small>copyright © 2026 HomeServices.com All rights reserved</small>
+          <small>{t("copyright")}</small>
           <div className="flex flex-col gap-2 min-[801px]:flex-row min-[801px]:gap-[30px]">
-            <a href="#terms">เงื่อนไขและข้อตกลงการใช้งานเว็บไซต์</a>
-            <a href="#privacy">นโยบายความเป็นส่วนตัว</a>
+            <Link href="/terms">{t("terms")}</Link>
+            <Link href="/privacy">{t("privacy")}</Link>
           </div>
         </div>
       </div>

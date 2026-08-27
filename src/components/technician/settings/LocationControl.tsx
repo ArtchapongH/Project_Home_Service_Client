@@ -4,6 +4,7 @@ import { useState } from "react";
 import { updateTechnicianLocation } from "@/services/technicianApi";
 import type { TechnicianProfile } from "@/types/technician";
 import { formatThaiDateTime } from "@/utils/technician";
+import { reverseGeocodeAddress } from "@/utils/technicianLocation";
 
 function geolocationMessage(error: GeolocationPositionError): string {
   if (error.code === error.PERMISSION_DENIED) return "ไม่ได้รับอนุญาตให้เข้าถึงตำแหน่ง กรุณาเปิดสิทธิ์ Location ใน Browser";
@@ -17,7 +18,9 @@ export function LocationControl({
   onUpdated,
 }: {
   profile: TechnicianProfile;
-  onUpdated: (location: Pick<TechnicianProfile, "latitude" | "longitude" | "locationUpdatedAt">) => void;
+  onUpdated: (
+    location: Pick<TechnicianProfile, "latitude" | "longitude" | "locationUpdatedAt" | "address">,
+  ) => void;
 }) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -32,12 +35,19 @@ export function LocationControl({
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         try {
+          const latitude = position.coords.latitude;
+          const longitude = position.coords.longitude;
+          const address = await reverseGeocodeAddress(latitude, longitude);
           const result = await updateTechnicianLocation({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
+            latitude,
+            longitude,
+            address,
           });
-          onUpdated(result);
-          setMessage("บันทึกพิกัดปัจจุบันแล้ว");
+          onUpdated({
+            ...result,
+            address: result.address ?? address,
+          });
+          setMessage("บันทึกพิกัดและที่อยู่ปัจจุบันแล้ว");
         } catch {
           setMessage("บันทึกพิกัดไม่สำเร็จ กรุณาลองใหม่");
         } finally {
@@ -55,7 +65,7 @@ export function LocationControl({
   return (
     <div>
       <div className="flex flex-wrap items-center gap-3">
-        <button type="button" onClick={locate} disabled={loading} className="inline-flex h-11 items-center rounded-lg border border-blue-600 px-4 text-sm font-medium text-blue-600 disabled:opacity-50">
+        <button type="button" onClick={locate} disabled={loading} className="inline-flex h-11 w-full items-center justify-center rounded-lg border border-blue-600 px-4 text-sm font-medium text-blue-600 disabled:opacity-50 md:w-auto">
           {loading ? "กำลังรีเฟรช..." : "รีเฟรช"}
         </button>
       </div>
