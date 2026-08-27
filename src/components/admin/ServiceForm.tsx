@@ -7,6 +7,7 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import AddIcon from "@mui/icons-material/Add";
 import CloudUploadOutlinedIcon from "@mui/icons-material/CloudUploadOutlined";
 import AlertConfirmation from "@/components/admin/AlertConfirmation";
+import DragVerticalIcon from "@/components/admin/DragVerticalIcon";
 import {
   ServiceItem,
   CreateServiceInput,
@@ -394,7 +395,8 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
             )}
 
             {/* Column Headers */}
-            <div className="flex items-center gap-3 pl-8 text-xs font-semibold text-gray-500">
+            <div className="flex items-center gap-3 text-xs font-semibold text-gray-500">
+              <span className="w-5" />
               <span className="flex-1">ชื่อรายการ<span className="text-red-500">*</span></span>
               <span className="w-44">หน่วยบริการ<span className="text-red-500">*</span></span>
               <span className="w-48">ค่าบริการ / 1 หน่วย<span className="text-red-500">*</span></span>
@@ -404,8 +406,8 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
             <div className="space-y-3">
               {serviceOptions.map((sub, index) => (
                 <div key={index} className="flex items-center gap-3">
-                  <div className="flex items-center justify-center text-gray-300">
-                    <Image src="/dragvertical.svg" alt="" width={24} height={32} className="block" />
+                  <div className="flex w-5 items-center justify-center text-[#C8CCDB]">
+                    <DragVerticalIcon className="text-[#C8CCDB]" />
                   </div>
                   <input
                     type="text"

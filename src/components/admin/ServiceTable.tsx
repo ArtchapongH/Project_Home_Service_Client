@@ -6,6 +6,7 @@ import Image from "next/image";
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
 import AlertConfirmation from "@/components/admin/AlertConfirmation";
+import DragVerticalIcon from "@/components/admin/DragVerticalIcon";
 import { useServiceContext } from "@/contexts/ServiceContext";
 import { ServiceItem } from "@/types/service";
 
@@ -111,7 +112,7 @@ export const ServiceTable: React.FC = () => {
         <table className="w-full text-left text-sm text-gray-600">
           <thead className="border-b border-gray-200 bg-[#EFEFEF] text-gray-500">
             <tr>
-              <th className="w-32 px-6 py-4 text-center font-normal text-xs text-gray-500">ลำดับ</th>
+              <th className="w-28 pl-8 pr-4 py-4 text-left font-normal text-xs text-gray-500">ลำดับ</th>
               <th className="px-6 py-4 font-normal text-xs text-gray-500">ชื่อบริการ</th>
               <th className="px-6 py-4 font-normal text-xs text-gray-500">หมวดหมู่</th>
               <th className="px-6 py-4 font-normal text-xs text-gray-500">สร้างเมื่อ</th>
@@ -142,8 +143,8 @@ export const ServiceTable: React.FC = () => {
                     onDrop={() => handleDrop(item.id)}
                     className={`transition-colors hover:bg-gray-50/50 ${draggedServiceId === item.id ? "opacity-50" : ""}`}
                   >
-                    <td className="px-6 py-5">
-                      <div className="relative flex items-center justify-center">
+                    <td className="w-28 pl-8 pr-4 py-5">
+                      <div className="flex items-center gap-4">
                         <button
                           type="button"
                           draggable
@@ -153,20 +154,15 @@ export const ServiceTable: React.FC = () => {
                             event.dataTransfer.setData("text/plain", String(item.id));
                           }}
                           onDragEnd={() => setDraggedServiceId(null)}
-                          className="absolute -left-5 top-1/2 -translate-y-1/2 cursor-grab touch-none text-gray-300 active:cursor-grabbing"
+                          className="p-1 -m-1 cursor-grab active:cursor-grabbing text-[#C8CCDB] hover:text-gray-600 active:text-[#3366FF] transition-colors"
                           title="ลากเพื่อสลับลำดับ"
                           aria-label={`สลับลำดับ ${item.name}`}
                         >
-                          <Image
-                            src="/dragvertical.svg"
-                            alt=""
-                            width={24}
-                            height={32}
-                            draggable={false}
-                            className="block"
-                          />
+                          <DragVerticalIcon />
                         </button>
-                        <span className="font-normal text-gray-800">{index + 1}</span>
+                        <span className="font-normal text-gray-800 tabular-nums">
+                          {index + 1}
+                        </span>
                       </div>
                     </td>
                     <td className="px-6 py-5 font-medium text-gray-900">
