@@ -111,8 +111,9 @@ export function ServiceCard({ service, sortBy, isPopular: isPopularProp, onCateg
   const categoryStyle = getCategoryStyles(service.category);
   const formattedPrice = formatServicePrice(service.minPrice, service.maxPrice);
   const imageSrc = service.imageUrl || "/images/landing/service-aircon.png";
-  const serviceLink = `/services/${service.id}`;
+  const serviceLink = `/service-details/${service.id}`;
   const { rating, reviewCount, isPopular, isRecommended } = getServiceMetrics(service, isPopularProp);
+
 
   // ปรับ Badge ตามโหมดการเรียงลำดับที่ผู้ใช้เลือก (เพื่อไม่ให้ป้าย แนะนำ ติดมาในโหมดยอดนิยม)
   const activeBadgeType = (() => {

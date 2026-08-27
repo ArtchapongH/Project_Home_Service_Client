@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { getDirectionsUrl } from "@/utils/technician";
+import {
+  getDirectionsUrl,
+  getDistanceKm,
+  isJobWithinRadius,
+} from "@/utils/technician";
 
 describe("getDirectionsUrl", () => {
   it("prefers coordinates when available", () => {
@@ -14,5 +18,17 @@ describe("getDirectionsUrl", () => {
 
   it("returns null without a destination", () => {
     expect(getDirectionsUrl({ latitude: null, longitude: null, address: null })).toBeNull();
+  });
+});
+
+describe("job radius", () => {
+  it("returns 0 when the technician stands on the job", () => {
+    expect(getDistanceKm(13.8285, 100.5596, 13.8285, 100.5596)).toBe(0);
+  });
+
+  it("hides jobs farther than 4km and jobs without coordinates", () => {
+    expect(isJobWithinRadius(13.8285, 100.5596, 13.8285, 100.5596)).toBe(true);
+    expect(isJobWithinRadius(13.8285, 100.5596, 18.7964, 98.9673)).toBe(false);
+    expect(isJobWithinRadius(13.8285, 100.5596, null, 100.5596)).toBe(false);
   });
 });

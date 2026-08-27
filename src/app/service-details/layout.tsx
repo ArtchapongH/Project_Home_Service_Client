@@ -3,7 +3,18 @@
 
 import React, { createContext, useEffect, useState } from "react";
 
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
+
+const stripePromise = loadStripe(
+  "pk_test_51U8I9tEcKQ4tElnOs6okgrxrdwBjLm1FIbeOt6xks4BzJ58YUH1OIOUlAsgJyUqUtNEzOHAYQSayXLV41hKrEoYO00YdOhLRrj"
+);
+
 type PaymentContextValue = {
+    userId: string | number | null;
+    setUserId: React.Dispatch<React.SetStateAction<string | number | null>>;
+    serviceId: number;
+    setServiceId: React.Dispatch<React.SetStateAction<number>>;
     serviceTitle: string;
     setServiceTitle: React.Dispatch<React.SetStateAction<string>>;
     serviceDetail: ServiceDetail[];
@@ -12,8 +23,7 @@ type PaymentContextValue = {
     setServiceFormData: React.Dispatch<React.SetStateAction<ServiceFormData>>;
     paymentFormData: PaymentFormData;
     setPaymentFormData: React.Dispatch<React.SetStateAction<PaymentFormData>>;
-    promotionCode: string;
-    setPromotionCode: React.Dispatch<React.SetStateAction<string>>;
+    
     isFirstPageCompleted: boolean;
     setIsFirstPageCompleted: React.Dispatch<React.SetStateAction<boolean>>;
     isSecondPageCompleted: boolean;
@@ -22,30 +32,48 @@ type PaymentContextValue = {
     setIsThirdPageCompleted: React.Dispatch<React.SetStateAction<boolean>>;
     totAmount: number;
     setTotAmount: React.Dispatch<React.SetStateAction<number>>;
+    paymentMethod: PaymentMethod;
+    setPaymentMethod: React.Dispatch<React.SetStateAction<PaymentMethod>>;
+    discount: number; 
+    setDiscount: React.Dispatch<React.SetStateAction<number>>;
+    discountType: string;
+    setDiscountType: React.Dispatch<React.SetStateAction<string>>;
+    newQuota: number;
+    setNewQuota: React.Dispatch<React.SetStateAction<number>>;
+
+
+    provincesList: string;
+    setProvincesList: React.Dispatch<React.SetStateAction<string>>;
+    districtList: string;
+    setDistrictList: React.Dispatch<React.SetStateAction<string>>;
+    subdistrictList: string;
+    setSubdistrictList: React.Dispatch<React.SetStateAction<string>>;
 };
+
+export type PaymentMethod = "promptpay" | "card";
 
 type ServiceDetail = {
-  serviceDetail: string;
-  pricePerUnit: number;
+  service_id: string;
+  service_name: string;
+  option_id: string;
+  option_name: string;
+  price: number;
   quantity: number;
-    unit: string;
+  unit: string;
 };
 
-const serviceOptions: ServiceDetail[] = [
-        { serviceDetail: "9,000 - 18,000 BTU, แบบติดผนัง", quantity: 0, pricePerUnit: 800, unit: "เครื่อง" },
-        { serviceDetail: "9,000 - 18,000 BTU, แบบติดผนัง", quantity: 0, pricePerUnit: 800, unit: "เครื่อง" },
-        { serviceDetail: "9,000 - 18,000 BTU, แบบติดผนัง", quantity: 0, pricePerUnit: 800, unit: "เครื่อง" },
-        { serviceDetail: "9,000 - 18,000 BTU, แบบติดผนัง", quantity: 0, pricePerUnit: 800, unit: "เครื่อง" },
-];
+const serviceOptions: ServiceDetail[] = [];
 
 const paymentStorageKey = "home-service-payment";
 
 type SavedPayment = {
+    serviceId?: number;
     serviceDetail?: ServiceDetail[];
     serviceFormData?: ServiceFormData;
     paymentFormData?: PaymentFormData;
     totAmount?: number;
 };
+
 
 function getSavedPayment(): SavedPayment | null {
     if (typeof window === "undefined") {
@@ -85,10 +113,10 @@ interface ServiceFormData {
 
 
 interface PaymentFormData {
-  creditCardNumber: string;
+  creditCardNumberComplete: boolean;
   creditCardName: string;
-  creditCardExpiry: string;
-  creditCardCVC: string;
+  creditCardExpiryComplete: boolean;
+  creditCardCVCComplete: boolean;
     promotionCode: string;
 }
 
@@ -97,6 +125,8 @@ export const PaymentContext = createContext<PaymentContextValue | undefined>(und
 
 export function PaymentProvider({ children }: { children: React.ReactNode }) {
     const [isHydrated, setIsHydrated] = useState(false);
+    const [userId, setUserId] = useState<string | number | null>("1");
+    const [serviceId, setServiceId] = useState(0);
     const [serviceTitle, setServiceTitle] = useState("");
     // ข้อมูล sevice datail มันจะต้องเป็น array ของ object ที่มี serviceDetail, pricePerUnit, quantity
     const [serviceDetail, setServiceDetail] = useState<ServiceDetail[]>(serviceOptions);
@@ -112,10 +142,10 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
     });
 
     const [paymentFormData, setPaymentFormData] = useState<PaymentFormData>({
-        creditCardNumber: "",
+        creditCardNumberComplete: false,
         creditCardName: "",
-        creditCardExpiry: "",
-        creditCardCVC: "",
+        creditCardExpiryComplete: false,
+        creditCardCVCComplete: false,
         promotionCode: "",
     });
 
@@ -127,11 +157,26 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
 
     const [totAmount, setTotAmount] = useState(0);
 
+    const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
+    const [discount, setDiscount] = useState(0);
+    const [discountType, setDiscountType] = useState("");
+    const [newQuota, setNewQuota] = useState(0);
+
+    const [provincesList, setProvincesList] = useState("");
+    const [districtList, setDistrictList] = useState("");
+    const [subdistrictList, setSubdistrictList] = useState("");
+    
+    
+
     useEffect(() => {
         const savedPayment = getSavedPayment();
 
         if (savedPayment?.serviceDetail) {
             setServiceDetail(savedPayment.serviceDetail);
+        }
+
+        if (savedPayment?.serviceId && Number.isSafeInteger(savedPayment.serviceId)) {
+            setServiceId(savedPayment.serviceId);
         }
 
         if (savedPayment?.serviceFormData) {
@@ -157,11 +202,15 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
 
         window.sessionStorage.setItem(
             paymentStorageKey,
-            JSON.stringify({ serviceDetail, serviceFormData, paymentFormData, totAmount }),
+            JSON.stringify({ serviceId, serviceDetail, serviceFormData, paymentFormData, totAmount }),
         );
-    }, [isHydrated, serviceDetail, serviceFormData, paymentFormData, totAmount]);
+    }, [isHydrated, serviceId, serviceDetail, serviceFormData, paymentFormData, totAmount]);
 
     const value: PaymentContextValue = {
+        userId,
+        setUserId,
+        serviceId,
+        setServiceId,
         serviceTitle,
         setServiceTitle,
         serviceDetail,
@@ -170,9 +219,14 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
         setServiceFormData,
         paymentFormData,
         setPaymentFormData,
-        promotionCode,
-        setPromotionCode,
         
+        discount, 
+        setDiscount, 
+        discountType,
+        setDiscountType,
+        newQuota,
+        setNewQuota,
+
         isFirstPageCompleted,
         setIsFirstPageCompleted,
         isSecondPageCompleted,
@@ -181,16 +235,30 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
         setIsThirdPageCompleted,
 
         totAmount,
-        setTotAmount
+        setTotAmount,
+
+        paymentMethod,
+        setPaymentMethod,
+
+        provincesList,
+        setProvincesList,
+        districtList,
+        setDistrictList,
+        subdistrictList,
+        setSubdistrictList
     };
 
 
     return(
-        <PaymentContext.Provider value={value}>
-            {children}
-        </PaymentContext.Provider>
+        <Elements stripe={stripePromise}>
+            <PaymentContext.Provider value={value}>
+                {children}
+            </PaymentContext.Provider>
+        </Elements>
     );
 }
 
-export default PaymentProvider;
+export default function ServiceDetailsLayout({ children }: { children: React.ReactNode }) {
+    return <PaymentProvider>{children}</PaymentProvider>;
+}
 
