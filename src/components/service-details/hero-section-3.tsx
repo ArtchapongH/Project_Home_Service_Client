@@ -153,7 +153,7 @@ export default function HeroSectionThree() {
 									<CardNumberElement
 										options={cardElementOptions}
 										className="w-full"
-										onChange={(event) => setPaymentFormData((currentForm) => ({ ...currentForm, creditCardNumberComplete: event.complete }))}
+										onChange={(event: { complete: boolean }) => setPaymentFormData((currentForm) => ({ ...currentForm, creditCardNumberComplete: event.complete }))}
 									/>
 								</div>
 							</Field>
@@ -165,7 +165,7 @@ export default function HeroSectionThree() {
 									<CardExpiryElement
 										options={cardElementOptions}
 										className="w-full"
-										onChange={(event) => setPaymentFormData((currentForm) => ({ ...currentForm, creditCardExpiryComplete: event.complete }))}
+										onChange={(event: { complete: boolean }) => setPaymentFormData((currentForm) => ({ ...currentForm, creditCardExpiryComplete: event.complete }))}
 									/>
 								</div>
 							</Field>
@@ -174,7 +174,7 @@ export default function HeroSectionThree() {
 									<CardCvcElement
 										options={cardElementOptions}
 										className="w-full"
-										onChange={(event) => setPaymentFormData((currentForm) => ({ ...currentForm, creditCardCVCComplete: event.complete }))}
+										onChange={(event: { complete: boolean }) => setPaymentFormData((currentForm) => ({ ...currentForm, creditCardCVCComplete: event.complete }))}
 									/>
 								</div>
 							</Field>

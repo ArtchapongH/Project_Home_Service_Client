@@ -47,9 +47,10 @@ export async function updateTechnicianLocation(
       latitude: input.latitude,
       longitude: input.longitude,
       locationUpdatedAt: new Date().toISOString(),
-      ...(input.address !== undefined ? { address: input.address } : {}),
+      address: input.address ?? null,
     };
   }
+
 
   const response = await apiClient.patch<
     ApiResponse<

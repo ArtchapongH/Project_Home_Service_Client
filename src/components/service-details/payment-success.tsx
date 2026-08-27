@@ -66,10 +66,10 @@ export function PaymentSuccess(props: PaymentSuccessProps) {
         totalPrice: paymentContext?.totAmount || 1550,
         items: selectedServices.map((s, idx) => ({
           id: `item-${idx}`,
-          name: s.serviceDetail,
+          name: s.option_name || (s as unknown as { serviceDetail?: string }).serviceDetail || "บริการซ่อมบำรุง",
           quantity: s.quantity,
           unit: s.unit || "เครื่อง",
-          price: s.pricePerUnit,
+          price: s.price ?? (s as unknown as { pricePerUnit?: number }).pricePerUnit ?? 0,
         })),
         createdAt: new Date().toISOString(),
       });
@@ -118,8 +118,8 @@ export function PaymentSuccess(props: PaymentSuccessProps) {
               {selectedServices.length > 0 ? (
                 <div className="space-y-2">
                   {selectedServices.map((service, index) => (
-                    <div key={`${service.serviceDetail}-${index}`} className="flex items-center justify-between gap-3 text-sm sm:text-[15px]">
-                      <span className="font-normal text-[#334155]">{service.serviceDetail}</span>
+                    <div key={`${service.option_name || index}-${index}`} className="flex items-center justify-between gap-3 text-sm sm:text-[15px]">
+                      <span className="font-normal text-[#334155]">{service.option_name || (service as unknown as { serviceDetail?: string }).serviceDetail}</span>
                       <span className="shrink-0 text-[#64748B]">{service.quantity} {service.unit || "รายการ"}</span>
                     </div>
                   ))}
