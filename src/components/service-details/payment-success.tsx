@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import { ProtectedRoute } from "@/components/common/ProtectedRoute";
 import { PaymentContext } from "@/app/service-details/layout";
+import { saveLocalStoredOrder } from "@/services/customerOrderApi";
 
 export interface PaymentSuccessProps {
   serviceName?: string;
@@ -17,8 +18,12 @@ export interface PaymentSuccessProps {
 
 export function PaymentSuccess(props: PaymentSuccessProps) {
   const paymentContext = useContext(PaymentContext);
+  const isSavedRef = useRef(false);
 
-  const selectedServices = paymentContext?.serviceDetail?.filter((s) => s.quantity > 0) || [];
+  const selectedServices = useMemo(
+    () => paymentContext?.serviceDetail?.filter((s) => s.quantity > 0) || [],
+    [paymentContext?.serviceDetail]
+  );
   const addressString = paymentContext?.serviceFormData
     ? [
         paymentContext.serviceFormData.address,
@@ -43,6 +48,33 @@ export function PaymentSuccess(props: PaymentSuccessProps) {
     ? `${paymentContext.totAmount.toFixed(2)} ฿`
     : (props.totalPriceText || "1550.00 ฿");
   const orderListHref = props.orderListHref || "/customer-services";
+
+  useEffect(() => {
+    if (isSavedRef.current) return;
+    if (selectedServices.length > 0) {
+      isSavedRef.current = true;
+      const generatedCode = `AD${Math.floor(10000000 + Math.random() * 90000000)}`;
+      saveLocalStoredOrder({
+        id: `ord-${Date.now()}`,
+        orderCode: generatedCode,
+        status: "pending",
+        statusText: "รอดำเนินการ",
+        scheduledDate: paymentContext?.serviceFormData?.serviceDate || "25/04/2567",
+        scheduledTime: paymentContext?.serviceFormData?.serviceTime || "13.00 น.",
+        technicianName: "สมาน เยี่ยมยอด",
+        address: addressString,
+        totalPrice: paymentContext?.totAmount || 1550,
+        items: selectedServices.map((s, idx) => ({
+          id: `item-${idx}`,
+          name: s.serviceDetail,
+          quantity: s.quantity,
+          unit: s.unit || "เครื่อง",
+          price: s.pricePerUnit,
+        })),
+        createdAt: new Date().toISOString(),
+      });
+    }
+  }, [selectedServices, paymentContext, addressString]);
 
   return (
     <ProtectedRoute>

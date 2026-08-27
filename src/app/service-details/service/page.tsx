@@ -1,15 +1,13 @@
 "use client";
 
-import NavbarResponsive from "@/components/service-details/navbar-responsive";
-
 import HeroSection from "@/components/service-details/hero-section-1";
 import { PaymentProvider } from "@/app/service-details/layout";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { useParams } from "next/navigation";
 
-export default function serviceDetailPage() {
+export default function ServiceDetailPage() {
  const params = useParams();
- const serviceId =  Number(params?.id ?? 0);
+ const serviceId = Number(params?.id ?? 0);
   return(
     <>
     <AuthProvider>
@@ -18,8 +16,5 @@ export default function serviceDetailPage() {
       </PaymentProvider>
     </AuthProvider>
     </>
-  ) 
-  
-  
-  
+  );
 }

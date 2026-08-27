@@ -20,6 +20,16 @@ export interface CustomerServiceOrder {
   scheduledDate: string;
   scheduledTime: string;
   technicianName?: string;
+  technicianPhone?: string;
   totalPrice: number;
+  subtotal?: number;
+  discount?: number;
+  address?: string;
+  notes?: string;
+  paymentMethod?: string;
   items: CustomerServiceItem[];
+  isReviewed?: boolean;
+  reviewRating?: number;
+  reviewComment?: string;
+  createdAt?: string;
 }

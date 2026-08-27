@@ -6,10 +6,8 @@ import NotificationsNoneRoundedIcon from "@mui/icons-material/NotificationsNoneR
 import { HomeServicesLogo } from "../layout/home-services-logo";
 import { UserAvatar } from "../layout/UserAvatar";
 import { useAuth } from "@/contexts/AuthContext";
-import { PaymentContext } from "@/app/service-details/layout";
 
 export default function NavbarResponsive() {
-	const payment = React.useContext(PaymentContext);
 	const { user } = useAuth();
 	const displayName = user?.displayName || user?.fullName || user?.email || "";
 

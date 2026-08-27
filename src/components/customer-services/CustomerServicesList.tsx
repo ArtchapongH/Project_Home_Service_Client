@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CustomerServicesSideNav } from "./CustomerServicesSideNav";
 import { CustomerServiceCard } from "./CustomerServiceCard";
 import { CustomerServiceDetailModal } from "./CustomerServiceDetailModal";
 import { ProtectedRoute } from "@/components/common/ProtectedRoute";
+import { customerOrderApi } from "@/services/customerOrderApi";
 import type { CustomerServiceOrder } from "@/types/customer-service";
 
 const DEFAULT_MOCK_SERVICES: CustomerServiceOrder[] = [
@@ -71,8 +72,35 @@ interface CustomerServicesListProps {
 export function CustomerServicesList({
   initialOrders = DEFAULT_MOCK_SERVICES,
 }: CustomerServicesListProps) {
-  const [services] = useState<CustomerServiceOrder[]>(initialOrders);
+  const [services, setServices] = useState<CustomerServiceOrder[]>(initialOrders);
   const [selectedOrder, setSelectedOrder] = useState<CustomerServiceOrder | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadOrders() {
+      try {
+        const fetched = await customerOrderApi.getUserOrders();
+        if (isMounted && fetched && fetched.length > 0) {
+          // กรองเอาเฉพาะออเดอร์ที่ยังไม่เสร็จสิ้น (pending หรือ in_progress)
+          const activeOrders = fetched.filter(
+            (o) => o.status === "pending" || o.status === "in_progress"
+          );
+          if (activeOrders.length > 0) {
+            setServices(activeOrders);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load customer orders:", err);
+      }
+    }
+
+    loadOrders();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
     <ProtectedRoute>

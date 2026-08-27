@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CustomerServicesSideNav } from "./CustomerServicesSideNav";
 import { CustomerServiceCard } from "./CustomerServiceCard";
+import { ReviewServiceModal } from "./ReviewServiceModal";
 import { ProtectedRoute } from "@/components/common/ProtectedRoute";
+import { reviewApi } from "@/services/reviewApi";
 import type { CustomerServiceOrder } from "@/types/customer-service";
 
 const DEFAULT_MOCK_HISTORY: CustomerServiceOrder[] = [
@@ -27,7 +29,7 @@ const DEFAULT_MOCK_HISTORY: CustomerServiceOrder[] = [
   },
   {
     id: "h2",
-    orderCode: "AD04071205",
+    orderCode: "AD04071206",
     status: "completed",
     statusText: "ดำเนินการสำเร็จ",
     scheduledDate: "25/04/2563",
@@ -45,7 +47,7 @@ const DEFAULT_MOCK_HISTORY: CustomerServiceOrder[] = [
   },
   {
     id: "h3",
-    orderCode: "AD04071205",
+    orderCode: "AD04071207",
     status: "completed",
     statusText: "ดำเนินการสำเร็จ",
     scheduledDate: "25/04/2563",
@@ -70,7 +72,93 @@ interface CustomerServicesHistoryProps {
 export function CustomerServicesHistory({
   initialHistory = DEFAULT_MOCK_HISTORY,
 }: CustomerServicesHistoryProps) {
-  const [historyOrders] = useState<CustomerServiceOrder[]>(initialHistory);
+  const [historyOrders, setHistoryOrders] = useState<CustomerServiceOrder[]>(initialHistory);
+  const [reviewingOrder, setReviewingOrder] = useState<CustomerServiceOrder | null>(null);
+
+  // ตรวจสอบสถานะการรีวิวจากฐานข้อมูลหลังบ้านสำหรับแต่ละรายการ
+  useEffect(() => {
+    let isMounted = true;
+
+    async function checkExistingReviews() {
+      try {
+        const checkPromises = historyOrders.map(async (order) => {
+          const code = order.orderCode || order.id;
+          try {
+            const res = await reviewApi.getReviewByOrderCode(code);
+            if (res.isReviewed && res.data) {
+              return {
+                id: order.id,
+                isReviewed: true,
+                reviewRating: res.data.rating,
+                reviewComment: res.data.comment,
+              };
+            }
+          } catch {
+            // Ignore fetch error for mock orders
+          }
+          return null;
+        });
+
+        const results = await Promise.all(checkPromises);
+        if (!isMounted) return;
+
+        setHistoryOrders((prev) =>
+          prev.map((order) => {
+            const match = results.find((r) => r?.id === order.id);
+            if (match) {
+              return {
+                ...order,
+                isReviewed: true,
+                reviewRating: match.reviewRating,
+                reviewComment: match.reviewComment,
+              };
+            }
+            return order;
+          })
+        );
+      } catch (err) {
+        console.error("Failed to check reviews:", err);
+      }
+    }
+
+    checkExistingReviews();
+
+    return () => {
+      isMounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleSubmitReview = (orderId: string, rating: number, comment: string) => {
+    setHistoryOrders((prev) =>
+      prev.map((order) =>
+        order.id === orderId
+          ? {
+              ...order,
+              isReviewed: true,
+              reviewRating: rating,
+              reviewComment: comment,
+            }
+          : order
+      )
+    );
+  };
+
+
+  const handleDeleteReview = (orderId: string) => {
+    setHistoryOrders((prev) =>
+      prev.map((order) =>
+        order.id === orderId
+          ? {
+              ...order,
+              isReviewed: false,
+              reviewRating: undefined,
+              reviewComment: undefined,
+            }
+          : order
+      )
+    );
+  };
 
   return (
     <ProtectedRoute>
@@ -98,6 +186,7 @@ export function CustomerServicesHistory({
                       order={order}
                       isHistory={true}
                       dateLabel="วันเวลาดำเนินการสำเร็จ:"
+                      onReview={(targetOrder) => setReviewingOrder(targetOrder)}
                     />
                   ))
                 ) : (
@@ -111,9 +200,19 @@ export function CustomerServicesHistory({
             </div>
           </div>
         </main>
+
+        {/* Review Modal */}
+        <ReviewServiceModal
+          order={reviewingOrder}
+          open={Boolean(reviewingOrder)}
+          onClose={() => setReviewingOrder(null)}
+          onSubmitReview={handleSubmitReview}
+          onDeleteReview={handleDeleteReview}
+        />
       </div>
     </ProtectedRoute>
   );
 }
+
 
 export default CustomerServicesHistory;

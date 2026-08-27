@@ -12,6 +12,7 @@ import Image from "next/image";
 import serviceDetailBanner from "@/assets/images/service-detail-banner.png";
 import MobileFooter from "./mobile-footer";
 import { PaymentContext } from "@/app/service-details/layout";
+import { ServiceReviewsSection } from "@/components/services/ServiceReviewsSection";
 
 export default function HeroSection({ serviceId }: { serviceId?: string | number }) {
 	const payment = React.useContext(PaymentContext);
@@ -60,37 +61,42 @@ export default function HeroSection({ serviceId }: { serviceId?: string | number
 			</div>
 
 			<div className="mx-3 mt-3 min-[801px]:mx-auto min-[801px]:grid min-[801px]:w-[min(664px,calc(100%-48px))] min-[801px]:grid-cols-[435px_207px] min-[801px]:gap-5">
-				<div className="rounded-lg border border-gray-200 bg-white p-3 min-[801px]:p-3.5">
-					<h1 className="text-base font-semibold text-gray-500">เลือกรายการบริการล้างแอร์</h1>
-					<div className="mt-2">
-					{serviceDetail.map((service, index) => (
-						<div
-							key={`${service.serviceDetail}-${index}`}
-							className="flex items-center justify-between border-b border-gray-200 py-3 last:border-b-0 last:pb-0"
-						>
-							<div className="pr-3">
-								<p className="text-sm font-semibold leading-5 text-black">{service.serviceDetail}</p>
-								<p className="mt-1 flex items-center gap-1 text-xs text-gray-500">
-									<LocalOfferOutlinedIcon className="text-[14px]" />
-									{service.pricePerUnit} ฿ / {service.unit}
-								</p>
+				<div className="space-y-4">
+					<div className="rounded-lg border border-gray-200 bg-white p-3 min-[801px]:p-3.5">
+						<h1 className="text-base font-semibold text-gray-500">เลือกรายการบริการ</h1>
+						<div className="mt-2">
+						{serviceDetail.map((service, index) => (
+							<div
+								key={`${service.serviceDetail}-${index}`}
+								className="flex items-center justify-between border-b border-gray-200 py-3 last:border-b-0 last:pb-0"
+							>
+								<div className="pr-3">
+									<p className="text-sm font-semibold leading-5 text-black">{service.serviceDetail}</p>
+									<p className="mt-1 flex items-center gap-1 text-xs text-gray-500">
+										<LocalOfferOutlinedIcon className="text-[14px]" />
+										{service.pricePerUnit} ฿ / {service.unit}
+									</p>
+								</div>
+								<div className="flex shrink-0 items-center gap-3">
+									<QuantityButton
+										label="ลดจำนวน"
+										onClick={() => changeQuantity(index, -1)}
+										icon={<RemoveRoundedIcon className="text-[18px]" />}
+									/>
+									<span className="w-2 text-center text-sm font-medium text-gray-700">{service.quantity}</span>
+									<QuantityButton
+										label="เพิ่มจำนวน"
+										onClick={() => changeQuantity(index, 1)}
+										icon={<AddRoundedIcon className="text-[18px]" />}
+									/>
+								</div>
 							</div>
-							<div className="flex shrink-0 items-center gap-3">
-								<QuantityButton
-									label="ลดจำนวน"
-									onClick={() => changeQuantity(index, -1)}
-									icon={<RemoveRoundedIcon className="text-[18px]" />}
-								/>
-								<span className="w-2 text-center text-sm font-medium text-gray-700">{service.quantity}</span>
-								<QuantityButton
-									label="เพิ่มจำนวน"
-									onClick={() => changeQuantity(index, 1)}
-									icon={<AddRoundedIcon className="text-[18px]" />}
-								/>
-							</div>
+						))}
 						</div>
-					))}
 					</div>
+
+					{/* Customer Reviews Section */}
+					<ServiceReviewsSection serviceId={serviceId || 1} />
 				</div>
 
 				<MobileFooter />

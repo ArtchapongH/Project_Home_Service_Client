@@ -3,6 +3,7 @@
 import Link from "next/link";
 import EventNoteOutlinedIcon from "@mui/icons-material/EventNoteOutlined";
 import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
+import StarRoundedIcon from "@mui/icons-material/StarRounded";
 import type {
   CustomerServiceOrder,
   CustomerServiceStatus,
@@ -11,6 +12,7 @@ import type {
 interface CustomerServiceCardProps {
   order: CustomerServiceOrder;
   onViewDetail?: (orderId: string) => void;
+  onReview?: (order: CustomerServiceOrder) => void;
   isHistory?: boolean;
   dateLabel?: string;
 }
@@ -55,6 +57,7 @@ const getStatusBadge = (
 export function CustomerServiceCard({
   order,
   onViewDetail,
+  onReview,
   isHistory = false,
   dateLabel,
 }: CustomerServiceCardProps) {
@@ -130,24 +133,58 @@ export function CustomerServiceCard({
           </ul>
         </div>
 
-        {/* Detail Button - Only shown when not in history mode */}
-        {!isHistory && (
+        {/* Action Button: Detail for active orders, Review for history orders */}
+        {!isHistory ? (
           <div className="shrink-0 pt-2 sm:pt-0">
             {onViewDetail ? (
               <button
                 type="button"
                 onClick={() => onViewDetail(order.id)}
-                className="inline-flex min-h-9 items-center justify-center rounded-[7px] bg-[#3366FF] px-5 py-1.5 text-xs sm:text-sm font-medium text-white shadow-sm transition-all duration-200 ease-out hover:scale-[1.02] hover:bg-[#2554DB] hover:shadow-md active:scale-[0.98]"
+                className="inline-flex min-h-[38px] items-center justify-center rounded-lg bg-[#3366FF] px-5 py-1.5 text-xs sm:text-sm font-semibold text-white shadow-sm transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:bg-[#2554DB] hover:shadow-[0_4px_14px_rgba(51,102,255,0.25)] active:translate-y-0 active:scale-[0.98]"
               >
                 ดูรายละเอียด
               </button>
             ) : (
               <Link
                 href={`/customer-services/${order.id}`}
-                className="inline-flex min-h-9 items-center justify-center rounded-[7px] bg-[#3366FF] px-5 py-1.5 text-xs sm:text-sm font-medium text-white shadow-sm transition-all duration-200 ease-out hover:scale-[1.02] hover:bg-[#2554DB] hover:shadow-md active:scale-[0.98]"
+                className="inline-flex min-h-[38px] items-center justify-center rounded-lg bg-[#3366FF] px-5 py-1.5 text-xs sm:text-sm font-semibold text-white shadow-sm transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:bg-[#2554DB] hover:shadow-[0_4px_14px_rgba(51,102,255,0.25)] active:translate-y-0 active:scale-[0.98]"
               >
                 ดูรายละเอียด
               </Link>
+            )}
+          </div>
+        ) : (
+          <div className="shrink-0 pt-2 sm:pt-0">
+            {order.isReviewed ? (
+              <button
+                type="button"
+                onClick={() => onReview && onReview(order)}
+                title="คลิกเพื่อดูหรือแก้ไขรีวิว"
+                className="group inline-flex min-h-[38px] items-center gap-1.5 rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] px-3.5 py-1.5 text-xs sm:text-sm font-medium text-[#475569] shadow-sm transition-all duration-200 hover:border-[#CBD5E1] hover:bg-[#F1F5F9] hover:text-[#1E293B] active:scale-[0.98]"
+              >
+                <StarRoundedIcon sx={{ fontSize: 18, color: "#F59E0B" }} />
+                <span>รีวิวแล้ว ({order.reviewRating || 5}/5)</span>
+                <span className="ml-1 text-[11px] text-[#94A3B8] group-hover:text-[#64748B] underline decoration-dotted">
+                  แก้ไข
+                </span>
+              </button>
+            ) : (
+
+              <button
+                type="button"
+                onClick={() => onReview && onReview(order)}
+                className="group inline-flex min-h-[38px] items-center gap-1.5 rounded-lg border border-[#3366FF]/30 bg-[#F0F5FF] px-4 py-1.5 text-xs sm:text-sm font-semibold text-[#3366FF] shadow-sm transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:border-[#3366FF] hover:bg-[#3366FF] hover:text-white hover:shadow-[0_6px_16px_rgba(51,102,255,0.22)] active:translate-y-0 active:scale-[0.98]"
+              >
+                <StarRoundedIcon
+                  sx={{
+                    fontSize: 19,
+                    color: "#F59E0B",
+                    transition: "transform 0.3s ease, color 0.3s ease",
+                  }}
+                  className="group-hover:scale-110 group-hover:!text-[#FDE047]"
+                />
+                <span>ให้คะแนนและรีวิว</span>
+              </button>
             )}
           </div>
         )}
