@@ -5,128 +5,70 @@ import { CustomerServicesSideNav } from "./CustomerServicesSideNav";
 import { CustomerServiceCard } from "./CustomerServiceCard";
 import { ReviewServiceModal } from "./ReviewServiceModal";
 import { ProtectedRoute } from "@/components/common/ProtectedRoute";
+import { customerOrderApi } from "@/services/customerOrderApi";
 import { reviewApi } from "@/services/reviewApi";
 import type { CustomerServiceOrder } from "@/types/customer-service";
-
-const DEFAULT_MOCK_HISTORY: CustomerServiceOrder[] = [
-  {
-    id: "h1",
-    orderCode: "AD04071205",
-    status: "completed",
-    statusText: "ดำเนินการสำเร็จ",
-    scheduledDate: "25/04/2563",
-    scheduledTime: "16.00 น.",
-    technicianName: "สมาน เยี่ยมยอด",
-    totalPrice: 1550.0,
-    items: [
-      {
-        id: "item-h1",
-        name: "ล้างแอร์ 9,000 - 18,000 BTU, ติดผนัง",
-        quantity: 2,
-        unit: "เครื่อง",
-      },
-    ],
-  },
-  {
-    id: "h2",
-    orderCode: "AD04071206",
-    status: "completed",
-    statusText: "ดำเนินการสำเร็จ",
-    scheduledDate: "25/04/2563",
-    scheduledTime: "16.00 น.",
-    technicianName: "สมาน เยี่ยมยอด",
-    totalPrice: 1550.0,
-    items: [
-      {
-        id: "item-h2",
-        name: "ล้างแอร์ 9,000 - 18,000 BTU, ติดผนัง",
-        quantity: 2,
-        unit: "เครื่อง",
-      },
-    ],
-  },
-  {
-    id: "h3",
-    orderCode: "AD04071207",
-    status: "completed",
-    statusText: "ดำเนินการสำเร็จ",
-    scheduledDate: "25/04/2563",
-    scheduledTime: "16.00 น.",
-    technicianName: "สมาน เยี่ยมยอด",
-    totalPrice: 1550.0,
-    items: [
-      {
-        id: "item-h3",
-        name: "ล้างแอร์ 9,000 - 18,000 BTU, ติดผนัง",
-        quantity: 2,
-        unit: "เครื่อง",
-      },
-    ],
-  },
-];
 
 interface CustomerServicesHistoryProps {
   initialHistory?: CustomerServiceOrder[];
 }
 
 export function CustomerServicesHistory({
-  initialHistory = DEFAULT_MOCK_HISTORY,
+  initialHistory,
 }: CustomerServicesHistoryProps) {
-  const [historyOrders, setHistoryOrders] = useState<CustomerServiceOrder[]>(initialHistory);
+  const [historyOrders, setHistoryOrders] = useState<CustomerServiceOrder[]>(initialHistory || []);
+  const [isLoading, setIsLoading] = useState<boolean>(!initialHistory);
   const [reviewingOrder, setReviewingOrder] = useState<CustomerServiceOrder | null>(null);
 
-  // ตรวจสอบสถานะการรีวิวจากฐานข้อมูลหลังบ้านสำหรับแต่ละรายการ
+  // ดึงประวัติรายการซ่อมที่เสร็จสิ้น และตรวจสอบสถานะรีวิว
   useEffect(() => {
     let isMounted = true;
 
-    async function checkExistingReviews() {
+    async function loadHistoryOrders() {
       try {
-        const checkPromises = historyOrders.map(async (order) => {
+        const allOrders = await customerOrderApi.getUserOrders();
+        if (!isMounted) return;
+
+        // กรองเฉพาะสถานะ completed
+        const completed = (allOrders || []).filter((o) => o.status === "completed");
+
+        // ตรวจสอบสถานะการรีวิวจากฐานข้อมูลหลังบ้านสำหรับแต่ละรายการ
+        const checkPromises = completed.map(async (order) => {
           const code = order.orderCode || order.id;
           try {
             const res = await reviewApi.getReviewByOrderCode(code);
             if (res.isReviewed && res.data) {
               return {
-                id: order.id,
+                ...order,
                 isReviewed: true,
                 reviewRating: res.data.rating,
                 reviewComment: res.data.comment,
               };
             }
           } catch {
-            // Ignore fetch error for mock orders
+            // Ignore review fetch error
           }
-          return null;
+          return order;
         });
 
-        const results = await Promise.all(checkPromises);
-        if (!isMounted) return;
-
-        setHistoryOrders((prev) =>
-          prev.map((order) => {
-            const match = results.find((r) => r?.id === order.id);
-            if (match) {
-              return {
-                ...order,
-                isReviewed: true,
-                reviewRating: match.reviewRating,
-                reviewComment: match.reviewComment,
-              };
-            }
-            return order;
-          })
-        );
+        const withReviews = await Promise.all(checkPromises);
+        if (isMounted) {
+          setHistoryOrders(withReviews);
+        }
       } catch (err) {
-        console.error("Failed to check reviews:", err);
+        console.error("Failed to load customer history:", err);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     }
 
-    checkExistingReviews();
+    loadHistoryOrders();
 
     return () => {
       isMounted = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSubmitReview = (orderId: string, rating: number, comment: string) => {
@@ -179,7 +121,21 @@ export function CustomerServicesHistory({
 
               {/* 2. Customer Service History List */}
               <div className="flex-1 space-y-4">
-                {historyOrders.length > 0 ? (
+                {isLoading ? (
+                  <div className="space-y-4">
+                    {[1, 2].map((n) => (
+                      <div
+                        key={n}
+                        className="h-44 w-full animate-pulse rounded-xl border border-gray-200 bg-white p-6"
+                      >
+                        <div className="h-4 w-1/3 rounded bg-gray-200" />
+                        <div className="mt-4 h-3 w-1/2 rounded bg-gray-100" />
+                        <div className="mt-2 h-3 w-1/4 rounded bg-gray-100" />
+                        <div className="mt-6 h-8 w-24 rounded bg-gray-200" />
+                      </div>
+                    ))}
+                  </div>
+                ) : historyOrders.length > 0 ? (
                   historyOrders.map((order) => (
                     <CustomerServiceCard
                       key={order.id}

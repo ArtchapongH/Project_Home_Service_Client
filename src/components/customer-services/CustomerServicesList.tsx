@@ -8,71 +8,15 @@ import { ProtectedRoute } from "@/components/common/ProtectedRoute";
 import { customerOrderApi } from "@/services/customerOrderApi";
 import type { CustomerServiceOrder } from "@/types/customer-service";
 
-const DEFAULT_MOCK_SERVICES: CustomerServiceOrder[] = [
-  {
-    id: "1",
-    orderCode: "AD04071205",
-    status: "pending",
-    statusText: "รอดำเนินการ",
-    scheduledDate: "25/04/2563",
-    scheduledTime: "13.00 น.",
-    technicianName: "สมาน เยี่ยมยอด",
-    totalPrice: 1550.0,
-    items: [
-      {
-        id: "item-1",
-        name: "ล้างแอร์ 9,000 - 18,000 BTU, ติดผนัง",
-        quantity: 2,
-        unit: "เครื่อง",
-      },
-    ],
-  },
-  {
-    id: "2",
-    orderCode: "AD04071205",
-    status: "pending",
-    statusText: "รอดำเนินการ",
-    scheduledDate: "25/04/2563",
-    scheduledTime: "13.00 น.",
-    technicianName: "สมาน เยี่ยมยอด",
-    totalPrice: 1550.0,
-    items: [
-      {
-        id: "item-2",
-        name: "ล้างแอร์ 9,000 - 18,000 BTU, ติดผนัง",
-        quantity: 2,
-        unit: "เครื่อง",
-      },
-    ],
-  },
-  {
-    id: "3",
-    orderCode: "AD04071205",
-    status: "in_progress",
-    statusText: "กำลังดำเนินการ",
-    scheduledDate: "25/04/2563",
-    scheduledTime: "13.00 น.",
-    technicianName: "สมาน เยี่ยมยอด",
-    totalPrice: 1550.0,
-    items: [
-      {
-        id: "item-3",
-        name: "ล้างแอร์ 9,000 - 18,000 BTU, ติดผนัง",
-        quantity: 2,
-        unit: "เครื่อง",
-      },
-    ],
-  },
-];
-
 interface CustomerServicesListProps {
   initialOrders?: CustomerServiceOrder[];
 }
 
 export function CustomerServicesList({
-  initialOrders = DEFAULT_MOCK_SERVICES,
+  initialOrders,
 }: CustomerServicesListProps) {
-  const [services, setServices] = useState<CustomerServiceOrder[]>(initialOrders);
+  const [services, setServices] = useState<CustomerServiceOrder[]>(initialOrders || []);
+  const [isLoading, setIsLoading] = useState<boolean>(!initialOrders);
   const [selectedOrder, setSelectedOrder] = useState<CustomerServiceOrder | null>(null);
 
   useEffect(() => {
@@ -81,17 +25,19 @@ export function CustomerServicesList({
     async function loadOrders() {
       try {
         const fetched = await customerOrderApi.getUserOrders();
-        if (isMounted && fetched && fetched.length > 0) {
+        if (isMounted) {
           // กรองเอาเฉพาะออเดอร์ที่ยังไม่เสร็จสิ้น (pending หรือ in_progress)
-          const activeOrders = fetched.filter(
+          const activeOrders = (fetched || []).filter(
             (o) => o.status === "pending" || o.status === "in_progress"
           );
-          if (activeOrders.length > 0) {
-            setServices(activeOrders);
-          }
+          setServices(activeOrders);
         }
       } catch (err) {
         console.error("Failed to load customer orders:", err);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     }
 
@@ -121,7 +67,21 @@ export function CustomerServicesList({
 
               {/* 2. Customer Services List */}
               <div className="flex-1 space-y-4">
-                {services.length > 0 ? (
+                {isLoading ? (
+                  <div className="space-y-4">
+                    {[1, 2].map((n) => (
+                      <div
+                        key={n}
+                        className="h-44 w-full animate-pulse rounded-xl border border-gray-200 bg-white p-6"
+                      >
+                        <div className="h-4 w-1/3 rounded bg-gray-200" />
+                        <div className="mt-4 h-3 w-1/2 rounded bg-gray-100" />
+                        <div className="mt-2 h-3 w-1/4 rounded bg-gray-100" />
+                        <div className="mt-6 h-8 w-24 rounded bg-gray-200" />
+                      </div>
+                    ))}
+                  </div>
+                ) : services.length > 0 ? (
                   services.map((service) => (
                     <CustomerServiceCard
                       key={service.id}

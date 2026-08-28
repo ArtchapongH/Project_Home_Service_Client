@@ -108,7 +108,9 @@ export function ReviewServiceModal({
           orderId: order.id,
           rating,
           comment,
-          serviceName,
+          serviceId: order.serviceId,
+          serviceName: order.serviceName || serviceName,
+          technicianId: order.technicianId,
           technicianName: order.technicianName,
         });
         setSuccessMessage("ขอบคุณสำหรับคำรีวิว!");

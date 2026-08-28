@@ -48,6 +48,14 @@ export function ServiceListContent() {
     return () => { active = false; };
   }, []);
 
+  const getPopularityWeight = (service: PublicService) => {
+    const reviews = service.reviewCount ?? 0;
+    const rating = service.averageRating ?? 0;
+    const score = service.popularityScore ?? 0;
+    // Prioritize services that actually have real user reviews and high ratings
+    return reviews * 100 + rating * 20 + score;
+  };
+
   const filteredServices = useMemo(() => services
     .filter((service) => {
       const query = appliedSearchQuery.trim().toLowerCase();
@@ -57,14 +65,17 @@ export function ServiceListContent() {
     })
     .sort((a, b) => {
       if (appliedSortBy === "recommended") return Number(b.isFeatured) - Number(a.isFeatured) || a.displayOrder - b.displayOrder;
-      if (appliedSortBy === "popular") return b.popularityScore - a.popularityScore;
+      if (appliedSortBy === "popular") return getPopularityWeight(b) - getPopularityWeight(a);
       return appliedSortBy === "asc"
         ? a.name.localeCompare(b.name, "th")
         : b.name.localeCompare(a.name, "th");
     }), [services, appliedSearchQuery, appliedCategory, appliedPriceRange, appliedSortBy]);
 
   const topPopularIds = useMemo(() => {
-    const sorted = [...services].sort((a, b) => b.popularityScore - a.popularityScore);
+    // Only give popular badges to services that have real reviews or top calculated popularity
+    const sorted = [...services]
+      .filter((s) => (s.reviewCount ?? 0) > 0 || (s.popularityScore ?? 0) > 0)
+      .sort((a, b) => getPopularityWeight(b) - getPopularityWeight(a));
     return new Set(sorted.slice(0, 3).map((s) => s.id));
   }, [services]);
 

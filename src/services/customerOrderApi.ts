@@ -41,8 +41,16 @@ export const customerOrderApi = {
       const response = await apiClient.get<{ success: boolean; data: CustomerServiceOrder[] }>(
         "/api/orders"
       );
-      if (response.data?.data && Array.isArray(response.data.data)) {
-        return response.data.data;
+      if (response.data && Array.isArray(response.data.data)) {
+        const serverOrders = response.data.data;
+        const localOrders = getLocalStoredOrders();
+        // Merge local orders that might not be synced to server yet
+        const serverIds = new Set(serverOrders.map((o) => o.id));
+        const serverCodes = new Set(serverOrders.map((o) => o.orderCode));
+        const extraLocal = localOrders.filter(
+          (l) => !serverIds.has(l.id) && !serverCodes.has(l.orderCode)
+        );
+        return [...serverOrders, ...extraLocal];
       }
     } catch {
       // หาก API หลังบ้านยังไม่มี ให้ fallback ไปใช้ข้อมูลที่ลูกค้าเพิ่งกดสั่งซื้อ
