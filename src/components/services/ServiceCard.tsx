@@ -87,7 +87,6 @@ function getServiceMetrics(service: PublicService, isPopularOverride?: boolean) 
   return {
     rating,
     reviewCount,
-    bookingsCount,
     isPopular,
     isRecommended,
   };
@@ -127,7 +126,7 @@ export function ServiceCard({ service, sortBy, isPopular: isPopularProp, onCateg
   const formattedPrice = formatServicePrice(service.minPrice, service.maxPrice, locale);
   const imageSrc = service.imageUrl || "/images/landing/service-aircon.png";
   const serviceLink = `/service-details/${service.id}`;
-  const { rating, reviewCount, bookingsCount, isPopular, isRecommended } = getServiceMetrics(service, isPopularProp);
+  const { rating, reviewCount, isPopular, isRecommended } = getServiceMetrics(service, isPopularProp);
 
 
   // ปรับ Badge ตามโหมดการเรียงลำดับที่ผู้ใช้เลือก (เพื่อไม่ให้ป้าย แนะนำ ติดมาในโหมดยอดนิยม)
@@ -299,23 +298,6 @@ export function ServiceCard({ service, sortBy, isPopular: isPopularProp, onCateg
               </Typography>
             )}
           </Box>
-
-          <Box
-            sx={{
-              width: 3,
-              height: 3,
-              borderRadius: "50%",
-              bgcolor: "#CBD5E1",
-              display: "inline-block",
-            }}
-          />
-
-          <Typography
-            component="span"
-            sx={{ color: "#64748B", fontSize: "0.75rem", fontWeight: 500 }}
-          >
-            {t("bookings", { count: bookingsCount.toLocaleString(locale) })}
-          </Typography>
         </Box>
 
         {/* Price Info */}
