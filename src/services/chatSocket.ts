@@ -46,7 +46,8 @@ function emitWithAck<T>(
 }
 
 export function getChatRooms(socket: Socket): Promise<ChatRoom[]> {
-  return emitWithAck(socket, "chat:rooms");
+  // ส่ง payload ว่างให้ชัดเจน เพื่อไม่ให้ Socket.IO สับสนระหว่าง payload กับ acknowledgement
+  return emitWithAck(socket, "chat:rooms", {});
 }
 
 export function getChatMessages(socket: Socket, roomId: string): Promise<ChatMessage[]> {
