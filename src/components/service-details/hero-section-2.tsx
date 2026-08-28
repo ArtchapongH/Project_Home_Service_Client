@@ -16,6 +16,7 @@ import {
 	reverseGeocodeServiceLocation,
 	type AdminPlace,
 } from "@/utils/serviceLocation";
+import { normalizeClockTime } from "@/utils/serviceSchedule";
 
 const ServiceLocationMap = dynamic(
 	() => import("./ServiceLocationMap").then((module) => module.ServiceLocationMap),
@@ -169,7 +170,10 @@ export default function HeroSectionTwo() {
 
 	function updateField(field: keyof ServiceFormData, value: string): void {
 		writeForm((currentForm) => {
-			const nextForm = { ...currentForm, [field]: value };
+			const nextForm = {
+				...currentForm,
+				[field]: field === "serviceTime" ? normalizeClockTime(value) : value,
+			};
 
 			if (field === "province") {
 				nextForm.district = "";
@@ -347,7 +351,7 @@ export default function HeroSectionTwo() {
 						<input type="date" value={serviceFormData.serviceDate} onChange={(event) => updateField("serviceDate", event.target.value)} className={inputClass} />
 					</Field>
 					<Field label="เวลาที่สะดวกใช้บริการ" required>
-						<input type="time" value={serviceFormData.serviceTime} onChange={(event) => updateField("serviceTime", event.target.value)} className={inputClass} />
+						<input type="time" step={60} value={serviceFormData.serviceTime} onChange={(event) => updateField("serviceTime", event.target.value)} className={inputClass} />
 					</Field>
 					<Field label="ที่อยู่" required>
 						<input type="text" value={serviceFormData.address} onChange={(event) => updateField("address", event.target.value)} placeholder="กรุณากรอกที่อยู่" className={inputClass} />

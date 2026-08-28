@@ -4,22 +4,7 @@ import React from "react";
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 import Link from "next/link";
 import { PaymentContext } from "@/app/service-details/layout";
-
-function formatServiceDate(value: string): string {
-	if (!value) return "-";
-	const date = new Date(`${value}T00:00:00`);
-	if (Number.isNaN(date.getTime())) return value;
-	return new Intl.DateTimeFormat("th-TH", {
-		day: "numeric",
-		month: "short",
-		year: "numeric",
-	}).format(date);
-}
-
-function formatServiceTime(value: string): string {
-	if (!value) return "-";
-	return `${value} น.`;
-}
+import { formatThaiServiceDate, formatThaiServiceTime } from "@/utils/serviceSchedule";
 
 export default function PaymentSuccess() {
 	const payment = React.useContext(PaymentContext);
@@ -68,8 +53,8 @@ export default function PaymentSuccess() {
 				</div>
 
 				<div className="space-y-1.5 border-b border-gray-200 py-3 text-[10px]">
-					<SummaryRow label="วันที่" value={formatServiceDate(serviceFormData.serviceDate)} />
-					<SummaryRow label="เวลา" value={formatServiceTime(serviceFormData.serviceTime)} />
+					<SummaryRow label="วันที่" value={formatThaiServiceDate(serviceFormData.serviceDate)} />
+					<SummaryRow label="เวลา" value={formatThaiServiceTime(serviceFormData.serviceTime)} />
 					<SummaryRow label="สถานที่" value={address || "-"} />
 				</div>
 

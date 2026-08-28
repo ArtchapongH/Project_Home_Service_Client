@@ -147,7 +147,7 @@ function restoreServiceFormData(saved: Partial<ServiceFormData> | undefined): Se
         district: typeof saved?.district === "string" ? saved.district : "",
         province: typeof saved?.province === "string" ? saved.province : "",
         serviceDate: typeof saved?.serviceDate === "string" ? saved.serviceDate : "",
-        serviceTime: typeof saved?.serviceTime === "string" ? saved.serviceTime : "",
+        serviceTime: typeof saved?.serviceTime === "string" ? saved.serviceTime.trim().slice(0, 5) : "",
         information: typeof saved?.information === "string" ? saved.information : "",
         latitude: toCoordinate(saved?.latitude),
         longitude: toCoordinate(saved?.longitude),
