@@ -6,6 +6,22 @@ import { ProtectedRoute } from "@/components/common/ProtectedRoute";
 import { PaymentContext } from "@/app/service-details/layout";
 import { saveLocalStoredOrder } from "@/services/customerOrderApi";
 
+function formatServiceDate(value: string): string {
+  if (!value) return "-";
+  const date = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("th-TH", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(date);
+}
+
+function formatServiceTime(value: string): string {
+  if (!value) return "-";
+  return value.includes("น.") ? value : `${value} น.`;
+}
+
 export interface PaymentSuccessProps {
   serviceName?: string;
   quantityText?: string;
@@ -35,8 +51,10 @@ export function PaymentSuccess(props: PaymentSuccessProps) {
         .join(" ")
     : "";
 
-  const finalDate = paymentContext?.serviceFormData?.serviceDate || props.dateText || "23 เม.ย. 2021";
-  const finalTime = paymentContext?.serviceFormData?.serviceTime || props.timeText || "11.00 น.";
+  const rawDate = paymentContext?.serviceFormData?.serviceDate;
+  const finalDate = rawDate ? formatServiceDate(rawDate) : (props.dateText || "23 เม.ย. 2021");
+  const rawTime = paymentContext?.serviceFormData?.serviceTime;
+  const finalTime = rawTime ? formatServiceTime(rawTime) : (props.timeText || "11.00 น.");
   const finalLocation = addressString || props.locationText || (
     <>
       444/4 คอนโดศุภาลัย เสนานิคม
@@ -138,6 +156,13 @@ export function PaymentSuccess(props: PaymentSuccessProps) {
               <SummaryRow label="เวลา" value={finalTime} />
               <SummaryRow label="สถานที่" value={finalLocation} />
             </div>
+
+            {paymentContext?.discount && paymentContext.discount > 0 ? (
+              <div className="mt-3 flex items-center justify-between text-sm">
+                <span className="text-[#64748B]">ส่วนลด</span>
+                <span className="font-medium text-red-500">-{paymentContext.discount.toFixed(2)} ฿</span>
+              </div>
+            ) : null}
 
             {/* Total Price */}
             <div className="mt-4 flex items-center justify-between text-sm sm:text-base">
