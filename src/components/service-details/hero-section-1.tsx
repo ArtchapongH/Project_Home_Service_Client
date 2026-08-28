@@ -23,7 +23,7 @@ export default function HeroSection({ serviceId }: { serviceId?: string | number
 		throw new Error("HeroSection must be rendered inside PaymentProvider");
 	}
 
-	const { serviceDetail, setServiceDetail, setServiceId, setUserId } = payment;
+	const { serviceDetail, setServiceDetail, setServiceId, setServiceTitle, setUserId } = payment;
 
 	// Store userId from AuthContext => may be not used
 	/*
@@ -80,6 +80,7 @@ export default function HeroSection({ serviceId }: { serviceId?: string | number
 
 			console.log("Mapped result:", result);
 			setServiceDetail(result);
+			setServiceTitle(result[0]?.service_name || "");
 			console.log("Service options loaded:", result);
 		} catch (error) {
 			console.error("Error fetching service options:", error);

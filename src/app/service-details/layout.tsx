@@ -67,11 +67,21 @@ const paymentStorageKey = "home-service-payment";
 
 type SavedPayment = {
     serviceId?: number;
+    serviceTitle?: string;
     serviceDetail?: ServiceDetail[];
     serviceFormData?: ServiceFormData;
     paymentFormData?: PaymentFormData;
     totAmount?: number;
 };
+
+export function getServiceBreadcrumbName(
+    serviceTitle: string,
+    services: Array<{ service_name: string; quantity: number }>,
+): string {
+    if (serviceTitle.trim()) return serviceTitle.trim();
+    const selected = services.find((service) => service.quantity > 0);
+    return selected?.service_name || services[0]?.service_name || "บริการ";
+}
 
 
 function getSavedPayment(): SavedPayment | null {
@@ -93,14 +103,7 @@ function getSavedPayment(): SavedPayment | null {
     }
 }
 
-function hasRequiredServiceFormData(formData: ServiceFormData): boolean {
-    return Object.entries(formData)
-        .filter(([field]) => field !== "information")
-        .every(([, value]) => value.trim().length > 0);
-}
-
-
-interface ServiceFormData {
+export interface ServiceFormData {
   address: string;
   subdistrict: string;
   district: string;
@@ -108,6 +111,21 @@ interface ServiceFormData {
   serviceDate: string;
   serviceTime: string;
   information: string;
+  latitude: number | null;
+  longitude: number | null;
+}
+
+export function hasRequiredServiceFormData(formData: ServiceFormData): boolean {
+    return (
+        formData.address.trim().length > 0 &&
+        formData.subdistrict.trim().length > 0 &&
+        formData.district.trim().length > 0 &&
+        formData.province.trim().length > 0 &&
+        formData.serviceDate.trim().length > 0 &&
+        formData.serviceTime.trim().length > 0 &&
+        formData.latitude != null &&
+        formData.longitude != null
+    );
 }
 
 
@@ -138,6 +156,8 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
         serviceDate: "",
         serviceTime: "",
         information: "",
+        latitude: null,
+        longitude: null,
     });
 
     const [paymentFormData, setPaymentFormData] = useState<PaymentFormData>({
@@ -170,6 +190,10 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         const savedPayment = getSavedPayment();
 
+        if (savedPayment?.serviceTitle) {
+            setServiceTitle(savedPayment.serviceTitle);
+        }
+
         if (savedPayment?.serviceDetail) {
             setServiceDetail(savedPayment.serviceDetail);
         }
@@ -179,8 +203,13 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
         }
 
         if (savedPayment?.serviceFormData) {
-            setServiceFormData(savedPayment.serviceFormData);
-            setIsSecondPageCompleted(hasRequiredServiceFormData(savedPayment.serviceFormData));
+            const restoredForm = {
+                ...savedPayment.serviceFormData,
+                latitude: savedPayment.serviceFormData.latitude ?? null,
+                longitude: savedPayment.serviceFormData.longitude ?? null,
+            };
+            setServiceFormData(restoredForm);
+            setIsSecondPageCompleted(hasRequiredServiceFormData(restoredForm));
         }
 
         if (savedPayment?.paymentFormData) {
@@ -201,9 +230,9 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
 
         window.sessionStorage.setItem(
             paymentStorageKey,
-            JSON.stringify({ serviceId, serviceDetail, serviceFormData, paymentFormData, totAmount }),
+            JSON.stringify({ serviceId, serviceTitle, serviceDetail, serviceFormData, paymentFormData, totAmount }),
         );
-    }, [isHydrated, serviceId, serviceDetail, serviceFormData, paymentFormData, totAmount]);
+    }, [isHydrated, serviceId, serviceTitle, serviceDetail, serviceFormData, paymentFormData, totAmount]);
 
     const value: PaymentContextValue = {
         userId,

@@ -120,6 +120,10 @@ export default function MobileFooterThree({promotion}: MobileFooterThreeProps) {
             throw new Error("[validation] A valid service must be selected before checkout");
         }
 
+        if (!Number.isFinite(Number(serviceFormData.latitude)) || !Number.isFinite(Number(serviceFormData.longitude))) {
+            throw new Error("[validation] Please pin the service location on the map before checkout");
+        }
+
         const response = await fetch(`${API_BASE_URL}/api/orders/checkout`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -134,6 +138,8 @@ export default function MobileFooterThree({promotion}: MobileFooterThreeProps) {
                 province: serviceFormData.province,
                 district: serviceFormData.district,
                 subdistrict: serviceFormData.subdistrict,
+                latitude: serviceFormData.latitude,
+                longitude: serviceFormData.longitude,
                 information: serviceFormData.information,
                 promotionCode: promotion?.promotion_code || "",
                 paymentMethod,
