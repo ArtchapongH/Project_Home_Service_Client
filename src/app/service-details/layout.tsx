@@ -93,10 +93,31 @@ function getSavedPayment(): SavedPayment | null {
     }
 }
 
-function hasRequiredServiceFormData(formData: ServiceFormData): boolean {
-    return Object.entries(formData)
-        .filter(([field]) => field !== "information")
-        .every(([, value]) => value.trim().length > 0);
+function isFilledText(value: unknown): boolean {
+    return typeof value === "string" && value.trim().length > 0;
+}
+
+export function hasRequiredServiceFormData(formData: ServiceFormData): boolean {
+    return (
+        isFilledText(formData.address) &&
+        isFilledText(formData.subdistrict) &&
+        isFilledText(formData.district) &&
+        isFilledText(formData.province) &&
+        isFilledText(formData.serviceDate) &&
+        isFilledText(formData.serviceTime)
+    );
+}
+
+function restoreServiceFormData(saved: Partial<ServiceFormData> | undefined): ServiceFormData {
+    return {
+        address: typeof saved?.address === "string" ? saved.address : "",
+        subdistrict: typeof saved?.subdistrict === "string" ? saved.subdistrict : "",
+        district: typeof saved?.district === "string" ? saved.district : "",
+        province: typeof saved?.province === "string" ? saved.province : "",
+        serviceDate: typeof saved?.serviceDate === "string" ? saved.serviceDate : "",
+        serviceTime: typeof saved?.serviceTime === "string" ? saved.serviceTime : "",
+        information: typeof saved?.information === "string" ? saved.information : "",
+    };
 }
 
 
@@ -179,8 +200,9 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
         }
 
         if (savedPayment?.serviceFormData) {
-            setServiceFormData(savedPayment.serviceFormData);
-            setIsSecondPageCompleted(hasRequiredServiceFormData(savedPayment.serviceFormData));
+            const restoredForm = restoreServiceFormData(savedPayment.serviceFormData);
+            setServiceFormData(restoredForm);
+            setIsSecondPageCompleted(hasRequiredServiceFormData(restoredForm));
         }
 
         if (savedPayment?.paymentFormData) {

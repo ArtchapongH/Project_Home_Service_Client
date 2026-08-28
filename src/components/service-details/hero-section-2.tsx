@@ -7,7 +7,7 @@ import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import Image from "next/image";
 import serviceDetailBanner from "@/assets/images/service-detail-banner.png";
 import MobileFooterTwo from "./mobile-footer2";
-import { PaymentContext } from "@/app/service-details/layout";
+import { hasRequiredServiceFormData, PaymentContext } from "@/app/service-details/layout";
 import apiClient from "@/services/apiClient";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -185,9 +185,7 @@ export default function HeroSectionTwo() {
 				nextForm.subdistrict = "";
 			}
 
-			const isComplete = Object.entries(nextForm)
-				.filter(([formField]) => formField !== "information")
-				.every(([, formValue]) => formValue.trim().length > 0);
+			const isComplete = hasRequiredServiceFormData(nextForm);
 
 			setIsSecondPageCompleted(isComplete);
 			return nextForm;
