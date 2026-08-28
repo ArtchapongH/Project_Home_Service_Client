@@ -3,6 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
 import {
   Card,
   CardContent,
@@ -76,6 +77,8 @@ function getServiceMetrics(service: PublicService, isPopularOverride?: boolean) 
     ? service.reviewCount!
     : Math.max(12, Math.round(popularity * 2.5 + ((idNum * 13) % 20)));
 
+  const bookingsCount = Math.max(15, Math.round(popularity * 3.8 + ((idNum * 17) % 35)));
+
   const isPopular = typeof isPopularOverride === "boolean"
     ? isPopularOverride
     : Boolean(popularity >= 40);
@@ -84,6 +87,7 @@ function getServiceMetrics(service: PublicService, isPopularOverride?: boolean) 
   return {
     rating,
     reviewCount,
+    bookingsCount,
     isPopular,
     isRecommended,
   };
@@ -94,25 +98,36 @@ function getServiceMetrics(service: PublicService, isPopularOverride?: boolean) 
  * - ถ้ามีช่วงราคา (minPrice & maxPrice ที่ต่างกัน): แสดง "ค่าบริการประมาณ min - max ฿"
  * - ถ้ามีราคาเดียว: แสดง "ค่าบริการประมาณ min ฿"
  */
-export function formatServicePrice(minPrice: number = 0, maxPrice?: number): string {
+export function formatServicePrice(
+  minPrice: number = 0,
+  maxPrice?: number,
+  locale: string = "th",
+): { min: string; max?: string; isRange: boolean } {
   const formatNumber = (num: number) =>
-    num.toLocaleString("th-TH", {
+    num.toLocaleString(locale, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
 
   if (maxPrice && maxPrice > minPrice) {
-    return `ค่าบริการประมาณ ${formatNumber(minPrice)} - ${formatNumber(maxPrice)} ฿`;
+    return {
+      min: formatNumber(minPrice),
+      max: formatNumber(maxPrice),
+      isRange: true,
+    };
   }
-  return `ค่าบริการประมาณ ${formatNumber(minPrice)} ฿`;
+
+  return { min: formatNumber(minPrice), isRange: false };
 }
 
 export function ServiceCard({ service, sortBy, isPopular: isPopularProp, onCategoryClick }: ServiceCardProps) {
+  const t = useTranslations("Services");
+  const locale = useLocale();
   const categoryStyle = getCategoryStyles(service.category);
-  const formattedPrice = formatServicePrice(service.minPrice, service.maxPrice);
+  const formattedPrice = formatServicePrice(service.minPrice, service.maxPrice, locale);
   const imageSrc = service.imageUrl || "/images/landing/service-aircon.png";
   const serviceLink = `/service-details/${service.id}`;
-  const { rating, reviewCount, isPopular, isRecommended } = getServiceMetrics(service, isPopularProp);
+  const { rating, reviewCount, bookingsCount, isPopular, isRecommended } = getServiceMetrics(service, isPopularProp);
 
 
   // ปรับ Badge ตามโหมดการเรียงลำดับที่ผู้ใช้เลือก (เพื่อไม่ให้ป้าย แนะนำ ติดมาในโหมดยอดนิยม)
@@ -196,12 +211,12 @@ export function ServiceCard({ service, sortBy, isPopular: isPopularProp, onCateg
             {activeBadgeType === "recommended" ? (
               <>
                 <StarRoundedIcon sx={{ fontSize: 16, color: "#F59E0B" }} />
-                <span>แนะนำ</span>
+                <span>{t("recommended")}</span>
               </>
             ) : (
               <>
                 <LocalFireDepartmentRoundedIcon sx={{ fontSize: 16, color: "#EF4444" }} />
-                <span>ยอดนิยม</span>
+                <span>{t("popular")}</span>
               </>
             )}
           </Box>
@@ -262,25 +277,45 @@ export function ServiceCard({ service, sortBy, isPopular: isPopularProp, onCateg
           sx={{
             display: "flex",
             alignItems: "center",
-            gap: 0.5,
+            flexWrap: "wrap",
+            gap: 0.75,
             mb: 1.75,
           }}
         >
-          <StarRoundedIcon sx={{ fontSize: 18, color: reviewCount > 0 ? "#F59E0B" : "#94A3B8" }} />
-          <Typography
-            component="span"
-            sx={{ fontWeight: 700, color: "#1E293B", fontSize: "0.8125rem" }}
-          >
-            {rating}
-          </Typography>
-          {reviewCount > 0 && (
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.35 }}>
+            <StarRoundedIcon sx={{ fontSize: 18, color: (typeof reviewCount === "number" && reviewCount > 0) ? "#F59E0B" : "#94A3B8" }} />
             <Typography
               component="span"
-              sx={{ color: "#64748B", fontSize: "0.75rem", ml: 0.25 }}
+              sx={{ fontWeight: 700, color: "#1E293B", fontSize: "0.8125rem" }}
             >
-              ({reviewCount})
+              {rating}
             </Typography>
-          )}
+            {typeof reviewCount === "number" && reviewCount > 0 && (
+              <Typography
+                component="span"
+                sx={{ color: "#64748B", fontSize: "0.75rem", ml: 0.25 }}
+              >
+                ({reviewCount})
+              </Typography>
+            )}
+          </Box>
+
+          <Box
+            sx={{
+              width: 3,
+              height: 3,
+              borderRadius: "50%",
+              bgcolor: "#CBD5E1",
+              display: "inline-block",
+            }}
+          />
+
+          <Typography
+            component="span"
+            sx={{ color: "#64748B", fontSize: "0.75rem", fontWeight: 500 }}
+          >
+            {t("bookings", { count: bookingsCount.toLocaleString(locale) })}
+          </Typography>
         </Box>
 
         {/* Price Info */}
@@ -306,7 +341,12 @@ export function ServiceCard({ service, sortBy, isPopular: isPopularProp, onCateg
               color: "#64748B",
             }}
           >
-            {formattedPrice}
+            {formattedPrice.isRange
+              ? t("priceRange", {
+                  min: formattedPrice.min,
+                  max: formattedPrice.max ?? formattedPrice.min,
+                })
+              : t("priceEstimate", { price: formattedPrice.min })}
           </Typography>
         </Box>
 
@@ -316,7 +356,7 @@ export function ServiceCard({ service, sortBy, isPopular: isPopularProp, onCateg
             href={serviceLink}
             className="text-[13px] font-semibold text-[#3366FF] underline underline-offset-4 transition hover:text-[#1E40AF]"
           >
-            เลือกบริการ
+            {t("select")}
           </Link>
         </Box>
       </CardContent>

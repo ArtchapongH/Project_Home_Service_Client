@@ -7,8 +7,12 @@
     "confirm": "ยืนยัน",
     "cancel": "ยกเลิก",
     "language": "ภาษา",
-    "thai": "ไทย",
-    "english": "EN"
+    "locale": {
+      "th": "ไทย",
+      "en": "EN"
+    },
+    "showPassword": "แสดงรหัสผ่าน",
+    "hidePassword": "ซ่อนรหัสผ่าน"
   },
   "Nav": {
     "homeAria": "กลับไปหน้าแรก",
@@ -68,5 +72,91 @@
       "body": "เข้ารับการฝึกอบรมที่ได้มาตรฐาน ฟรี!<newline></newline>และยังได้รับค่าตอบแทนที่มากขึ้นกว่าเดิม",
       "contact": "ติดต่อมาที่อีเมล: job@homeservices.co"
     }
+  },
+  "Login": {
+    "metaTitle": "เข้าสู่ระบบ",
+    "title": "เข้าสู่ระบบ",
+    "email": "อีเมล",
+    "emailPlaceholder": "กรุณากรอกอีเมล",
+    "password": "รหัสผ่าน",
+    "passwordPlaceholder": "กรุณากรอกรหัสผ่าน",
+    "submit": "เข้าสู่ระบบ",
+    "submitting": "กำลังเข้าสู่ระบบ...",
+    "orDivider": "หรือลงชื่อเข้าใช้ผ่าน",
+    "facebook": "เข้าสู่ระบบด้วย Facebook",
+    "noAccount": "ยังไม่มีบัญชีผู้ใช้ HomeService?",
+    "register": "ลงทะเบียน",
+    "errors": {
+      "invalidCredentials": "อีเมลหรือรหัสผ่านไม่ถูกต้อง",
+      "generic": "ไม่สามารถเข้าสู่ระบบได้ กรุณาลองใหม่อีกครั้ง"
+    }
+  },
+  "Register": {
+    "metaTitle": "ลงทะเบียน",
+    "title": "ลงทะเบียน",
+    "firstName": "ชื่อจริง",
+    "firstNamePlaceholder": "กรุณากรอกชื่อจริง",
+    "lastName": "นามสกุล",
+    "lastNamePlaceholder": "กรุณากรอกนามสกุล",
+    "phone": "เบอร์โทรศัพท์",
+    "phonePlaceholder": "กรุณากรอกเบอร์โทรศัพท์",
+    "email": "อีเมล",
+    "emailPlaceholder": "กรุณากรอกอีเมล",
+    "password": "รหัสผ่าน",
+    "passwordPlaceholder": "กรุณากรอกรหัสผ่าน (อย่างน้อย 6 ตัวอักษร)",
+    "confirmPassword": "ยืนยันรหัสผ่าน",
+    "confirmPasswordPlaceholder": "กรุณากรอกรหัสผ่านอีกครั้ง",
+    "acceptTerms": "ยอมรับ",
+    "termsAndConditions": "ข้อตกลงและเงื่อนไข",
+    "and": "และ",
+    "privacyPolicy": "นโยบายความเป็นส่วนตัว",
+    "submit": "ลงทะเบียน",
+    "submitting": "กำลังลงทะเบียน...",
+    "orDivider": "หรือลงชื่อเข้าใช้ผ่าน",
+    "facebook": "เข้าสู่ระบบด้วย Facebook",
+    "backToLogin": "กลับไปหน้าเข้าสู่ระบบ",
+    "errors": {
+      "termsAndConditions": "กรุณายอมรับข้อตกลงและเงื่อนไขก่อนลงทะเบียน",
+      "passwordLength": "รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร",
+      "passwordMatch": "รหัสผ่านและยืนยันรหัสผ่านไม่ตรงกัน",
+      "registrationError": "เกิดข้อผิดพลาดในการลงทะเบียน",
+      "generic": "ไม่สามารถลงทะเบียนได้ กรุณาลองใหม่อีกครั้ง"
+    },
+    "success": {
+      "emailConfirmation": "ลงทะเบียนสำเร็จ! กรุณายืนยันอีเมลก่อนเข้าสู่ระบบ",
+      "registrationSuccess": "ลงทะเบียนสำเร็จ! กำลังนำคุณเข้าสู่ระบบ..."
+    }
+  },
+  "Services": {
+    "metaTitle": "บริการของเรา | HomeServices",
+    "metaDescription": "บริการซ่อมเครื่องใช้ไฟฟ้า ซ่อมแอร์ ทำความสะอาดบ้าน และอื่น ๆ อีกมากมาย โดยพนักงานแม่บ้าน และช่างมืออาชีพ",
+    "breadcrumb": "Service List",
+    "title": "บริการของเรา",
+    "subtitle": "ซ่อมเครื่องใช้ไฟฟ้า ซ่อมแอร์ ทำความสะอาดบ้าน และอื่น ๆ อีกมากมาย<newline></newline>โดยพนักงานแม่บ้าน และช่างมืออาชีพ",
+    "bannerAlt": "บริการของเรา",
+    "searchPlaceholder": "ค้นหาบริการ..",
+    "search": "ค้นหา",
+    "clearSearch": "ล้างคำค้นหา",
+    "loading": "กำลังโหลดบริการ",
+    "categoryLabel": "หมวดหมู่บริการ",
+    "allCategories": "บริการทั้งหมด",
+    "priceLabel": "ราคา",
+    "sortLabel": "เรียงตาม",
+    "sort": {
+      "recommended": "บริการแนะนำ",
+      "popular": "บริการยอดนิยม",
+      "asc": "ตามตัวอักษร (ก-ฮ)",
+      "desc": "ตามตัวอักษร (ฮ-ก)"
+    },
+    "emptyTitle": "ไม่พบบริการที่คุณค้นหา",
+    "resetFilters": "ล้างตัวกรองทั้งหมด",
+    "select": "เลือกบริการ",
+    "recommended": "แนะนำ",
+    "popular": "ยอดนิยม",
+    "priceEstimate": "ค่าบริการประมาณ {price} ฿",
+    "priceRange": "ค่าบริการประมาณ {min} - {max} ฿",
+    "bookings": "จองแล้ว {count}+ ครั้ง",
+    "bottomBannerAria": "เกี่ยวกับบริการ HomeServices",
+    "bottomBanner": "เพราะเราคือช่าง ผู้ให้บริการเรื่องบ้านอันดับ 1 แบบครบวงจร โดยทีมช่างมืออาชีพมากกว่า 100 ทีม<newline></newline>สามารถตอบโจทย์ด้านการบริการเรื่องบ้านของคุณ และสร้าง<newline></newline>ความสะดวกสบายในการติดต่อกับทีมช่าง ได้ทุกที่ ทุกเวลา ตลอด 24 ชม.<newline></newline>มั่นใจ ช่างไม่ทิ้งงาน พร้อมรับประกันคุณภาพงาน"
   }
 }
