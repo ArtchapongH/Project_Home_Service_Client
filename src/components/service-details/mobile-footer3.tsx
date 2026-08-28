@@ -54,12 +54,12 @@ export default function MobileFooterThree({promotion}: MobileFooterThreeProps) {
     const { serviceDetail, serviceFormData, paymentFormData, totAmount, paymentMethod, setIsThirdPageCompleted, discount, userId, setUserId, serviceId } = payment;
 
     // Store userId from AuthContext
-        React.useEffect(() => {
-            if (user?.id) {
-                setUserId(user.id);
-                console.log("User ID set in PaymentContext:", user.id);
-            }
-        }, [user, setUserId]);
+    React.useEffect(() => {
+        if (user?.id) {
+            setUserId(user.id);
+            console.log("User ID set in PaymentContext:", user.id);
+        }
+    }, [user, setUserId]);
 
     const selectedServices = serviceDetail.filter((service) => service.quantity !== 0);
     const address = [
