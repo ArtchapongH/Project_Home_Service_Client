@@ -74,15 +74,25 @@ export default function LoginForm() {
           value={email}
           onChange={setEmail}
         />
-        <LoginTextField
-          id="password"
-          label="รหัสผ่าน"
-          type="password"
-          placeholder="กรุณากรอกรหัสผ่าน"
-          autoComplete="current-password"
-          value={password}
-          onChange={setPassword}
-        />
+        <div>
+          <LoginTextField
+            id="password"
+            label="รหัสผ่าน"
+            type="password"
+            placeholder="กรุณากรอกรหัสผ่าน"
+            autoComplete="current-password"
+            value={password}
+            onChange={setPassword}
+          />
+          <div className="mt-2 flex justify-end">
+            <Link
+              href="/forgot-password"
+              className="text-xs text-blue-500 underline sm:text-sm"
+            >
+              ลืมรหัสผ่าน?
+            </Link>
+          </div>
+        </div>
         <LoginSubmitButton isDisabled={isLoading}>
           {isLoading ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
         </LoginSubmitButton>

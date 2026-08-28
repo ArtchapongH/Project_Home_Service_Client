@@ -117,3 +117,57 @@ export function getAuthErrorMessage(
 
   return "ไม่สามารถลงทะเบียนได้ กรุณาตรวจสอบข้อมูลแล้วลองใหม่อีกครั้ง";
 }
+
+export function getChangePasswordErrorMessage(error: unknown): string {
+  const raw = extractRawMessage(error).trim();
+  const lower = raw.toLowerCase();
+  const status = axios.isAxiosError(error) ? error.response?.status : undefined;
+  const hasNoResponse = axios.isAxiosError(error) && !error.response;
+
+  if (hasNoResponse) {
+    return "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาตรวจสอบการเชื่อมต่อแล้วลองใหม่";
+  }
+
+  if (
+    status === 401 ||
+    lower.includes("current password") ||
+    lower.includes("incorrect password") ||
+    lower.includes("wrong password") ||
+    lower.includes("invalid credentials")
+  ) {
+    return "รหัสผ่านปัจจุบันไม่ถูกต้อง";
+  }
+
+  if (
+    lower.includes("match") ||
+    lower.includes("confirm") ||
+    lower.includes("ไม่ตรง")
+  ) {
+    return "รหัสผ่านใหม่และยืนยันรหัสผ่านไม่ตรงกัน";
+  }
+
+  if (
+    lower.includes("same") ||
+    lower.includes("identical") ||
+    lower.includes("must be different")
+  ) {
+    return "รหัสผ่านใหม่ต้องแตกต่างจากรหัสผ่านปัจจุบัน";
+  }
+
+  if (
+    lower.includes("password") &&
+    (lower.includes("least") || lower.includes("short") || lower.includes("weak"))
+  ) {
+    return "รหัสผ่านใหม่ต้องมีความยาวอย่างน้อย 6 ตัวอักษร";
+  }
+
+  if (status && status >= 500) {
+    return "ระบบมีปัญหาชั่วคราว กรุณาลองใหม่อีกครั้งในอีกสักครู่";
+  }
+
+  if (raw && hasThaiText(raw) && !isTechnicalMessage(raw)) {
+    return raw;
+  }
+
+  return "ไม่สามารถเปลี่ยนรหัสผ่านได้ กรุณาลองใหม่อีกครั้ง";
+}
