@@ -5,22 +5,7 @@ import Link from "next/link";
 import { ProtectedRoute } from "@/components/common/ProtectedRoute";
 import { PaymentContext } from "@/app/service-details/layout";
 import { saveLocalStoredOrder } from "@/services/customerOrderApi";
-
-function formatServiceDate(value: string): string {
-  if (!value) return "-";
-  const date = new Date(`${value}T00:00:00`);
-  if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat("th-TH", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  }).format(date);
-}
-
-function formatServiceTime(value: string): string {
-  if (!value) return "-";
-  return value.includes("น.") ? value : `${value} น.`;
-}
+import { formatThaiServiceDate, formatThaiServiceTime } from "@/utils/serviceSchedule";
 
 export interface PaymentSuccessProps {
   serviceName?: string;
@@ -52,9 +37,9 @@ export function PaymentSuccess(props: PaymentSuccessProps) {
     : "";
 
   const rawDate = paymentContext?.serviceFormData?.serviceDate;
-  const finalDate = rawDate ? formatServiceDate(rawDate) : (props.dateText || "23 เม.ย. 2021");
+  const finalDate = rawDate ? formatThaiServiceDate(rawDate) : (props.dateText || "23 เม.ย. 2021");
   const rawTime = paymentContext?.serviceFormData?.serviceTime;
-  const finalTime = rawTime ? formatServiceTime(rawTime) : (props.timeText || "11.00 น.");
+  const finalTime = rawTime ? formatThaiServiceTime(rawTime) : (props.timeText || "11.00 น.");
   const finalLocation = addressString || props.locationText || (
     <>
       444/4 คอนโดศุภาลัย เสนานิคม

@@ -7,6 +7,7 @@ import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownR
 import KeyboardArrowUpRoundedIcon from "@mui/icons-material/KeyboardArrowUpRounded";
 import { CardNumberElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import { PaymentContext } from "@/app/service-details/layout";
+import { formatThaiServiceDate, formatThaiServiceTime } from "@/utils/serviceSchedule";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -278,8 +279,8 @@ export default function MobileFooterThree({promotion}: MobileFooterThreeProps) {
                         ))}
                     </div>
                     <div className="space-y-2 border-b border-gray-200 py-3 text-[10px]">
-                        <SummaryRow label="วันที่" value={serviceFormData.serviceDate} />
-                        <SummaryRow label="เวลา" value={serviceFormData.serviceTime} />
+                        <SummaryRow label="วันที่" value={formatThaiServiceDate(serviceFormData.serviceDate)} />
+                        <SummaryRow label="เวลา" value={formatThaiServiceTime(serviceFormData.serviceTime)} />
                         <SummaryRow label="สถานที่" value={address} />
                     </div>
                     <SummaryRow className="mt-3 text-xs" label="Promotion Code" value={<span className="text-red-500">{discount > 0 ? `-${discount.toFixed(2)} ฿` : "-"}</span>} />
@@ -317,8 +318,8 @@ export default function MobileFooterThree({promotion}: MobileFooterThreeProps) {
                     ))}
                 </div>
                 <div className="space-y-2 border-b border-gray-200 py-3 text-[10px]">
-                    <SummaryRow label="วันที่" value={serviceFormData.serviceDate} />
-                    <SummaryRow label="เวลา" value={serviceFormData.serviceTime} />
+                    <SummaryRow label="วันที่" value={formatThaiServiceDate(serviceFormData.serviceDate)} />
+                    <SummaryRow label="เวลา" value={formatThaiServiceTime(serviceFormData.serviceTime)} />
                     <SummaryRow label="สถานที่" value={address} />
                 </div>
                 <SummaryRow className="mt-3 text-xs" label="Promotion Code" value={<span className="text-red-500">{discount > 0 ? `-${discount.toFixed(2)} ฿` : "-"}</span>} />

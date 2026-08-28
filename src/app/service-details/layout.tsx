@@ -104,6 +104,18 @@ function getSavedPayment(): SavedPayment | null {
     }
 }
 
+function isFilledText(value: unknown): boolean {
+    return typeof value === "string" && value.trim().length > 0;
+}
+
+function toCoordinate(value: unknown): number | null {
+    if (typeof value === "number" && Number.isFinite(value)) return value;
+    if (typeof value === "string" && value.trim() !== "" && Number.isFinite(Number(value))) {
+        return Number(value);
+    }
+    return null;
+}
+
 export interface ServiceFormData {
   address: string;
   subdistrict: string;
@@ -118,15 +130,29 @@ export interface ServiceFormData {
 
 export function hasRequiredServiceFormData(formData: ServiceFormData): boolean {
     return (
-        formData.address.trim().length > 0 &&
-        formData.subdistrict.trim().length > 0 &&
-        formData.district.trim().length > 0 &&
-        formData.province.trim().length > 0 &&
-        formData.serviceDate.trim().length > 0 &&
-        formData.serviceTime.trim().length > 0 &&
+        isFilledText(formData.address) &&
+        isFilledText(formData.subdistrict) &&
+        isFilledText(formData.district) &&
+        isFilledText(formData.province) &&
+        isFilledText(formData.serviceDate) &&
+        isFilledText(formData.serviceTime) &&
         formData.latitude != null &&
         formData.longitude != null
     );
+}
+
+function restoreServiceFormData(saved: Partial<ServiceFormData> | undefined): ServiceFormData {
+    return {
+        address: typeof saved?.address === "string" ? saved.address : "",
+        subdistrict: typeof saved?.subdistrict === "string" ? saved.subdistrict : "",
+        district: typeof saved?.district === "string" ? saved.district : "",
+        province: typeof saved?.province === "string" ? saved.province : "",
+        serviceDate: typeof saved?.serviceDate === "string" ? saved.serviceDate : "",
+        serviceTime: typeof saved?.serviceTime === "string" ? saved.serviceTime.trim().slice(0, 5) : "",
+        information: typeof saved?.information === "string" ? saved.information : "",
+        latitude: toCoordinate(saved?.latitude),
+        longitude: toCoordinate(saved?.longitude),
+    };
 }
 
 
@@ -204,11 +230,7 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
         }
 
         if (savedPayment?.serviceFormData) {
-            const restoredForm = {
-                ...savedPayment.serviceFormData,
-                latitude: savedPayment.serviceFormData.latitude ?? null,
-                longitude: savedPayment.serviceFormData.longitude ?? null,
-            };
+            const restoredForm = restoreServiceFormData(savedPayment.serviceFormData);
             setServiceFormData(restoredForm);
             setIsSecondPageCompleted(hasRequiredServiceFormData(restoredForm));
         }

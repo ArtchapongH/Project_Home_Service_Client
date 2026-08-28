@@ -7,6 +7,7 @@ import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownR
 import KeyboardArrowUpRoundedIcon from "@mui/icons-material/KeyboardArrowUpRounded";
 import { useRouter } from "next/navigation";
 import { PaymentContext } from "@/app/service-details/layout";
+import { formatThaiServiceDate, formatThaiServiceTime } from "@/utils/serviceSchedule";
 
 export default function MobileFooterTwo() {
 	const payment = React.useContext(PaymentContext);
@@ -63,8 +64,8 @@ export default function MobileFooterTwo() {
 					))}
 				</div>
 				<div className="space-y-2 border-b border-gray-200 py-3 text-[10px]">
-					<SummaryRow label="วันที่" value={serviceFormData.serviceDate} />
-					<SummaryRow label="เวลา" value={serviceFormData.serviceTime} />
+					<SummaryRow label="วันที่" value={formatThaiServiceDate(serviceFormData.serviceDate)} />
+					<SummaryRow label="เวลา" value={formatThaiServiceTime(serviceFormData.serviceTime)} />
 					<SummaryRow label="สถานที่" value={address} />
 				</div>
 			</div>
@@ -100,8 +101,8 @@ export default function MobileFooterTwo() {
 					))}
 				</div>
 				<div className="space-y-2 border-b border-gray-200 py-3 text-[10px]">
-					<SummaryRow label="วันที่" value={serviceFormData.serviceDate} />
-					<SummaryRow label="เวลา" value={serviceFormData.serviceTime} />
+					<SummaryRow label="วันที่" value={formatThaiServiceDate(serviceFormData.serviceDate)} />
+					<SummaryRow label="เวลา" value={formatThaiServiceTime(serviceFormData.serviceTime)} />
 					<SummaryRow label="สถานที่" value={address} />
 				</div>
 				<div className="mt-3 flex items-center justify-between text-xs">
