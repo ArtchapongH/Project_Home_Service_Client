@@ -108,17 +108,7 @@ export default function MobileFooterThree({
     );
   }
 
-<<<<<<< HEAD
   const isProcessing = isSubmitting || (paymentMethod === "card" && !stripe);
-=======
-    // Store userId from AuthContext
-    React.useEffect(() => {
-        if (user?.id) {
-            setUserId(user.id);
-            console.log("User ID set in PaymentContext:", user.id);
-        }
-    }, [user, setUserId]);
->>>>>>> 9fa651c099260f19ee029cab9ee17290d05f1caa
 
   function handleBack(): void {
     router.push("/service-details/userinfo");
