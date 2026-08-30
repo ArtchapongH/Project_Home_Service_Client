@@ -19,6 +19,7 @@ import type { PublicService, PublicServiceSort } from "@/types/public-service";
 interface ServiceCardProps {
   service: PublicService;
   sortBy?: PublicServiceSort;
+  isPopular?: boolean;
   onCategoryClick?: (category: string) => void;
 }
 
@@ -58,21 +59,34 @@ const getCategoryStyles = (category: string) => {
 /**
  * คำนวณสถิติและคะแนนสำหรับแสดงผลเชิงสังคม (Social Proof)
  */
-function getServiceMetrics(service: PublicService) {
+function getServiceMetrics(service: PublicService, isPopularOverride?: boolean) {
   const idNum = Number(service.id) || (service.name.charCodeAt(0) + service.name.length);
   const popularity = service.popularityScore ?? 0;
 
-  const rating = (4.8 + ((idNum * 3) % 3) * 0.1).toFixed(1);
-  const reviewCount = Math.max(25, Math.round(popularity * 2.5 + ((idNum * 13) % 30)));
-  const bookingsCount = Math.max(80, Math.round(popularity * 8 + ((idNum * 29) % 60)));
+  // ใช้อัตราคะแนนและจำนวนรีวิวจริงจาก Database หากมีข้อมูล
+  const hasReviewData = typeof service.reviewCount === "number";
+  const hasRealReviews = hasReviewData && service.reviewCount! > 0;
 
-  const isPopular = popularity >= 40 || bookingsCount >= 300;
+  const rating = hasRealReviews && typeof service.averageRating === "number"
+    ? service.averageRating.toFixed(1)
+    : hasReviewData && service.reviewCount === 0
+      ? "ยังไม่มีรีวิว"
+      : (4.8 + ((idNum * 3) % 3) * 0.1).toFixed(1);
+
+  const reviewCount = hasReviewData
+    ? service.reviewCount!
+    : Math.max(12, Math.round(popularity * 2.5 + ((idNum * 13) % 20)));
+
+  const bookingsCount = Math.max(15, Math.round(popularity * 3.8 + ((idNum * 17) % 35)));
+
+  const isPopular = typeof isPopularOverride === "boolean"
+    ? isPopularOverride
+    : Boolean(popularity >= 40);
   const isRecommended = Boolean(service.isFeatured);
 
   return {
     rating,
     reviewCount,
-    bookingsCount,
     isPopular,
     isRecommended,
   };
@@ -105,14 +119,15 @@ export function formatServicePrice(
   return { min: formatNumber(minPrice), isRange: false };
 }
 
-export function ServiceCard({ service, sortBy, onCategoryClick }: ServiceCardProps) {
+export function ServiceCard({ service, sortBy, isPopular: isPopularProp, onCategoryClick }: ServiceCardProps) {
   const t = useTranslations("Services");
   const locale = useLocale();
   const categoryStyle = getCategoryStyles(service.category);
   const formattedPrice = formatServicePrice(service.minPrice, service.maxPrice, locale);
   const imageSrc = service.imageUrl || "/images/landing/service-aircon.png";
   const serviceLink = `/service-details/${service.id}`;
-  const { rating, reviewCount, bookingsCount, isPopular, isRecommended } = getServiceMetrics(service);
+  const { rating, reviewCount, isPopular, isRecommended } = getServiceMetrics(service, isPopularProp);
+
 
   // ปรับ Badge ตามโหมดการเรียงลำดับที่ผู้ใช้เลือก (เพื่อไม่ให้ป้าย แนะนำ ติดมาในโหมดยอดนิยม)
   const activeBadgeType = (() => {
@@ -256,7 +271,7 @@ export function ServiceCard({ service, sortBy, onCategoryClick }: ServiceCardPro
           {service.name}
         </Typography>
 
-        {/* Rating & Bookings count */}
+        {/* Rating & Review count */}
         <Box
           sx={{
             display: "flex",
@@ -267,37 +282,22 @@ export function ServiceCard({ service, sortBy, onCategoryClick }: ServiceCardPro
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.35 }}>
-            <StarRoundedIcon sx={{ fontSize: 17, color: "#F59E0B" }} />
+            <StarRoundedIcon sx={{ fontSize: 18, color: (typeof reviewCount === "number" && reviewCount > 0) ? "#F59E0B" : "#94A3B8" }} />
             <Typography
               component="span"
               sx={{ fontWeight: 700, color: "#1E293B", fontSize: "0.8125rem" }}
             >
               {rating}
             </Typography>
-            <Typography
-              component="span"
-              sx={{ color: "#64748B", fontSize: "0.75rem" }}
-            >
-              ({reviewCount})
-            </Typography>
+            {typeof reviewCount === "number" && reviewCount > 0 && (
+              <Typography
+                component="span"
+                sx={{ color: "#64748B", fontSize: "0.75rem", ml: 0.25 }}
+              >
+                ({reviewCount})
+              </Typography>
+            )}
           </Box>
-
-          <Box
-            sx={{
-              width: 3,
-              height: 3,
-              borderRadius: "50%",
-              bgcolor: "#CBD5E1",
-              display: "inline-block",
-            }}
-          />
-
-          <Typography
-            component="span"
-            sx={{ color: "#64748B", fontSize: "0.75rem", fontWeight: 500 }}
-          >
-            {t("bookings", { count: bookingsCount.toLocaleString(locale) })}
-          </Typography>
         </Box>
 
         {/* Price Info */}

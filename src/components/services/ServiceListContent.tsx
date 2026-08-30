@@ -28,8 +28,11 @@ export function ServiceListContent() {
   const [searchInput, setSearchInput] = useState("");
   const [appliedSearchQuery, setAppliedSearchQuery] = useState("");
   const [category, setCategory] = useState("all");
+  const [appliedCategory, setAppliedCategory] = useState("all");
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 3000]);
+  const [appliedPriceRange, setAppliedPriceRange] = useState<[number, number]>([0, 3000]);
   const [sortBy, setSortBy] = useState<PublicServiceSort>("recommended");
+  const [appliedSortBy, setAppliedSortBy] = useState<PublicServiceSort>("recommended");
 
   useEffect(() => {
     let active = true;
@@ -48,27 +51,47 @@ export function ServiceListContent() {
     return () => { active = false; };
   }, []);
 
+  const getPopularityWeight = (service: PublicService) => {
+    const reviews = service.reviewCount ?? 0;
+    const rating = service.averageRating ?? 0;
+    const score = service.popularityScore ?? 0;
+    // Prioritize services that actually have real user reviews and high ratings
+    return reviews * 100 + rating * 20 + score;
+  };
+
   const filteredServices = useMemo(() => services
     .filter((service) => {
       const query = appliedSearchQuery.trim().toLowerCase();
       if (query && !service.name.toLowerCase().includes(query) && !service.category.toLowerCase().includes(query)) return false;
-      if (category !== "all" && service.category !== category) return false;
-      return service.minPrice >= priceRange[0] && service.minPrice <= priceRange[1];
+      if (appliedCategory !== "all" && service.category !== appliedCategory) return false;
+      return service.minPrice >= appliedPriceRange[0] && service.minPrice <= appliedPriceRange[1];
     })
     .sort((a, b) => {
-      if (sortBy === "recommended") return Number(b.isFeatured) - Number(a.isFeatured) || a.displayOrder - b.displayOrder;
-      if (sortBy === "popular") return b.popularityScore - a.popularityScore;
-      return sortBy === "asc"
+      if (appliedSortBy === "recommended") return Number(b.isFeatured) - Number(a.isFeatured) || a.displayOrder - b.displayOrder;
+      if (appliedSortBy === "popular") return getPopularityWeight(b) - getPopularityWeight(a);
+      return appliedSortBy === "asc"
         ? a.name.localeCompare(b.name, locale)
         : b.name.localeCompare(a.name, locale);
-    }), [services, appliedSearchQuery, category, priceRange, sortBy, locale]);
+    }), [services, appliedSearchQuery, appliedCategory, appliedPriceRange, appliedSortBy, locale]);
+
+  const topPopularIds = useMemo(() => {
+    // Only give popular badges to services that have real reviews or top calculated popularity
+    const sorted = [...services]
+      .filter((s) => (s.reviewCount ?? 0) > 0 || (s.popularityScore ?? 0) > 0)
+      .sort((a, b) => getPopularityWeight(b) - getPopularityWeight(a));
+    return new Set(sorted.slice(0, 3).map((s) => s.id));
+  }, [services]);
 
   const handleSearchSubmit = (queryOverride?: string) => {
     setAppliedSearchQuery(typeof queryOverride === "string" ? queryOverride : searchInput);
+    setAppliedCategory(category);
+    setAppliedPriceRange(priceRange);
+    setAppliedSortBy(sortBy);
   };
 
   const handleCategoryClick = (value: string) => {
     setCategory(value);
+    setAppliedCategory(value);
     document.getElementById("service-filter-bar")?.scrollIntoView({ behavior: "smooth" });
   };
 
@@ -76,13 +99,15 @@ export function ServiceListContent() {
     setSearchInput("");
     setAppliedSearchQuery("");
     setCategory("all");
+    setAppliedCategory("all");
     setPriceRange([0, 3000]);
+    setAppliedPriceRange([0, 3000]);
     setSortBy("recommended");
+    setAppliedSortBy("recommended");
   };
 
   const handleClearSearch = () => {
     setSearchInput("");
-    setAppliedSearchQuery("");
   };
 
   return (
@@ -108,16 +133,21 @@ export function ServiceListContent() {
             <Box role="alert" sx={{ textAlign: "center", py: 8, bgcolor: "#FEF2F2", color: "#B91C1C", borderRadius: "14px" }}>{error}</Box>
           ) : filteredServices.length > 0 ? (
             <div
-              key={`${sortBy}-${category}-${appliedSearchQuery}`}
+              key={`${appliedSortBy}-${appliedCategory}-${appliedSearchQuery}-${appliedPriceRange.join("-")}`}
               className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8"
             >
               {filteredServices.map((service, index) => (
                 <div
-                  key={`${sortBy}-${service.id}`}
+                  key={`${appliedSortBy}-${service.id}`}
                   className="animate-service-card"
                   style={{ animationDelay: `${index * 110}ms`, opacity: 0 }}
                 >
-                  <ServiceCard service={service} sortBy={sortBy} onCategoryClick={handleCategoryClick} />
+                  <ServiceCard
+                    service={service}
+                    sortBy={appliedSortBy}
+                    isPopular={topPopularIds.has(service.id)}
+                    onCategoryClick={handleCategoryClick}
+                  />
                 </div>
               ))}
             </div>

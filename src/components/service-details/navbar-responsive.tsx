@@ -1,11 +1,16 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
 import NotificationsNoneRoundedIcon from "@mui/icons-material/NotificationsNoneRounded";
 import { HomeServicesLogo } from "../layout/home-services-logo";
-import { PaymentContext } from "@/app/service-details/layout";
+import { UserAvatar } from "../layout/UserAvatar";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function NavbarResponsive() {
-	const payment = React.useContext(PaymentContext);
+	const { user } = useAuth();
+	const displayName = user?.displayName || user?.fullName || user?.email || "";
+
 	return (
 		<header className="relative z-10 h-14 border-b border-gray-200 bg-white shadow-[0_2px_12px_rgb(23_51_109/7%)] min-[801px]:h-18">
 			<div className="mx-auto flex h-full w-[min(1140px,calc(100%-28px))] items-center justify-between min-[801px]:w-[min(1140px,calc(100%-48px))]">
@@ -28,7 +33,8 @@ export default function NavbarResponsive() {
               {displayName}
             </span>
             <UserAvatar
-              fullName={displayName}
+              displayName={user?.displayName}
+              fullName={user?.fullName}
               email={user?.email}
               avatarUrl={user?.avatarUrl}
             />
