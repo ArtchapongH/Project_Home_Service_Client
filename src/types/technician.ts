@@ -8,6 +8,8 @@ export interface TechnicianProfile {
   userId: string;
   email: string;
   fullName: string;
+  firstName?: string;
+  lastName?: string;
   first_name?: string;
   last_name?: string;
   phone: string | null;
@@ -68,6 +70,8 @@ export interface TechnicianListFilters {
 
 export interface TechnicianSettingsInput {
   fullName?: string;
+  firstName?: string;
+  lastName?: string;
   first_name?: string;
   last_name?: string;
   phone?: string | null;

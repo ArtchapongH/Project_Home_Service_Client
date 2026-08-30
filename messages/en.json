@@ -7,8 +7,12 @@
     "confirm": "Confirm",
     "cancel": "Cancel",
     "language": "Language",
-    "thai": "TH",
-    "english": "EN"
+    "locale": {
+      "th": "TH",
+      "en": "EN"
+    },
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
   },
   "Nav": {
     "homeAria": "Back to home",
@@ -44,6 +48,8 @@
       "title": "Our most popular services",
       "viewAll": "View all services",
       "select": "Select service",
+      "loading": "Loading popular services...",
+      "empty": "No popular services are available yet",
       "items": {
         "cleaning": {
           "category": "General service",
@@ -68,5 +74,91 @@
       "body": "Get standardized training for free!<newline></newline>And earn a better income than before",
       "contact": "Contact us at: job@homeservices.co"
     }
+  },
+  "Login": {
+    "metaTitle": "Log in",
+    "title": "Log in",
+    "email": "Email",
+    "emailPlaceholder": "Enter your email",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "submit": "Log in",
+    "submitting": "Signing in...",
+    "orDivider": "Or sign in with",
+    "facebook": "Continue with Facebook",
+    "noAccount": "Don't have a HomeService account?",
+    "register": "Register",
+    "errors": {
+      "invalidCredentials": "Invalid email or password",
+      "generic": "Unable to sign in. Please try again"
+    }
+  },
+  "Register": {
+    "metaTitle": "Register",
+    "title": "Register",
+    "firstName": "First name",
+    "firstNamePlaceholder": "Enter your first name",
+    "lastName": "Last name",
+    "lastNamePlaceholder": "Enter your last name",
+    "phone": "Phone number",
+    "phonePlaceholder": "Enter your phone number",
+    "email": "Email",
+    "emailPlaceholder": "Enter your email",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password (at least 6 characters)",
+    "confirmPassword": "Confirm password",
+    "confirmPasswordPlaceholder": "Enter your password again",
+    "acceptTerms": "I agree to the",
+    "termsAndConditions": "Terms and conditions",
+    "and": "and",
+    "privacyPolicy": "Privacy policy",
+    "submit": "Register",
+    "submitting": "Creating account...",
+    "orDivider": "Or sign in with",
+    "facebook": "Continue with Facebook",
+    "backToLogin": "Back to log in",
+    "errors": {
+      "termsAndConditions": "Please accept the terms and conditions before registering",
+      "passwordLength": "Password must be at least 6 characters",
+      "passwordMatch": "Password and confirmation do not match",
+      "registrationError": "Registration failed",
+      "generic": "Unable to register. Please try again"
+    },
+    "success": {
+      "emailConfirmation": "Registration successful! Please confirm your email before signing in",
+      "registrationSuccess": "Registration successful! Signing you in..."
+    }
+  },
+  "Services": {
+    "metaTitle": "Our services | HomeServices",
+    "metaDescription": "Appliance repair, air conditioner service, house cleaning, and more by professional housekeepers and technicians",
+    "breadcrumb": "Service List",
+    "title": "Our services",
+    "subtitle": "Appliance repair, air conditioner service, house cleaning, and much more<newline></newline>by professional housekeepers and technicians",
+    "bannerAlt": "Our services",
+    "searchPlaceholder": "Search services...",
+    "search": "Search",
+    "clearSearch": "Clear search",
+    "loading": "Loading services",
+    "categoryLabel": "Service category",
+    "allCategories": "All services",
+    "priceLabel": "Price",
+    "sortLabel": "Sort by",
+    "sort": {
+      "recommended": "Recommended",
+      "popular": "Most popular",
+      "asc": "Alphabetical (A-Z)",
+      "desc": "Alphabetical (Z-A)"
+    },
+    "emptyTitle": "No services found",
+    "resetFilters": "Clear all filters",
+    "select": "Select service",
+    "recommended": "Recommended",
+    "popular": "Popular",
+    "priceEstimate": "Estimated {price} ฿",
+    "priceRange": "Estimated {min} - {max} ฿",
+    "bookings": "Booked {count}+ times",
+    "bottomBannerAria": "About HomeServices",
+    "bottomBanner": "We are Thailand's No. 1 complete home-service technicians, with more than 100 professional teams<newline></newline>ready to meet your home-service needs and make it<newline></newline>easy to reach our technicians anytime, anywhere, 24 hours a day.<newline></newline>Rest assured: our technicians stay on the job, with quality guaranteed."
   }
 }

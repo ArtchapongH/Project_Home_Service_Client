@@ -64,7 +64,7 @@ export function TechnicianSidebar() {
           );
         })}
       </nav>
-      <button type="button" onClick={handleLogout} className="mt-auto flex h-12 w-full items-center gap-3 px-6 text-sm text-blue-100 hover:bg-[#0641A6]/70">
+      <button type="button" onClick={handleLogout} className="mt-auto flex h-12 w-full cursor-pointer items-center gap-3 px-6 text-sm text-blue-100 hover:bg-[#0641A6]/70">
         <LogOut size={18} /> ออกจากระบบ
       </button>
     </>

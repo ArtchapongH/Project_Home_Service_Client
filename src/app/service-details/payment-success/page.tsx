@@ -1,9 +1,6 @@
-import PaymentSuccess from "@/components/service-details/payment-success";
+import { PaymentSuccess } from "@/components/service-details/payment-success";
 
-export default function serverPaymentSuccessPage() {
-  return(
-    <>
-    <PaymentSuccess />
-    </>
-  ) 
+export default function ServicePaymentSuccessPage() {
+  return <PaymentSuccess />;
 }
+

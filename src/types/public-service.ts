@@ -14,6 +14,9 @@ export interface PublicService {
   isFeatured: boolean;
   displayOrder: number;
   popularityScore: number;
+  orderCount?: number;
+  averageRating?: number;
+  reviewCount?: number;
 }
 
 export interface PublicServiceOption {

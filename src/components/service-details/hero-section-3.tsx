@@ -8,7 +8,7 @@ import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import Image from "next/image";
 import serviceDetailBanner from "@/assets/images/service-detail-banner.png";
 import MobileFooterThree from "./mobile-footer3";
-import { PaymentContext } from "@/app/service-details/layout";
+import { getServiceBreadcrumbName, PaymentContext } from "@/app/service-details/layout";
 import { useAuth } from "@/contexts/AuthContext";
 
 import {
@@ -38,7 +38,7 @@ export default function HeroSectionThree() {
 		throw new Error("HeroSection must be rendered inside PaymentProvider");
 	}
 
-	const { paymentFormData, setPaymentFormData, paymentMethod, setPaymentMethod, setDiscount, setDiscountType, setNewQuota, totAmount, setTotAmount, setUserId } = payment;
+	const { paymentFormData, setPaymentFormData, paymentMethod, setPaymentMethod, setDiscount, setDiscountType, setNewQuota, totAmount, setTotAmount, setUserId, serviceTitle, serviceDetail } = payment;
 
 	// Store userId from AuthContext
 	React.useEffect(() => {
@@ -125,7 +125,7 @@ export default function HeroSectionThree() {
 				<div className="absolute left-3 top-11 flex h-10 items-center rounded-[7px] bg-white px-3 text-sm shadow-sm min-[801px]:left-1/2 min-[801px]:top-10 min-[801px]:-translate-x-1/2">
 					<span className="text-gray-500">บริการของเรา</span>
 					<ChevronRightRoundedIcon className="mx-1 text-[17px] text-gray-500" />
-					<span className="font-semibold text-blue-600">ล้างแอร์</span>
+					<span className="font-semibold text-blue-600">{getServiceBreadcrumbName(serviceTitle, serviceDetail)}</span>
 				</div>
 			</div>
 
@@ -153,7 +153,7 @@ export default function HeroSectionThree() {
 									<CardNumberElement
 										options={cardElementOptions}
 										className="w-full"
-										onChange={(event) => setPaymentFormData((currentForm) => ({ ...currentForm, creditCardNumberComplete: event.complete }))}
+										onChange={(event: { complete: boolean }) => setPaymentFormData((currentForm) => ({ ...currentForm, creditCardNumberComplete: event.complete }))}
 									/>
 								</div>
 							</Field>
@@ -165,7 +165,7 @@ export default function HeroSectionThree() {
 									<CardExpiryElement
 										options={cardElementOptions}
 										className="w-full"
-										onChange={(event) => setPaymentFormData((currentForm) => ({ ...currentForm, creditCardExpiryComplete: event.complete }))}
+										onChange={(event: { complete: boolean }) => setPaymentFormData((currentForm) => ({ ...currentForm, creditCardExpiryComplete: event.complete }))}
 									/>
 								</div>
 							</Field>
@@ -174,7 +174,7 @@ export default function HeroSectionThree() {
 									<CardCvcElement
 										options={cardElementOptions}
 										className="w-full"
-										onChange={(event) => setPaymentFormData((currentForm) => ({ ...currentForm, creditCardCVCComplete: event.complete }))}
+										onChange={(event: { complete: boolean }) => setPaymentFormData((currentForm) => ({ ...currentForm, creditCardCVCComplete: event.complete }))}
 									/>
 								</div>
 							</Field>

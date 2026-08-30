@@ -1,5 +1,6 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
+import dynamic from "next/dynamic";
 import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import CreditCardOutlinedIcon from "@mui/icons-material/CreditCardOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
@@ -7,30 +8,31 @@ import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import Image from "next/image";
 import serviceDetailBanner from "@/assets/images/service-detail-banner.png";
 import MobileFooterTwo from "./mobile-footer2";
-import { PaymentContext } from "@/app/service-details/layout";
+import { getServiceBreadcrumbName, hasRequiredServiceFormData, PaymentContext, type ServiceFormData } from "@/app/service-details/layout";
 import apiClient from "@/services/apiClient";
-import { useAuth } from "@/contexts/AuthContext";
+import {
+	matchPlaceName,
+	normalizeAdminPlaces,
+	reverseGeocodeServiceLocation,
+	type AdminPlace,
+} from "@/utils/serviceLocation";
+import { normalizeClockTime } from "@/utils/serviceSchedule";
 
-interface Province {
-	id: number;
-	nameTh: string;
-	nameEn: string;
-}
+const ServiceLocationMap = dynamic(
+	() => import("./ServiceLocationMap").then((module) => module.ServiceLocationMap),
+	{
+		ssr: false,
+		loading: () => (
+			<div className="flex h-64 items-center justify-center rounded-[7px] border border-gray-300 bg-gray-100 text-sm text-gray-500">
+				กำลังโหลดแผนที่...
+			</div>
+		),
+	},
+);
 
-interface District {
-	id: number;
-	nameTh: string;
-	nameEn: string;
-	provinceId?: number;
-}
-
-interface Subdistrict {
-	id: number;
-	nameTh: string;
-	nameEn: string;
-	districtId?: number;
-	zipCode: number;
-}
+type Province = AdminPlace;
+type District = AdminPlace;
+type Subdistrict = AdminPlace;
 
 export default function HeroSectionTwo() {
 	
@@ -41,7 +43,7 @@ export default function HeroSectionTwo() {
 		throw new Error("HeroSection must be rendered inside PaymentProvider");
 	}
 	
-	const { serviceFormData, setServiceFormData, setIsSecondPageCompleted, setUserId } = payment;
+	const { serviceFormData, setServiceFormData, setIsSecondPageCompleted, serviceTitle, serviceDetail } = payment;
 
 	// Store userId from AuthContext
 	/*
@@ -58,6 +60,36 @@ export default function HeroSectionTwo() {
 	const [subdistricts, setSubdistricts] = React.useState<Subdistrict[]>([]);
 	const [loading, setLoading] = React.useState(false);
 	const [error, setError] = React.useState<string | null>(null);
+	const [mapNotice, setMapNotice] = React.useState<string | null>(null);
+	const [isLocating, setIsLocating] = React.useState(false);
+	const geocodeTimeoutRef = useRef<number | null>(null);
+	const fillGenerationRef = useRef(0);
+	const mapFillLockRef = useRef(false);
+	const provincesRef = useRef<Province[]>([]);
+
+	provincesRef.current = provinces;
+
+	function writeForm(updater: (current: ServiceFormData) => ServiceFormData): void {
+		setServiceFormData((currentForm) => {
+			const nextForm = updater(currentForm);
+			setIsSecondPageCompleted(hasRequiredServiceFormData(nextForm));
+			return nextForm;
+		});
+	}
+
+	async function loadDistricts(provinceName: string, provinceOptions: Province[] = provincesRef.current): Promise<District[]> {
+		const selectedProvince = provinceOptions.find((province) => province.nameTh === provinceName);
+		if (!selectedProvince) return [];
+		const response = await apiClient.get(`/api/provinces/${selectedProvince.id}/districts`);
+		return normalizeAdminPlaces(response.data);
+	}
+
+	async function loadSubdistricts(districtName: string, districtOptions: District[]): Promise<Subdistrict[]> {
+		const selectedDistrict = districtOptions.find((district) => district.nameTh === districtName);
+		if (!selectedDistrict) return [];
+		const response = await apiClient.get(`/api/districts/${selectedDistrict.id}/subdistricts`);
+		return normalizeAdminPlaces(response.data);
+	}
 
 	// Fetch provinces on component mount
 	useEffect(() => {
@@ -70,15 +102,11 @@ export default function HeroSectionTwo() {
 				
 				// Check if response has the expected structure
 				if (response.data && response.data.data) {
-					if (Array.isArray(response.data.data)) {
-						// If data is directly an array
-						setProvinces(response.data.data);
-					} else if (response.data.data.value && Array.isArray(response.data.data.value)) {
-						// If data has a value property with the array
-						setProvinces(response.data.data.value);
-					} else {
-						console.error("Unexpected response structure:", response.data);
+					const nextProvinces = normalizeAdminPlaces(response.data);
+					if (nextProvinces.length === 0) {
 						setError("รูปแบบข้อมูลจังหวัดไม่ถูกต้อง");
+					} else {
+						setProvinces(nextProvinces);
 					}
 				} else {
 					console.error("Missing data in response:", response.data);
@@ -94,9 +122,9 @@ export default function HeroSectionTwo() {
 		fetchProvinces();
 	}, []);
 
-	// Fetch districts when province changes
 	useEffect(() => {
 		async function fetchDistricts() {
+			if (mapFillLockRef.current) return;
 			if (!serviceFormData.province) {
 				setDistricts([]);
 				setSubdistricts([]);
@@ -104,80 +132,49 @@ export default function HeroSectionTwo() {
 			}
 
 			try {
-				setLoading(true);
-				const selectedProvince = provinces.find(p => p.nameTh === serviceFormData.province);
-				if (!selectedProvince) return;
-
-				const response = await apiClient.get(`/api/provinces/${selectedProvince.id}/districts`);
-				console.log("Districts API response:", response.data);
-				
-				// Check if response has the expected structure
-				if (response.data && response.data.data) {
-					if (Array.isArray(response.data.data)) {
-						// If data is directly an array
-						setDistricts(response.data.data);
-					} else if (response.data.data.districts && Array.isArray(response.data.data.districts)) {
-						// If data has a districts property with the array
-						setDistricts(response.data.data.districts);
-					} else {
-						console.error("Unexpected districts response structure:", response.data);
-						setError("รูปแบบข้อมูลเขต/อำเภอไม่ถูกต้อง");
-					}
+				setError(null);
+				const nextDistricts = await loadDistricts(serviceFormData.province);
+				if (mapFillLockRef.current) return;
+				setDistricts(nextDistricts);
+				if (!nextDistricts.some((district) => district.nameTh === serviceFormData.district)) {
+					setSubdistricts([]);
 				}
 			} catch (err) {
 				console.error("Error fetching districts:", err);
 				setError("ไม่สามารถโหลดข้อมูลเขต/อำเภอได้");
-			} finally {
-				setLoading(false);
 			}
 		}
-		fetchDistricts();
+		void fetchDistricts();
 	}, [serviceFormData.province, provinces]);
 
-	// Fetch subdistricts when district changes
 	useEffect(() => {
 		async function fetchSubdistricts() {
+			if (mapFillLockRef.current) return;
 			if (!serviceFormData.district) {
 				setSubdistricts([]);
 				return;
 			}
 
 			try {
-				setLoading(true);
-				const selectedDistrict = districts.find(d => d.nameTh === serviceFormData.district);
-				if (!selectedDistrict) return;
-
-				const response = await apiClient.get(`/api/districts/${selectedDistrict.id}/subdistricts`);
-				console.log("Subdistricts API response:", response.data);
-				
-				// Check if response has the expected structure
-				if (response.data && response.data.data) {
-					if (Array.isArray(response.data.data)) {
-						// If data is directly an array
-						setSubdistricts(response.data.data);
-					} else if (response.data.data.subdistricts && Array.isArray(response.data.data.subdistricts)) {
-						// If data has a subdistricts property with the array
-						setSubdistricts(response.data.data.subdistricts);
-					} else {
-						console.error("Unexpected subdistricts response structure:", response.data);
-						setError("รูปแบบข้อมูลแขวง/ตำบลไม่ถูกต้อง");
-					}
-				}
+				setError(null);
+				const nextSubdistricts = await loadSubdistricts(serviceFormData.district, districts);
+				if (mapFillLockRef.current) return;
+				setSubdistricts(nextSubdistricts);
 			} catch (err) {
 				console.error("Error fetching subdistricts:", err);
 				setError("ไม่สามารถโหลดข้อมูลแขวง/ตำบลได้");
-			} finally {
-				setLoading(false);
 			}
 		}
-		fetchSubdistricts();
+		void fetchSubdistricts();
 	}, [serviceFormData.district, districts]);
 
-	function updateField(field: keyof typeof serviceFormData, value: string): void {
-		setServiceFormData((currentForm) => {
-			const nextForm = { ...currentForm, [field]: value };
-			
-			// Reset dependent fields when parent field changes
+	function updateField(field: keyof ServiceFormData, value: string): void {
+		writeForm((currentForm) => {
+			const nextForm = {
+				...currentForm,
+				[field]: field === "serviceTime" ? normalizeClockTime(value) : value,
+			};
+
 			if (field === "province") {
 				nextForm.district = "";
 				nextForm.subdistrict = "";
@@ -185,14 +182,100 @@ export default function HeroSectionTwo() {
 				nextForm.subdistrict = "";
 			}
 
-			const isComplete = Object.entries(nextForm)
-				.filter(([formField]) => formField !== "information")
-				.every(([, formValue]) => formValue.trim().length > 0);
-
-			setIsSecondPageCompleted(isComplete);
 			return nextForm;
 		});
 	}
+
+	async function fillAddressFromPin(latitude: number, longitude: number): Promise<void> {
+		const generation = ++fillGenerationRef.current;
+		setMapNotice("กำลังค้นหาที่อยู่จากแผนที่...");
+		try {
+			const resolved = await reverseGeocodeServiceLocation(latitude, longitude);
+			if (generation !== fillGenerationRef.current) return;
+
+			const currentProvinces = provincesRef.current;
+			const provinceName = matchPlaceName(currentProvinces, resolved.provinceHints) ?? "";
+			let districtName = "";
+			let subdistrictName = "";
+			let nextDistricts: District[] = [];
+			let nextSubdistricts: Subdistrict[] = [];
+
+			if (provinceName) {
+				nextDistricts = await loadDistricts(provinceName, currentProvinces);
+				if (generation !== fillGenerationRef.current) return;
+				districtName = matchPlaceName(nextDistricts, resolved.districtHints) ?? "";
+				if (districtName) {
+					nextSubdistricts = await loadSubdistricts(districtName, nextDistricts);
+					if (generation !== fillGenerationRef.current) return;
+					subdistrictName = matchPlaceName(nextSubdistricts, resolved.subdistrictHints) ?? "";
+				}
+			}
+
+			mapFillLockRef.current = true;
+			setDistricts(nextDistricts);
+			setSubdistricts(nextSubdistricts);
+			writeForm((currentForm) => ({
+				...currentForm,
+				latitude,
+				longitude,
+				address: resolved.streetAddress || currentForm.address,
+				province: provinceName,
+				district: districtName,
+				subdistrict: subdistrictName,
+			}));
+			window.setTimeout(() => {
+				mapFillLockRef.current = false;
+			}, 0);
+
+			if (!provinceName) {
+				setMapNotice("ปักหมุดแล้ว แต่ไม่พบจังหวัดในระบบ กรุณาเลือกหรือพิมพ์ที่อยู่เองได้");
+			} else if (!districtName) {
+				setMapNotice("ปักหมุดแล้ว กรุณาเลือกเขต/อำเภอ หรือแก้ที่อยู่ในช่องได้");
+			} else if (!subdistrictName) {
+				setMapNotice("ปักหมุดแล้ว กรุณาเลือกแขวง/ตำบล หรือแก้ที่อยู่ในช่องได้");
+			} else {
+				setMapNotice("ปักหมุดแล้ว ระบบกรอกที่อยู่ให้แล้ว สามารถแก้ไขในช่องได้");
+			}
+		} catch {
+			if (generation !== fillGenerationRef.current) return;
+			writeForm((currentForm) => ({ ...currentForm, latitude, longitude }));
+			setMapNotice("ปักหมุดแล้ว แต่ค้นหาที่อยู่ไม่สำเร็จ กรุณากรอกที่อยู่เอง");
+		}
+	}
+
+	function handlePinSelect(latitude: number, longitude: number): void {
+		writeForm((currentForm) => ({ ...currentForm, latitude, longitude }));
+		if (geocodeTimeoutRef.current) window.clearTimeout(geocodeTimeoutRef.current);
+		geocodeTimeoutRef.current = window.setTimeout(() => {
+			void fillAddressFromPin(latitude, longitude);
+		}, 400);
+	}
+
+	function locateCurrentPosition(): void {
+		if (!("geolocation" in navigator)) {
+			setMapNotice("Browser นี้ไม่รองรับการใช้งาน Location");
+			return;
+		}
+
+		setIsLocating(true);
+		navigator.geolocation.getCurrentPosition(
+			(position) => {
+				setIsLocating(false);
+				handlePinSelect(position.coords.latitude, position.coords.longitude);
+			},
+			() => {
+				setIsLocating(false);
+				setMapNotice("ไม่สามารถอ่านตำแหน่งปัจจุบันได้ กรุณาปักหมุดบนแผนที่");
+			},
+			{ enableHighAccuracy: true, timeout: 10_000, maximumAge: 60_000 },
+		);
+	}
+
+	useEffect(() => {
+		return () => {
+			if (geocodeTimeoutRef.current) window.clearTimeout(geocodeTimeoutRef.current);
+		};
+	}, []);
 
 
 	return (
@@ -209,7 +292,7 @@ export default function HeroSectionTwo() {
 				<div className="absolute left-3 top-9 flex h-10 items-center rounded-[7px] bg-white px-3 text-sm shadow-sm min-[801px]:left-1/2 min-[801px]:top-10 min-[801px]:-translate-x-1/2">
 					<span className="text-gray-500">บริการของเรา</span>
 					<ChevronRightRoundedIcon className="mx-1 text-[17px] text-gray-500" />
-					<span className="font-semibold text-blue-600">ล้างแอร์</span>
+					<span className="font-semibold text-blue-600">{getServiceBreadcrumbName(serviceTitle, serviceDetail)}</span>
 				</div>
 			</div>
 
@@ -230,12 +313,45 @@ export default function HeroSectionTwo() {
 							{error}
 						</div>
 					)}
+					<section className="mt-3">
+						<h2 className="text-sm font-medium text-gray-700">จุดหมายที่ช่างต้องไป<span className="text-red-500">*</span></h2>
+						<p className="mt-1 text-xs text-gray-500">ปักหมุดเพื่อให้ระบบกรอกที่อยู่ให้ หรือกรอกและเลือกในช่องด้านล่างเองก็ได้</p>
+						<div className="mt-2">
+							<ServiceLocationMap
+								latitude={serviceFormData.latitude}
+								longitude={serviceFormData.longitude}
+								onPinSelect={handlePinSelect}
+							/>
+						</div>
+						<div className="mt-2 flex flex-wrap items-center gap-2">
+							<button
+								type="button"
+								onClick={locateCurrentPosition}
+								disabled={isLocating}
+								className="h-8 rounded-[7px] border border-blue-500 px-3 text-xs font-medium text-blue-600 disabled:opacity-50"
+							>
+								{isLocating ? "กำลังค้นหาตำแหน่ง..." : "ใช้ตำแหน่งปัจจุบัน"}
+							</button>
+							{serviceFormData.latitude != null && serviceFormData.longitude != null ? (
+								<p className="text-xs text-gray-500">
+									พิกัด {serviceFormData.latitude.toFixed(5)}, {serviceFormData.longitude.toFixed(5)}
+								</p>
+							) : (
+								<p className="text-xs text-red-500">กรุณาปักหมุดบนแผนที่ก่อนดำเนินการต่อ</p>
+							)}
+						</div>
+						{mapNotice && (
+							<p role="status" className="mt-2 text-xs text-gray-600">
+								{mapNotice}
+							</p>
+						)}
+					</section>
 					<div className="mt-3 space-y-3 min-[801px]:grid min-[801px]:grid-cols-2 min-[801px]:gap-x-3 min-[801px]:gap-y-3 min-[801px]:space-y-0">
 					<Field label="วันที่สะดวกใช้บริการ" required>
 						<input type="date" value={serviceFormData.serviceDate} onChange={(event) => updateField("serviceDate", event.target.value)} className={inputClass} />
 					</Field>
 					<Field label="เวลาที่สะดวกใช้บริการ" required>
-						<input type="time" value={serviceFormData.serviceTime} onChange={(event) => updateField("serviceTime", event.target.value)} className={inputClass} />
+						<input type="time" step={60} value={serviceFormData.serviceTime} onChange={(event) => updateField("serviceTime", event.target.value)} className={inputClass} />
 					</Field>
 					<Field label="ที่อยู่" required>
 						<input type="text" value={serviceFormData.address} onChange={(event) => updateField("address", event.target.value)} placeholder="กรุณากรอกที่อยู่" className={inputClass} />
@@ -246,7 +362,7 @@ export default function HeroSectionTwo() {
 							onChange={(value) => updateField("province", value)} 
 							placeholder="เลือกจังหวัด"
 							provinces={provinces}
-							loading={loading}
+							loading={loading && provinces.length === 0}
 						/>
 					</Field>
 					<Field label="เขต / อำเภอ" required>
@@ -255,7 +371,6 @@ export default function HeroSectionTwo() {
 							onChange={(value) => updateField("district", value)} 
 							placeholder="เลือกเขต / อำเภอ"
 							districts={districts}
-							loading={loading}
 							disabled={!serviceFormData.province}
 						/>
 					</Field>
@@ -265,7 +380,6 @@ export default function HeroSectionTwo() {
 							onChange={(value) => updateField("subdistrict", value)} 
 							placeholder="เลือกแขวง / ตำบล"
 							subdistricts={subdistricts}
-							loading={loading}
 							disabled={!serviceFormData.district}
 						/>
 					</Field>
@@ -316,12 +430,11 @@ function ProvinceSelect({ onChange, placeholder, value, provinces, loading }: {
 	);
 }
 
-function DistrictSelect({ onChange, placeholder, value, districts, loading, disabled }: { 
+function DistrictSelect({ onChange, placeholder, value, districts, disabled }: { 
 	onChange: (value: string) => void; 
 	placeholder: string; 
 	value: string;
 	districts: District[];
-	loading: boolean;
 	disabled: boolean;
 }) {
 	return (
@@ -329,10 +442,10 @@ function DistrictSelect({ onChange, placeholder, value, districts, loading, disa
 			value={value} 
 			onChange={(event) => onChange(event.target.value)} 
 			className={`${inputClass} appearance-auto`}
-			disabled={loading || disabled}
+			disabled={disabled}
 		>
 			<option value="" disabled>
-				{disabled ? "กรุณาเลือกจังหวัดก่อน" : loading ? "กำลังโหลด..." : placeholder}
+				{disabled ? "กรุณาเลือกจังหวัดก่อน" : placeholder}
 			</option>
 			{districts?.map((district) => (
 				<option key={district.id} value={district.nameTh}>
@@ -343,12 +456,11 @@ function DistrictSelect({ onChange, placeholder, value, districts, loading, disa
 	);
 }
 
-function SubdistrictSelect({ onChange, placeholder, value, subdistricts, loading, disabled }: { 
+function SubdistrictSelect({ onChange, placeholder, value, subdistricts, disabled }: { 
 	onChange: (value: string) => void; 
 	placeholder: string; 
 	value: string;
 	subdistricts: Subdistrict[];
-	loading: boolean;
 	disabled: boolean;
 }) {
 	return (
@@ -356,27 +468,16 @@ function SubdistrictSelect({ onChange, placeholder, value, subdistricts, loading
 			value={value} 
 			onChange={(event) => onChange(event.target.value)} 
 			className={`${inputClass} appearance-auto`}
-			disabled={loading || disabled}
+			disabled={disabled}
 		>
 			<option value="" disabled>
-				{disabled ? "กรุณาเลือกเขต/อำเภอก่อน" : loading ? "กำลังโหลด..." : placeholder}
+				{disabled ? "กรุณาเลือกเขต/อำเภอก่อน" : placeholder}
 			</option>
 			{subdistricts?.map((subdistrict) => (
 				<option key={subdistrict.id} value={subdistrict.nameTh}>
 					{subdistrict.nameTh}
 				</option>
 			))}
-		</select>
-	);
-}
-
-function Select({ onChange, placeholder, value }: { onChange: (value: string) => void; placeholder: string; value: string }) {
-	return (
-		<select value={value} onChange={(event) => onChange(event.target.value)} className={`${inputClass} appearance-auto`}>
-			<option value="" disabled>{placeholder}</option>
-			<option value="กรุงเทพมหานคร">กรุงเทพมหานคร</option>
-			<option value="นนทบุรี">นนทบุรี</option>
-			<option value="ปทุมธานี">ปทุมธานี</option>
 		</select>
 	);
 }

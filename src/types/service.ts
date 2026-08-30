@@ -37,6 +37,8 @@ export interface ServiceItem {
   maxPrice?: number;
   isRecommended?: boolean;
   popularityScore?: number;
+  averageRating?: number;
+  reviewCount?: number;
   serviceOptions?: ServiceOption[];
   service_options?: ServiceOption[];
   createdAt?: string;
