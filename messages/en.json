@@ -48,6 +48,8 @@
       "title": "Our most popular services",
       "viewAll": "View all services",
       "select": "Select service",
+      "loading": "Loading popular services...",
+      "empty": "No popular services are available yet",
       "items": {
         "cleaning": {
           "category": "General service",

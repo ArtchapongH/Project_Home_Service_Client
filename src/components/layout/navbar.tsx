@@ -89,7 +89,7 @@ export function Navbar() {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="inline-flex min-h-9 items-center justify-center rounded-[7px] border border-gray-300 px-3.5 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-100 min-[801px]:min-h-[42px] min-[801px]:px-[18px] min-[801px]:py-2 min-[801px]:text-sm"
+                className="inline-flex min-h-9 cursor-pointer items-center justify-center rounded-[7px] border border-gray-300 px-3.5 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-100 min-[801px]:min-h-[42px] min-[801px]:px-[18px] min-[801px]:py-2 min-[801px]:text-sm"
               >
                 {t("logout")}
               </button>
