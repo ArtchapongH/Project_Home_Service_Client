@@ -1,20 +1,55 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import LoginCard from "./LoginCard";
 import LoginSubmitButton from "./LoginSubmitButton";
 import LoginTextField from "./LoginTextField";
+import { resetPasswordWithRecovery } from "@/services/auth.service";
+import { getResetPasswordErrorMessage } from "@/utils/getAuthErrorMessage";
+import {
+  clearRecoveryParamsFromUrl,
+  getRecoverySessionFromUrl,
+  type RecoverySession,
+} from "@/utils/getRecoverySessionFromUrl";
 
 export default function ResetPasswordForm() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [recoverySession, setRecoverySession] = useState<RecoverySession | null>(
+    null,
+  );
+  const isSubmittingRef = useRef(false);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  useEffect(() => {
+    const session = getRecoverySessionFromUrl();
+    setRecoverySession(session);
+
+    if (!session) {
+      setErrorMessage(
+        "ลิงก์รีเซ็ตรหัสผ่านไม่ถูกต้องหรือหมดอายุ กรุณาขอลิงก์ใหม่จากหน้าลืมรหัสผ่าน",
+      );
+    }
+  }, []);
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (isSubmittingRef.current) {
+      return;
+    }
+
     setErrorMessage("");
+
+    if (!recoverySession) {
+      setErrorMessage(
+        "ลิงก์รีเซ็ตรหัสผ่านไม่ถูกต้องหรือหมดอายุ กรุณาขอลิงก์ใหม่จากหน้าลืมรหัสผ่าน",
+      );
+      return;
+    }
 
     if (newPassword.length < 6) {
       setErrorMessage("รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร");
@@ -26,7 +61,24 @@ export default function ResetPasswordForm() {
       return;
     }
 
-    setIsSubmitted(true);
+    isSubmittingRef.current = true;
+    setIsLoading(true);
+
+    try {
+      await resetPasswordWithRecovery({
+        newPassword,
+        confirmNewPassword: confirmPassword,
+        accessToken: recoverySession.accessToken,
+        refreshToken: recoverySession.refreshToken,
+      });
+      clearRecoveryParamsFromUrl();
+      setIsSubmitted(true);
+    } catch (error: unknown) {
+      setErrorMessage(getResetPasswordErrorMessage(error));
+      isSubmittingRef.current = false;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -70,17 +122,29 @@ export default function ResetPasswordForm() {
               value={confirmPassword}
               onChange={setConfirmPassword}
             />
-            <LoginSubmitButton>บันทึกรหัสผ่านใหม่</LoginSubmitButton>
+            <LoginSubmitButton isDisabled={isLoading || !recoverySession}>
+              {isLoading ? "กำลังบันทึก..." : "บันทึกรหัสผ่านใหม่"}
+            </LoginSubmitButton>
           </form>
         </>
       )}
 
-      <Link
-        href="/login"
-        className="mt-5 block text-center text-xs text-blue-500 underline sm:mt-6 sm:text-sm"
-      >
-        กลับไปหน้าเข้าสู่ระบบ
-      </Link>
+      <div className="mt-5 flex flex-col items-center gap-2 sm:mt-6">
+        {!isSubmitted && !recoverySession ? (
+          <Link
+            href="/forgot-password"
+            className="text-xs text-blue-500 underline sm:text-sm"
+          >
+            ขอลิงก์รีเซ็ตรหัสผ่านใหม่
+          </Link>
+        ) : null}
+        <Link
+          href="/login"
+          className="text-xs text-blue-500 underline sm:text-sm"
+        >
+          กลับไปหน้าเข้าสู่ระบบ
+        </Link>
+      </div>
     </LoginCard>
   );
 }

@@ -171,3 +171,72 @@ export function getChangePasswordErrorMessage(error: unknown): string {
 
   return "ไม่สามารถเปลี่ยนรหัสผ่านได้ กรุณาลองใหม่อีกครั้ง";
 }
+
+export function getForgotPasswordErrorMessage(error: unknown): string {
+  const raw = extractRawMessage(error).trim();
+  const status = axios.isAxiosError(error) ? error.response?.status : undefined;
+  const hasNoResponse = axios.isAxiosError(error) && !error.response;
+
+  if (hasNoResponse) {
+    return "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาตรวจสอบการเชื่อมต่อแล้วลองใหม่";
+  }
+
+  if (status === 429) {
+    return "ส่งคำขอบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่อีกครั้ง";
+  }
+
+  if (status && status >= 500) {
+    return "ระบบมีปัญหาชั่วคราว กรุณาลองใหม่อีกครั้งในอีกสักครู่";
+  }
+
+  if (raw && hasThaiText(raw) && !isTechnicalMessage(raw)) {
+    return raw;
+  }
+
+  return "ไม่สามารถส่งลิงก์รีเซ็ตรหัสผ่านได้ กรุณาลองใหม่อีกครั้ง";
+}
+
+export function getResetPasswordErrorMessage(error: unknown): string {
+  const raw = extractRawMessage(error).trim();
+  const lower = raw.toLowerCase();
+  const status = axios.isAxiosError(error) ? error.response?.status : undefined;
+  const hasNoResponse = axios.isAxiosError(error) && !error.response;
+
+  if (hasNoResponse) {
+    return "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาตรวจสอบการเชื่อมต่อแล้วลองใหม่";
+  }
+
+  if (
+    status === 401 ||
+    lower.includes("session") ||
+    lower.includes("expired") ||
+    lower.includes("invalid token")
+  ) {
+    return "ลิงก์รีเซ็ตรหัสผ่านไม่ถูกต้องหรือหมดอายุ กรุณาขอลิงก์ใหม่";
+  }
+
+  if (
+    lower.includes("match") ||
+    lower.includes("confirm") ||
+    lower.includes("ไม่ตรง")
+  ) {
+    return "รหัสผ่านใหม่และยืนยันรหัสผ่านไม่ตรงกัน";
+  }
+
+  if (
+    lower.includes("password") &&
+    (lower.includes("least") || lower.includes("short") || lower.includes("weak"))
+  ) {
+    return "รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร";
+  }
+
+  if (status && status >= 500) {
+    return "ระบบมีปัญหาชั่วคราว กรุณาลองใหม่อีกครั้งในอีกสักครู่";
+  }
+
+  if (raw && hasThaiText(raw) && !isTechnicalMessage(raw)) {
+    return raw;
+  }
+
+  return "ไม่สามารถตั้งรหัสผ่านใหม่ได้ กรุณาลองใหม่อีกครั้ง";
+}
