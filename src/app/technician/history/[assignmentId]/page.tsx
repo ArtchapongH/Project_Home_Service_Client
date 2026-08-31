@@ -6,5 +6,11 @@ export default async function TechnicianHistoryDetailPage({
   params: Promise<{ assignmentId: string }>;
 }) {
   const { assignmentId } = await params;
-  return <TechnicianJobDetail assignmentId={assignmentId} history />;
+  return (
+    <TechnicianJobDetail
+      key={assignmentId}
+      assignmentId={assignmentId}
+      history
+    />
+  );
 }

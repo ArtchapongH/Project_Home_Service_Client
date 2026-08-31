@@ -30,6 +30,15 @@ export interface TechnicianJobItem {
   unit: string;
 }
 
+export interface TechnicianJobCompletionImage {
+  imageId: string;
+  objectPath: string;
+  sortOrder: number;
+  createdAt: string;
+  signedUrl: string | null;
+  expiresIn: number | null;
+}
+
 export type TechnicianJobStatus =
   | "ACCEPTED"
   | "IN_PROGRESS"
@@ -57,6 +66,13 @@ export interface TechnicianJob {
   customerName: string | null;
   customerPhone: string | null;
   items: TechnicianJobItem[];
+  completionImages?: TechnicianJobCompletionImage[];
+}
+
+export interface TechnicianCompletionImageUploadResult {
+  assignmentId: string;
+  imageCount: number;
+  images: TechnicianJobCompletionImage[];
 }
 
 export interface TechnicianListFilters {

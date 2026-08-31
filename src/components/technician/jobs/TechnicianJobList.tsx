@@ -22,14 +22,19 @@ export function TechnicianJobList({ mode }: { mode: "active" | "history" }) {
     setLoading(true);
     setError(null);
     try {
-      const result = await getTechnicianJobs({ search: search || undefined, serviceId: serviceId || undefined, sort });
+      const result = await getTechnicianJobs({
+        search: search || undefined,
+        serviceId: serviceId || undefined,
+        sort,
+        status: mode === "history" ? "COMPLETED" : undefined,
+      });
       setJobs(result.data);
     } catch (requestError) {
       setError(getTechnicianApiError(requestError).message);
     } finally {
       setLoading(false);
     }
-  }, [search, serviceId, sort]);
+  }, [mode, search, serviceId, sort]);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => void loadJobs(), 250);
@@ -39,7 +44,7 @@ export function TechnicianJobList({ mode }: { mode: "active" | "history" }) {
   const visibleJobs = useMemo(
     () => jobs.filter((job) => mode === "active"
       ? job.assignmentStatus === "ACCEPTED" || job.assignmentStatus === "IN_PROGRESS"
-      : job.assignmentStatus === "COMPLETED" || job.assignmentStatus === "CANCELLED"),
+      : job.assignmentStatus === "COMPLETED"),
     [jobs, mode],
   );
   const basePath = mode === "active" ? "/technician/jobs" : "/technician/history";
@@ -90,13 +95,13 @@ export function TechnicianJobList({ mode }: { mode: "active" | "history" }) {
               {visibleJobs.map((job) => (
                 <article key={job.assignmentId} className="min-w-0 rounded-lg border border-gray-200 p-4 shadow-sm">
                   <div className="flex min-w-0 items-start justify-between gap-3">
-                    <h2 className="min-w-0 break-words font-semibold text-gray-900">{job.serviceName}</h2>
+                    <h2 className="min-w-0 wrap-break-word font-semibold text-gray-900">{job.serviceName}</h2>
                     <Link href={`${basePath}/${job.assignmentId}`} aria-label={`ดูรายละเอียด ${job.serviceName}`} className="inline-flex size-11 shrink-0 items-center justify-center rounded-lg border border-blue-200 text-blue-600">
                       <ExternalLink size={18} />
                     </Link>
                   </div>
                   <dl className="mt-3 grid grid-cols-[96px_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
-                    <dt className="text-gray-500">วันนัดหมาย</dt><dd className="break-words">{formatThaiDateTime(job.scheduledAt)}</dd>
+                    <dt className="text-gray-500">วันนัดหมาย</dt><dd className="wrap-break-word">{formatThaiDateTime(job.scheduledAt)}</dd>
                     <dt className="text-gray-500">รหัสคำสั่งซื้อ</dt><dd className="break-all">{job.orderCode}</dd>
                     <dt className="text-gray-500">ราคารวม</dt><dd>{formatBaht(job.totalPrice)}</dd>
                   </dl>
