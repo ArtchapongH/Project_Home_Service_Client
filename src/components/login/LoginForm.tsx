@@ -76,15 +76,25 @@ export default function LoginForm() {
           value={email}
           onChange={setEmail}
         />
-        <LoginTextField
-          id="password"
-          label={t("password")}
-          type="password"
-          placeholder={t("passwordPlaceholder")}
-          autoComplete="current-password"
-          value={password}
-          onChange={setPassword}
-        />
+        <div>
+          <LoginTextField
+            id="password"
+            label={t("password")}
+            type="password"
+            placeholder={t("passwordPlaceholder")}
+            autoComplete="current-password"
+            value={password}
+            onChange={setPassword}
+          />
+          <div className="mt-2 flex justify-end">
+            <Link
+              href="/forgot-password"
+              className="text-xs text-blue-500 underline sm:text-sm"
+            >
+              ลืมรหัสผ่าน?
+            </Link>
+          </div>
+        </div>
         <LoginSubmitButton isDisabled={isLoading}>
           {isLoading ? t("submitting") : t("submit")}
         </LoginSubmitButton>
