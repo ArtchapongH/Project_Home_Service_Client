@@ -7,6 +7,23 @@ import { PaymentContext } from "@/app/service-details/layout";
 
 export default function PaymentSuccess() {
 	const payment = React.useContext(PaymentContext);
+
+	if (!payment) {
+		throw new Error("PaymentSuccess must be rendered inside PaymentProvider");
+	}
+
+	const { serviceDetail, serviceFormData, totAmount } = payment;
+
+	const selectedServices = serviceDetail.filter((service) => service.quantity !== 0);
+	const address = [
+		serviceFormData.address,
+		serviceFormData.district,
+		serviceFormData.subdistrict,
+		serviceFormData.province,
+	]
+		.filter(Boolean)
+		.join(" ");
+
 	return (
 		<section className="min-h-screen bg-utility-bg px-2 pt-6 min-[801px]:flex min-[801px]:items-start min-[801px]:justify-center min-[801px]:px-6 min-[801px]:pt-7">
 			<div className="w-full rounded-[7px] border border-gray-200 bg-white px-2.5 py-6 shadow-[0_1px_3px_rgb(23_51_109/6%)] min-[801px]:w-87 min-[801px]:px-9.5 min-[801px]:py-7.5">
@@ -17,22 +34,24 @@ export default function PaymentSuccess() {
 					<h1 className="mt-3 text-base font-semibold text-[#17396f] min-[801px]:text-xl">ชำระเงินเรียบร้อย !</h1>
 				</div>
 
-				<div className="mt-4 border-b border-gray-200 pb-3 text-[10px]">
-					<div className="flex items-start justify-between gap-2 text-gray-700">
-						<span>9,000 - 18,000 BTU, แบบติดผนัง</span>
-						<span className="shrink-0 text-gray-500">2 รายการ</span>
-					</div>
+				<div className="mt-4 space-y-2 border-b border-gray-200 pb-3 text-[10px] text-gray-700">
+					{selectedServices.map((service, index) => (
+						<div key={`service-${service.service_id || "0"}-${service.option_id || "0"}-${index}`} className="flex items-start justify-between gap-2">
+							<span>{service.option_name}</span>
+							<span className="shrink-0">{service.quantity} {service.unit}</span>
+						</div>
+					))}
 				</div>
 
 				<div className="space-y-1.5 border-b border-gray-200 py-3 text-[10px]">
-					<SummaryRow label="วันที่" value="23 เม.ย. 2022" />
-					<SummaryRow label="เวลา" value="11:00 น." />
-					<SummaryRow label="สถานที่" value={<>444/4 คอนโดสุขสมัย แขวงดินแดง<br />จตุจักร กรุงเทพฯ</>} />
+					<SummaryRow label="วันที่" value={serviceFormData.serviceDate} />
+					<SummaryRow label="เวลา" value={serviceFormData.serviceTime} />
+					<SummaryRow label="สถานที่" value={address} />
 				</div>
 
 				<div className="mt-3 flex items-center justify-between text-xs">
 					<span className="text-gray-500">รวม</span>
-					<span className="font-semibold text-black">1,550.00 ฿</span>
+					<span className="font-semibold text-black">{totAmount.toFixed(2)} ฿</span>
 				</div>
 
 				<Link href="/" className="mt-4 flex h-8 items-center justify-center rounded-[7px] bg-blue-500 text-xs font-medium text-white">
