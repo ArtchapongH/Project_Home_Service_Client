@@ -41,13 +41,14 @@ export function LanguageSwitcher() {
             type="button"
             onClick={() => switchLocale(code)}
             aria-pressed={locale === code}
-            className={`rounded px-1.5 py-1 transition ${
+            className={`cursor-pointer rounded px-1 py-0.5 transition min-[801px]:px-1.5 min-[801px]:py-1 ${
               locale === code
                 ? "text-blue-600"
                 : "text-gray-400 hover:text-gray-700"
             }`}
           >
-            {localeLabels[code]}
+            <span className="min-[801px]:hidden">{code.toUpperCase()}</span>
+            <span className="hidden min-[801px]:inline">{localeLabels[code]}</span>
           </button>
         </Fragment>
       ))}

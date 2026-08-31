@@ -24,6 +24,9 @@
     "openProfile": "เปิดหน้าโปรไฟล์",
     "notifications": "การแจ้งเตือน",
     "logout": "ออกจากระบบ",
+    "logoutShort": "ออก",
+    "openMenu": "เปิดเมนู",
+    "closeMenu": "ปิดเมนู",
     "login": "เข้าสู่ระบบ",
     "register": "ลงทะเบียน"
   },
