@@ -9,20 +9,6 @@ import type { PublicService } from "@/types/public-service";
 
 const FALLBACK_IMAGE = "/images/landing/service-aircon.png";
 
-function formatPriceText(service: PublicService, locale: string, t: (key: string, values: Record<string, string>) => string): string {
-  const formatNumber = (value: number) =>
-    value.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-  if (service.maxPrice > service.minPrice) {
-    return t("priceRange", {
-      min: formatNumber(service.minPrice),
-      max: formatNumber(service.maxPrice),
-    });
-  }
-
-  return t("priceEstimate", { price: formatNumber(service.minPrice) });
-}
-
 export function ServicesSection() {
   const t = useTranslations("Landing.popularServices");
   const tServices = useTranslations("Services");
@@ -30,6 +16,25 @@ export function ServicesSection() {
   const [services, setServices] = useState<PublicService[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  function formatPriceText(service: PublicService): string {
+    const formatNumber = (value: number) =>
+      value.toLocaleString(locale, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+
+    if (service.maxPrice > service.minPrice) {
+      return tServices("priceRange", {
+        min: formatNumber(service.minPrice),
+        max: formatNumber(service.maxPrice),
+      });
+    }
+
+    return tServices("priceEstimate", {
+      price: formatNumber(service.minPrice),
+    });
+  }
 
   useEffect(() => {
     let active = true;
@@ -68,7 +73,7 @@ export function ServicesSection() {
                   image: service.imageUrl || FALLBACK_IMAGE,
                   category: service.category,
                   name: service.name,
-                  price: formatPriceText(service, locale, tServices),
+                  price: formatPriceText(service),
                 }}
                 selectLabel={t("select")}
               />
