@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { ServiceCard } from "./service-card";
-import { getApiErrorMessage, getPublicServices } from "@/services/publicServiceApi";
+import { getApiErrorMessage, getPublicServices, isCanceledRequest } from "@/services/publicServiceApi";
 import type { PublicService } from "@/types/public-service";
 
 const FALLBACK_IMAGE = "/images/landing/service-aircon.png";
@@ -38,20 +38,25 @@ export function ServicesSection() {
 
   useEffect(() => {
     let active = true;
-    getPublicServices({ featured: true, limit: 3 })
+    const controller = new AbortController();
+    setLoading(true);
+    setError("");
+    getPublicServices({ featured: true, limit: 3, locale, signal: controller.signal })
       .then((data) => {
         if (active) setServices(data);
       })
       .catch((reason) => {
-        if (active) setError(getApiErrorMessage(reason));
+        if (!active || isCanceledRequest(reason)) return;
+        setError(getApiErrorMessage(reason));
       })
       .finally(() => {
         if (active) setLoading(false);
       });
     return () => {
       active = false;
+      controller.abort();
     };
-  }, []);
+  }, [locale]);
 
   return (
     <section className="min-h-[620px] bg-gray-100 py-[52px] text-center min-[801px]:pt-[68px] min-[801px]:pb-[74px]" aria-labelledby="services-title">
