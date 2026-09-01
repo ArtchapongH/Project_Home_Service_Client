@@ -3,10 +3,7 @@
 import React, { useEffect } from "react";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
-import CreditCardOutlinedIcon from "@mui/icons-material/CreditCardOutlined";
-import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import LocalOfferOutlinedIcon from "@mui/icons-material/LocalOfferOutlined";
-import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import RemoveRoundedIcon from "@mui/icons-material/RemoveRounded";
 import Image from "next/image";
 import { useLocale } from "next-intl";
@@ -18,6 +15,9 @@ import {
   getPublicServiceOptions,
   isCanceledRequest,
 } from "@/services/publicServiceApi";
+import createIcon1 from "@/assets/icons/create_black_24dp 1.png";
+import createIcon2 from "@/assets/icons/create_black_24dp 2.png";
+import createIcon3 from "@/assets/icons/create_black_24dp 3.png";
 
 export default function HeroSection({
   serviceId,
@@ -26,37 +26,16 @@ export default function HeroSection({
 }) {
   const locale = useLocale();
   const payment = React.useContext(PaymentContext);
-  //const { user } = useAuth();
 
   if (!payment) {
     throw new Error("HeroSection must be rendered inside PaymentProvider");
   }
 
-  const {
-    serviceDetail,
-    setServiceDetail,
-    setServiceId,
-    setServiceTitle,
-    setUserId,
-  } = payment;
+  const { serviceDetail, setServiceDetail, setServiceId, setServiceTitle } = payment;
 
-  // Store userId from AuthContext => may be not used
-  /*
-	React.useEffect(() => {
-		if (user?.id) {
-			setUserId(user.id);
-			console.log("User ID set in PaymentContext:", user.id);
-		}
-	}, [user, setUserId]);
-	*/
-
-  // Store serviceId in context and log for debugging
   React.useEffect(() => {
     if (serviceId) {
       setServiceId(Number(serviceId));
-      console.log("Service ID received:", serviceId);
-      // TODO: Fetch service details using this serviceId
-      // Example: fetchServiceDetails(serviceId);
     }
   }, [serviceId, setServiceId]);
 
@@ -69,15 +48,16 @@ export default function HeroSection({
     getPublicServiceOptions(String(serviceId), locale, controller.signal)
       .then((rows) => {
         if (!active) return;
-        setServiceDetail((current) => {
-          const quantityByOptionId = new Map(
-            current.map((item) => [String(item.option_id), item.quantity]),
-          );
-          return rows.map((item) => ({
-            ...item,
-            quantity: quantityByOptionId.get(item.option_id) ?? 0,
-          }));
-        });
+        setServiceDetail((current) =>
+          rows.map((item) => {
+            const existing = current.find(
+              (row) =>
+                row.service_id === item.service_id &&
+                row.option_id === item.option_id,
+            );
+            return { ...item, quantity: existing?.quantity ?? 0 };
+          }),
+        );
         setServiceTitle(rows[0]?.service_name || "");
       })
       .catch((error) => {
@@ -122,21 +102,11 @@ export default function HeroSection({
       </div>
 
       <div className="relative z-10 -mt-11 mx-3 rounded-lg border border-gray-200 bg-white px-3 py-3 min-[801px]:mx-auto min-[801px]:w-[min(664px,calc(100%-48px))] min-[801px]:px-8 min-[801px]:py-5">
-        <div className="absolute left-[16.67%] right-[16.67%] top-6.25 h-px bg-gray-200" />
+        <div className="absolute left-[calc(16.67%+14px)] right-[calc(16.67%+14px)] top-[26px] h-0.5 bg-gray-200 min-[801px]:top-[34px]" />
         <div className="relative grid grid-cols-3">
-          <Step
-            icon={<ReceiptLongOutlinedIcon className="text-[16px]" />}
-            label="รายการ"
-            active
-          />
-          <Step
-            icon={<EditOutlinedIcon className="text-[16px]" />}
-            label="กรอกข้อมูลบริการ"
-          />
-          <Step
-            icon={<CreditCardOutlinedIcon className="text-[16px]" />}
-            label="ชำระเงิน"
-          />
+          <Step icon={<Image src={createIcon3} alt="" width={16} height={16} aria-hidden />} label="รายการ" active />
+          <Step icon={<Image src={createIcon1} alt="" width={16} height={16} aria-hidden />} label="กรอกข้อมูลบริการ" />
+          <Step icon={<Image src={createIcon2} alt="" width={16} height={16} aria-hidden />} label="ชำระเงิน" />
         </div>
       </div>
 
@@ -181,7 +151,6 @@ export default function HeroSection({
             </div>
           </div>
 
-          {/* Customer Reviews Section */}
           <ServiceReviewsSection serviceId={serviceId || 1} />
         </div>
 
@@ -191,27 +160,13 @@ export default function HeroSection({
   );
 }
 
-function Step({
-  icon,
-  label,
-  active = false,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  active?: boolean;
-}) {
+function Step({ icon, label, active = false }: { icon: React.ReactNode; label: string; active?: boolean }) {
   return (
-    <div
-      className={`flex flex-col items-center text-center ${active ? "text-blue-600" : "text-gray-500"}`}
-    >
-      <span
-        className={`flex size-7 items-center justify-center rounded-full border bg-white ${active ? "border-blue-500" : "border-gray-300"}`}
-      >
+    <div className={`flex flex-col items-center text-center ${active ? "text-blue-600" : "text-gray-500"}`}>
+      <span className={`flex size-7 items-center justify-center rounded-full border-2 bg-white ${active ? "border-blue-500" : "border-gray-300"}`}>
         {icon}
       </span>
-      <span className="mt-1 text-xs font-medium whitespace-nowrap">
-        {label}
-      </span>
+      <span className="mt-1 text-xs font-medium whitespace-nowrap">{label}</span>
     </div>
   );
 }

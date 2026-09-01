@@ -15,6 +15,7 @@ import {
   formatThaiServiceDate,
   formatThaiServiceTime,
 } from "@/utils/serviceSchedule";
+import { formatCurrency } from "@/utils/formatCurrency";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -365,7 +366,7 @@ export default function MobileFooterThree({
         <div className="mt-3 flex items-center justify-between text-xs">
           <span className="text-gray-500">รวม</span>
           <span className="font-semibold text-black">
-            {totAmount.toFixed(2)} ฿
+            {formatCurrency(totAmount)} ฿
           </span>
         </div>
         {paymentError && (
@@ -430,7 +431,7 @@ export default function MobileFooterThree({
         <div className="mt-3 flex items-center justify-between text-xs">
           <span className="text-gray-500">รวม</span>
           <span className="font-semibold text-black">
-            {totAmount.toFixed(2)} ฿
+            {formatCurrency(totAmount)} ฿
           </span>
         </div>
       </aside>
