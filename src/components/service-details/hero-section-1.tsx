@@ -152,7 +152,7 @@ export default function HeroSection({ serviceId }: { serviceId?: string | number
 			</div>
 
 			<div className="relative z-10 -mt-11 mx-3 rounded-lg border border-gray-200 bg-white px-3 py-3 min-[801px]:mx-auto min-[801px]:w-[min(664px,calc(100%-48px))] min-[801px]:px-8 min-[801px]:py-5">
-				<div className="absolute left-[calc(16.67%+14px)] right-[calc(16.67%+14px)] top-[26px] h-px bg-gray-200 min-[801px]:top-[34px]" />
+				<div className="absolute left-[calc(16.67%+14px)] right-[calc(16.67%+14px)] top-[26px] h-0.5 bg-gray-200 min-[801px]:top-[34px]" />
 				<div className="relative grid grid-cols-3">
 					<Step icon={<Image src={createIcon3} alt="" width={16} height={16} aria-hidden />} label="รายการ" active />
 					<Step icon={<Image src={createIcon1} alt="" width={16} height={16} aria-hidden />} label="กรอกข้อมูลบริการ" />
@@ -208,7 +208,7 @@ export default function HeroSection({ serviceId }: { serviceId?: string | number
 function Step({ icon, label, active = false }: { icon: React.ReactNode; label: string; active?: boolean }) {
 	return (
 		<div className={`flex flex-col items-center text-center ${active ? "text-blue-600" : "text-gray-500"}`}>
-			<span className={`flex size-7 items-center justify-center rounded-full border bg-white ${active ? "border-blue-500" : "border-gray-300"}`}>
+			<span className={`flex size-7 items-center justify-center rounded-full border-2 bg-white ${active ? "border-blue-500" : "border-gray-300"}`}>
 				{icon}
 			</span>
 			<span className="mt-1 text-xs font-medium whitespace-nowrap">{label}</span>

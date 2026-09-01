@@ -134,7 +134,7 @@ export default function HeroSectionThree() {
 			</div>
 
 			<div className="relative z-10 -mt-11 mx-3 rounded-lg border border-gray-200 bg-white px-3 py-3 min-[801px]:mx-auto min-[801px]:w-[min(672px,calc(100%-48px))] min-[801px]:px-10 min-[801px]:py-5">
-				<div className="absolute left-[calc(16.67%+14px)] right-[calc(16.67%+14px)] top-[26px] h-px bg-blue-500 min-[801px]:top-[34px]" />
+				<div className="absolute left-[calc(16.67%+14px)] right-[calc(16.67%+14px)] top-[26px] h-0.5 bg-blue-500 min-[801px]:top-[34px]" />
 				<div className="relative grid grid-cols-3">
 					<Step icon={<Image className="brightness-0 invert" src={createIcon3} alt="" width={16} height={16} aria-hidden />} label="รายการ" completed />
 					<Step icon={<Image className="brightness-0 invert" src={createIcon1} alt="" width={16} height={16} aria-hidden />} label="กรอกข้อมูลบริการ" completed />
@@ -239,7 +239,7 @@ function PaymentOption({ icon, label, onClick, selected }: { icon: React.ReactNo
 function Step({ icon, label, active = false, completed = false }: { icon: React.ReactNode; label: string; active?: boolean; completed?: boolean }) {
 	return (
 		<div className={`flex flex-col items-center text-center ${active || completed ? "text-blue-600" : "text-gray-500"}`}>
-			<span className={`flex size-7 items-center justify-center rounded-full border ${completed ? "border-blue-500 bg-blue-500" : active ? "border-blue-500 bg-white" : "border-gray-300 bg-white"}`}>{icon}</span>
+			<span className={`flex size-7 items-center justify-center rounded-full border-2 ${completed ? "border-blue-500 bg-blue-500" : active ? "border-blue-500 bg-white" : "border-gray-300 bg-white"}`}>{icon}</span>
 			<span className="mt-1 whitespace-nowrap text-xs font-medium">{label}</span>
 		</div>
 	);

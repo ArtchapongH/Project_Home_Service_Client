@@ -6,6 +6,7 @@ import Link from "next/link";
 import { PaymentContext } from "@/app/service-details/layout";
 import { ProtectedRoute } from "@/components/common/ProtectedRoute";
 import { saveLocalStoredOrder } from "@/services/customerOrderApi";
+import { formatCurrency } from "@/utils/formatCurrency";
 import { formatThaiServiceDate, formatThaiServiceTime } from "@/utils/serviceSchedule";
 
 export interface PaymentSuccessProps {
@@ -113,14 +114,14 @@ export function PaymentSuccess({ orderListHref = "/customer-services" }: Payment
             </div>
 
             <div className="space-y-3.5 border-b border-[#E2E8F0] py-4 text-sm">
-              <SummaryRow label="วันที่" value={formatThaiServiceDate(serviceFormData.serviceDate)} />
+              <SummaryRow label="วันที่นัดหมาย" value={formatThaiServiceDate(serviceFormData.serviceDate)} />
               <SummaryRow label="เวลาที่นัดหมาย" value={formatThaiServiceTime(serviceFormData.serviceTime)} />
               <SummaryRow label="สถานที่" value={address || "-"} />
             </div>
 
             <div className="mt-4 flex items-center justify-between text-sm sm:text-base">
               <span className="text-[#64748B]">รวม</span>
-              <span className="text-lg font-bold text-[#0F172A] sm:text-xl">{totAmount.toFixed(2)} ฿</span>
+              <span className="text-lg font-bold text-[#0F172A] sm:text-xl">{formatCurrency(totAmount)} ฿</span>
             </div>
 
             <div className="mt-6">
