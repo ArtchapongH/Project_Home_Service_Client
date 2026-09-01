@@ -5,6 +5,7 @@ import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownR
 import KeyboardArrowUpRoundedIcon from "@mui/icons-material/KeyboardArrowUpRounded";
 import { useRouter } from "next/navigation";
 import { PaymentContext } from "@/app/service-details/layout";
+import { formatCurrency } from "@/utils/formatCurrency";
 
 export default function MobileFooter() {
 	const payment = React.useContext(PaymentContext);
@@ -62,7 +63,7 @@ export default function MobileFooter() {
 				</div>
 				<div className="mt-3 flex items-center justify-between text-xs">
 					<span className="text-gray-500">รวม</span>
-					<span className="font-semibold text-black">{totAmount.toFixed(2)} ฿</span>
+					<span className="font-semibold text-black">{formatCurrency(totAmount)} ฿</span>
 				</div>
 			</aside>
 
@@ -91,7 +92,7 @@ export default function MobileFooter() {
 				</div>
 				<div className="mt-3 flex items-center justify-between text-xs">
 					<span className="text-gray-500">รวม</span>
-					<span className="font-semibold text-black">{totAmount.toFixed(2)} ฿</span>
+					<span className="font-semibold text-black">{formatCurrency(totAmount)} ฿</span>
 				</div>
 				<div className="mt-3 grid grid-cols-2 gap-3 border-t border-gray-200 pt-3">
 					<button type="button" className="flex h-9 cursor-pointer items-center justify-center gap-1 rounded-[7px] border border-blue-500 text-sm font-medium text-blue-600">

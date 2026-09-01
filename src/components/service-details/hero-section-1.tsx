@@ -1,12 +1,9 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
-import CreditCardOutlinedIcon from "@mui/icons-material/CreditCardOutlined";
-import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import LocalOfferOutlinedIcon from "@mui/icons-material/LocalOfferOutlined";
-import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import RemoveRoundedIcon from "@mui/icons-material/RemoveRounded";
 import Image from "next/image";
 import serviceDetailBanner from "@/assets/images/service-detail-banner.png";
@@ -14,26 +11,34 @@ import MobileFooter from "./mobile-footer";
 import { PaymentContext } from "@/app/service-details/layout";
 import { ServiceReviewsSection } from "@/components/services/ServiceReviewsSection";
 import axios from "axios";
+import createIcon1 from "@/assets/icons/create_black_24dp 1.png";
+import createIcon2 from "@/assets/icons/create_black_24dp 2.png";
+import createIcon3 from "@/assets/icons/create_black_24dp 3.png";
 
-export default function HeroSection({
-  serviceId,
-}: {
-  serviceId?: string | number;
-}) {
-  const payment = React.useContext(PaymentContext);
-  //const { user } = useAuth();
+type ServiceOption = {
+	service_id?: string | number;
+	service_name?: string;
+	option_id?: string | number;
+	id?: string | number;
+	option_name?: string;
+	name?: string;
+	price?: string | number;
+	unit?: string;
+};
+
+type ServiceOptionResponse =
+	| ServiceOption[]
+	| { data?: ServiceOption[]; options?: ServiceOption[] };
+
+export default function HeroSection({ serviceId }: { serviceId?: string | number }) {
+	const payment = React.useContext(PaymentContext);
+	//const { user } = useAuth();
 
   if (!payment) {
     throw new Error("HeroSection must be rendered inside PaymentProvider");
   }
 
-  const {
-    serviceDetail,
-    setServiceDetail,
-    setServiceId,
-    setServiceTitle,
-    setUserId,
-  } = payment;
+	const { serviceDetail, setServiceDetail, setServiceId, setServiceTitle } = payment;
 
   // Store userId from AuthContext => may be not used
   /*
@@ -55,66 +60,68 @@ export default function HeroSection({
     }
   }, [serviceId, setServiceId]);
 
-  async function getServiceOption(id: string | number) {
-    try {
-      const apiBaseUrl =
-        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
-
-      const response = await axios.get(
-        `${apiBaseUrl}/api/services/options/${id}`,
-      );
-      console.log("API Response:", response.data);
-      console.log("API Response Type:", typeof response.data);
-      console.log("Is Array?", Array.isArray(response.data));
-
-      // Handle different response structures
-      let dataArray;
-      if (Array.isArray(response.data)) {
-        dataArray = response.data;
-      } else if (response.data.data && Array.isArray(response.data.data)) {
-        dataArray = response.data.data;
-      } else if (
-        response.data.options &&
-        Array.isArray(response.data.options)
-      ) {
-        dataArray = response.data.options;
-      } else {
-        console.error("Unexpected API response structure:", response.data);
-        return;
-      }
+	const getServiceOption = useCallback(async (id: string | number): Promise<void> => {
+		try {
+			const response = await axios.get<ServiceOptionResponse>(`http://localhost:3001/api/services/options/${id}`);
+			console.log("API Response:", response.data);
+			console.log("API Response Type:", typeof response.data);
+			console.log("Is Array?", Array.isArray(response.data));
+			
+			// Handle different response structures
+			let dataArray: ServiceOption[];
+			if (Array.isArray(response.data)) {
+				dataArray = response.data;
+			} else if (response.data.data && Array.isArray(response.data.data)) {
+				dataArray = response.data.data;
+			} else if (response.data.options && Array.isArray(response.data.options)) {
+				dataArray = response.data.options;
+			} else {
+				console.error("Unexpected API response structure:", response.data);
+				return;
+			}
 
       console.log("Data Array:", dataArray);
       console.log("First item:", dataArray[0]);
 
-      const result = dataArray.map((item: any) => ({
-        service_id: item.service_id || "0",
-        service_name: item.service_name || "",
-        option_id: item.option_id || item.id || "0",
-        option_name: item.option_name || item.name || "",
-        price: Number(item.price) || 0,
-        unit: item.unit || "",
-        quantity: 0,
-      }));
+			const result = dataArray.map((item) => ({
+				service_id: String(item.service_id || "0"),
+				service_name: item.service_name || '',
+				option_id: String(item.option_id || item.id || "0"),
+				option_name: item.option_name || item.name || '',
+				price: Number(item.price) || 0,
+				unit: item.unit || '',
+				quantity: 0
+			}));
 
-      console.log("Mapped result:", result);
-      setServiceDetail(result);
-      setServiceTitle(result[0]?.service_name || "");
-      console.log("Service options loaded:", result);
-    } catch (error) {
-      console.error("Error fetching service options:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-        console.error("Response status:", error.response?.status);
-        console.error("Request URL:", error.config?.url);
-      }
-    }
-  }
+			console.log("Mapped result:", result);
+			setServiceDetail((currentServiceDetails) =>
+				result.map((service) => {
+					const existingService = currentServiceDetails.find(
+						(currentService) =>
+							currentService.service_id === service.service_id &&
+							currentService.option_id === service.option_id,
+					);
 
-  useEffect(() => {
-    if (serviceId) {
-      getServiceOption(serviceId);
-    }
-  }, [serviceId]);
+					return existingService ? { ...service, quantity: existingService.quantity } : service;
+				}),
+			);
+			setServiceTitle(result[0]?.service_name || "");
+			console.log("Service options loaded:", result);
+		} catch (error) {
+			console.error("Error fetching service options:", error);
+			if (axios.isAxiosError(error)) {
+				console.error("Response data:", error.response?.data);
+				console.error("Response status:", error.response?.status);
+				console.error("Request URL:", error.config?.url);
+			}
+		}
+	}, [setServiceDetail, setServiceTitle]);
+
+	useEffect(() => {
+		if (serviceId) {
+			getServiceOption(serviceId);
+		}
+	}, [getServiceOption, serviceId]);
 
   function changeQuantity(index: number, amount: number): void {
     setServiceDetail((currentServiceDetails) =>
@@ -146,24 +153,14 @@ export default function HeroSection({
         </div>
       </div>
 
-      <div className="relative z-10 -mt-11 mx-3 rounded-lg border border-gray-200 bg-white px-3 py-3 min-[801px]:mx-auto min-[801px]:w-[min(664px,calc(100%-48px))] min-[801px]:px-8 min-[801px]:py-5">
-        <div className="absolute left-[16.67%] right-[16.67%] top-6.25 h-px bg-gray-200" />
-        <div className="relative grid grid-cols-3">
-          <Step
-            icon={<ReceiptLongOutlinedIcon className="text-[16px]" />}
-            label="รายการ"
-            active
-          />
-          <Step
-            icon={<EditOutlinedIcon className="text-[16px]" />}
-            label="กรอกข้อมูลบริการ"
-          />
-          <Step
-            icon={<CreditCardOutlinedIcon className="text-[16px]" />}
-            label="ชำระเงิน"
-          />
-        </div>
-      </div>
+			<div className="relative z-10 -mt-11 mx-3 rounded-lg border border-gray-200 bg-white px-3 py-3 min-[801px]:mx-auto min-[801px]:w-[min(664px,calc(100%-48px))] min-[801px]:px-8 min-[801px]:py-5">
+				<div className="absolute left-[calc(16.67%+14px)] right-[calc(16.67%+14px)] top-[26px] h-0.5 bg-gray-200 min-[801px]:top-[34px]" />
+				<div className="relative grid grid-cols-3">
+					<Step icon={<Image src={createIcon3} alt="" width={16} height={16} aria-hidden />} label="รายการ" active />
+					<Step icon={<Image src={createIcon1} alt="" width={16} height={16} aria-hidden />} label="กรอกข้อมูลบริการ" />
+					<Step icon={<Image src={createIcon2} alt="" width={16} height={16} aria-hidden />} label="ชำระเงิน" />
+				</div>
+			</div>
 
       <div className="mx-3 mt-3 min-[801px]:mx-auto min-[801px]:grid min-[801px]:w-[min(664px,calc(100%-48px))] min-[801px]:grid-cols-[435px_207px] min-[801px]:gap-5">
         <div className="space-y-4">
@@ -216,29 +213,15 @@ export default function HeroSection({
   );
 }
 
-function Step({
-  icon,
-  label,
-  active = false,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  active?: boolean;
-}) {
-  return (
-    <div
-      className={`flex flex-col items-center text-center ${active ? "text-blue-600" : "text-gray-500"}`}
-    >
-      <span
-        className={`flex size-7 items-center justify-center rounded-full border bg-white ${active ? "border-blue-500" : "border-gray-300"}`}
-      >
-        {icon}
-      </span>
-      <span className="mt-1 text-xs font-medium whitespace-nowrap">
-        {label}
-      </span>
-    </div>
-  );
+function Step({ icon, label, active = false }: { icon: React.ReactNode; label: string; active?: boolean }) {
+	return (
+		<div className={`flex flex-col items-center text-center ${active ? "text-blue-600" : "text-gray-500"}`}>
+			<span className={`flex size-7 items-center justify-center rounded-full border-2 bg-white ${active ? "border-blue-500" : "border-gray-300"}`}>
+				{icon}
+			</span>
+			<span className="mt-1 text-xs font-medium whitespace-nowrap">{label}</span>
+		</div>
+	);
 }
 
 function QuantityButton({
