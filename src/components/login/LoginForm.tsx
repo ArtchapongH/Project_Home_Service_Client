@@ -3,6 +3,7 @@
 import { useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/contexts/AuthContext";
 import FacebookLoginButton from "./FacebookLoginButton";
 import LoginCard from "./LoginCard";
@@ -11,6 +12,7 @@ import LoginTextField from "./LoginTextField";
 import OrDivider from "./OrDivider";
 
 export default function LoginForm() {
+  const t = useTranslations("Login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -42,11 +44,11 @@ export default function LoginForm() {
         return;
       }
 
-      setErrorMessage(result.error || "อีเมลหรือรหัสผ่านไม่ถูกต้อง");
+      setErrorMessage(result.error || t("errors.invalidCredentials"));
       isSubmittingRef.current = false;
       setIsLoading(false);
     } catch {
-      setErrorMessage("ไม่สามารถเข้าสู่ระบบได้ กรุณาลองใหม่อีกครั้ง");
+      setErrorMessage(t("errors.generic"));
       isSubmittingRef.current = false;
       setIsLoading(false);
     }
@@ -55,7 +57,7 @@ export default function LoginForm() {
   return (
     <LoginCard>
       <h1 className="mb-6 text-center text-xl font-semibold text-blue-900 sm:mb-8 sm:text-2xl">
-        เข้าสู่ระบบ
+        {t("title")}
       </h1>
 
       {errorMessage && (
@@ -67,34 +69,44 @@ export default function LoginForm() {
       <form onSubmit={handleSubmit} className="flex flex-col gap-4 sm:gap-5">
         <LoginTextField
           id="email"
-          label="อีเมล"
+          label={t("email")}
           type="email"
-          placeholder="กรุณากรอกอีเมล"
+          placeholder={t("emailPlaceholder")}
           autoComplete="email"
           value={email}
           onChange={setEmail}
         />
-        <LoginTextField
-          id="password"
-          label="รหัสผ่าน"
-          type="password"
-          placeholder="กรุณากรอกรหัสผ่าน"
-          autoComplete="current-password"
-          value={password}
-          onChange={setPassword}
-        />
+        <div>
+          <LoginTextField
+            id="password"
+            label={t("password")}
+            type="password"
+            placeholder={t("passwordPlaceholder")}
+            autoComplete="current-password"
+            value={password}
+            onChange={setPassword}
+          />
+          <div className="mt-2 flex justify-end">
+            <Link
+              href="/forgot-password"
+              className="text-xs text-blue-500 underline sm:text-sm"
+            >
+              ลืมรหัสผ่าน?
+            </Link>
+          </div>
+        </div>
         <LoginSubmitButton isDisabled={isLoading}>
-          {isLoading ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
+          {isLoading ? t("submitting") : t("submit")}
         </LoginSubmitButton>
       </form>
 
-      <OrDivider />
-      <FacebookLoginButton />
+      <OrDivider label={t("orDivider")} />
+      <FacebookLoginButton label={t("facebook")} />
 
       <p className="mt-5 text-center text-xs text-gray-700 sm:mt-6 sm:text-sm">
-        ยังไม่มีบัญชีผู้ใช้ HomeService?{" "}
+        {t("noAccount")}{" "}
         <Link href="/register" className="text-blue-500 underline">
-          ลงทะเบียน
+          {t("register")}
         </Link>
       </p>
     </LoginCard>

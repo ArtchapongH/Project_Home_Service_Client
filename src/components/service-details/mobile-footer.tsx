@@ -94,14 +94,14 @@ export default function MobileFooter() {
 					<span className="font-semibold text-black">{totAmount.toFixed(2)} ฿</span>
 				</div>
 				<div className="mt-3 grid grid-cols-2 gap-3 border-t border-gray-200 pt-3">
-					<button type="button" className="flex h-9 items-center justify-center gap-1 rounded-[7px] border border-blue-500 text-sm font-medium text-blue-600">
+					<button type="button" className="flex h-9 cursor-pointer items-center justify-center gap-1 rounded-[7px] border border-blue-500 text-sm font-medium text-blue-600">
 						<ChevronLeftRoundedIcon className="text-[18px]" />
 						ย้อนกลับ
 					</button>
 					<button
 						type="button"
 						onClick={handleNext}
-						className={`flex h-9 items-center justify-center gap-1 rounded-[7px] text-sm font-medium text-white ${totAmount > 0 ? "bg-blue-500" : "bg-[#d0d5df]"}`}
+						className={`flex h-9 cursor-pointer items-center justify-center gap-1 rounded-[7px] text-sm font-medium text-white ${totAmount > 0 ? "bg-blue-500" : "bg-[#d0d5df]"}`}
 					>
 						ดำเนินการต่อ
 						<ChevronRightRoundedIcon className="text-[18px]" />
@@ -113,7 +113,7 @@ export default function MobileFooter() {
 				<div className="mx-auto flex h-full w-[min(820px,calc(100%-48px))] items-center justify-between">
 				<button
 					type="button"
-					className="flex h-8 items-center justify-center gap-1 rounded-[7px] border border-blue-500 px-6 text-xs font-medium text-blue-600"
+					className="flex h-8 cursor-pointer items-center justify-center gap-1 rounded-[7px] border border-blue-500 px-6 text-xs font-medium text-blue-600"
 				>
 					<ChevronLeftRoundedIcon className="text-[17px]" />
 					ย้อนกลับ
@@ -121,7 +121,7 @@ export default function MobileFooter() {
 				<button
 					type="button"
 					onClick={handleNext}
-					className="flex h-8 items-center justify-center gap-1 rounded-[7px] bg-blue-500 px-5 text-xs font-medium text-white"
+					className="flex h-8 cursor-pointer items-center justify-center gap-1 rounded-[7px] bg-blue-500 px-5 text-xs font-medium text-white"
 				>
 					ดำเนินการต่อ
 					<ChevronRightRoundedIcon className="text-[17px]" />

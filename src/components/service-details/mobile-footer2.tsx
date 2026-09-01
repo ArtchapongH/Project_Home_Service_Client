@@ -7,6 +7,7 @@ import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownR
 import KeyboardArrowUpRoundedIcon from "@mui/icons-material/KeyboardArrowUpRounded";
 import { useRouter } from "next/navigation";
 import { PaymentContext } from "@/app/service-details/layout";
+import { formatThaiServiceDate, formatThaiServiceTime } from "@/utils/serviceSchedule";
 
 export default function MobileFooterTwo() {
 	const payment = React.useContext(PaymentContext);
@@ -63,8 +64,8 @@ export default function MobileFooterTwo() {
 					))}
 				</div>
 				<div className="space-y-2 border-b border-gray-200 py-3 text-[10px]">
-					<SummaryRow label="วันที่" value={serviceFormData.serviceDate} />
-					<SummaryRow label="เวลา" value={serviceFormData.serviceTime} />
+					<SummaryRow label="วันที่" value={formatThaiServiceDate(serviceFormData.serviceDate)} />
+					<SummaryRow label="เวลา" value={formatThaiServiceTime(serviceFormData.serviceTime)} />
 					<SummaryRow label="สถานที่" value={address} />
 				</div>
 			</div>
@@ -73,7 +74,7 @@ export default function MobileFooterTwo() {
 				<span className="font-semibold text-black">{totAmount.toFixed(2)} ฿</span>
 			</div>
 			<div className="mt-3 grid grid-cols-2 gap-3 border-t border-gray-200 pt-3">
-				<button type="button" onClick={handleBack} className="flex h-8 items-center justify-center gap-1 rounded-[7px] border border-blue-500 text-xs font-medium text-blue-600">
+				<button type="button" onClick={handleBack} className="flex h-8 cursor-pointer items-center justify-center gap-1 rounded-[7px] border border-blue-500 text-xs font-medium text-blue-600">
 					<ChevronLeftRoundedIcon className="text-[17px]" />
 					ย้อนกลับ
 				</button>
@@ -81,7 +82,7 @@ export default function MobileFooterTwo() {
 					type="button"
 					disabled={!isSecondPageCompleted}
 					onClick={handleNext}
-					className={`flex h-8 items-center justify-center gap-1 rounded-[7px] text-xs font-medium text-white ${isSecondPageCompleted ? "bg-blue-500" : "bg-[#d0d5df]"}`}
+					className={`flex h-8 cursor-pointer items-center justify-center gap-1 rounded-[7px] text-xs font-medium text-white disabled:cursor-not-allowed ${isSecondPageCompleted ? "bg-blue-500" : "bg-[#d0d5df]"}`}
 				>
 					ดำเนินการต่อ
 					<ChevronRightRoundedIcon className="text-[17px]" />
@@ -100,8 +101,8 @@ export default function MobileFooterTwo() {
 					))}
 				</div>
 				<div className="space-y-2 border-b border-gray-200 py-3 text-[10px]">
-					<SummaryRow label="วันที่" value={serviceFormData.serviceDate} />
-					<SummaryRow label="เวลา" value={serviceFormData.serviceTime} />
+					<SummaryRow label="วันที่" value={formatThaiServiceDate(serviceFormData.serviceDate)} />
+					<SummaryRow label="เวลา" value={formatThaiServiceTime(serviceFormData.serviceTime)} />
 					<SummaryRow label="สถานที่" value={address} />
 				</div>
 				<div className="mt-3 flex items-center justify-between text-xs">
@@ -112,7 +113,7 @@ export default function MobileFooterTwo() {
 
 			<footer className="fixed inset-x-0 bottom-0 z-30 hidden h-16 border-t border-gray-200 bg-white min-[801px]:block">
 				<div className="mx-auto flex h-full w-[min(644px,calc(100%-48px))] items-center justify-between">
-					<button type="button" onClick={handleBack} className="flex h-8 items-center justify-center gap-1 rounded-[7px] border border-blue-500 px-6 text-xs font-medium text-blue-600">
+					<button type="button" onClick={handleBack} className="flex h-8 cursor-pointer items-center justify-center gap-1 rounded-[7px] border border-blue-500 px-6 text-xs font-medium text-blue-600">
 						<ChevronLeftRoundedIcon className="text-[17px]" />
 						ย้อนกลับ
 					</button>
@@ -120,7 +121,7 @@ export default function MobileFooterTwo() {
 						type="button"
 						disabled={!isSecondPageCompleted}
 						onClick={handleNext}
-						className={`flex h-8 items-center justify-center gap-1 rounded-[7px] px-5 text-xs font-medium text-white ${isSecondPageCompleted ? "bg-blue-500" : "bg-[#d0d5df]"}`}
+						className={`flex h-8 cursor-pointer items-center justify-center gap-1 rounded-[7px] px-5 text-xs font-medium text-white disabled:cursor-not-allowed ${isSecondPageCompleted ? "bg-blue-500" : "bg-[#d0d5df]"}`}
 					>
 						ดำเนินการต่อ
 						<ChevronRightRoundedIcon className="text-[17px]" />
