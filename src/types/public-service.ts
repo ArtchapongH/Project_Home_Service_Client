@@ -26,6 +26,15 @@ export interface PublicServiceOption {
   unit: string;
 }
 
+export interface PublicServiceOptionRow {
+  service_id: string;
+  service_name: string;
+  option_id: string;
+  option_name: string;
+  price: number;
+  unit: string;
+}
+
 export interface PublicServiceDetail extends PublicService {
   serviceOptions: PublicServiceOption[];
 }
