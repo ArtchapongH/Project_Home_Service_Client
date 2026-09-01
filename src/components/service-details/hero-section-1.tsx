@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import CreditCardOutlinedIcon from "@mui/icons-material/CreditCardOutlined";
@@ -15,6 +15,20 @@ import { PaymentContext } from "@/app/service-details/layout";
 import { ServiceReviewsSection } from "@/components/services/ServiceReviewsSection";
 import axios from "axios";
 
+type ServiceOption = {
+	service_id?: string | number;
+	service_name?: string;
+	option_id?: string | number;
+	id?: string | number;
+	option_name?: string;
+	name?: string;
+	price?: string | number;
+	unit?: string;
+};
+
+type ServiceOptionResponse =
+	| ServiceOption[]
+	| { data?: ServiceOption[]; options?: ServiceOption[] };
 
 export default function HeroSection({ serviceId }: { serviceId?: string | number }) {
 	const payment = React.useContext(PaymentContext);
@@ -24,7 +38,7 @@ export default function HeroSection({ serviceId }: { serviceId?: string | number
 		throw new Error("HeroSection must be rendered inside PaymentProvider");
 	}
 
-	const { serviceDetail, setServiceDetail, setServiceId, setServiceTitle, setUserId } = payment;
+	const { serviceDetail, setServiceDetail, setServiceId, setServiceTitle } = payment;
 
 	// Store userId from AuthContext => may be not used
 	/*
@@ -46,15 +60,15 @@ export default function HeroSection({ serviceId }: { serviceId?: string | number
 		}
 	}, [serviceId, setServiceId]);
 
-	async function getServiceOption(id: string | number) {
+	const getServiceOption = useCallback(async (id: string | number): Promise<void> => {
 		try {
-			const response = await axios.get(`http://localhost:3001/api/services/options/${id}`);
+			const response = await axios.get<ServiceOptionResponse>(`http://localhost:3001/api/services/options/${id}`);
 			console.log("API Response:", response.data);
 			console.log("API Response Type:", typeof response.data);
 			console.log("Is Array?", Array.isArray(response.data));
 			
 			// Handle different response structures
-			let dataArray;
+			let dataArray: ServiceOption[];
 			if (Array.isArray(response.data)) {
 				dataArray = response.data;
 			} else if (response.data.data && Array.isArray(response.data.data)) {
@@ -69,10 +83,10 @@ export default function HeroSection({ serviceId }: { serviceId?: string | number
 			console.log("Data Array:", dataArray);
 			console.log("First item:", dataArray[0]);
 
-			const result = dataArray.map((item: any) => ({
-				service_id: item.service_id || "0",
+			const result = dataArray.map((item) => ({
+				service_id: String(item.service_id || "0"),
 				service_name: item.service_name || '',
-				option_id: item.option_id || item.id || "0",
+				option_id: String(item.option_id || item.id || "0"),
 				option_name: item.option_name || item.name || '',
 				price: Number(item.price) || 0,
 				unit: item.unit || '',
@@ -80,7 +94,17 @@ export default function HeroSection({ serviceId }: { serviceId?: string | number
 			}));
 
 			console.log("Mapped result:", result);
-			setServiceDetail(result);
+			setServiceDetail((currentServiceDetails) =>
+				result.map((service) => {
+					const existingService = currentServiceDetails.find(
+						(currentService) =>
+							currentService.service_id === service.service_id &&
+							currentService.option_id === service.option_id,
+					);
+
+					return existingService ? { ...service, quantity: existingService.quantity } : service;
+				}),
+			);
 			setServiceTitle(result[0]?.service_name || "");
 			console.log("Service options loaded:", result);
 		} catch (error) {
@@ -91,13 +115,13 @@ export default function HeroSection({ serviceId }: { serviceId?: string | number
 				console.error("Request URL:", error.config?.url);
 			}
 		}
-	}
+	}, [setServiceDetail, setServiceTitle]);
 
 	useEffect(() => {
 		if (serviceId) {
 			getServiceOption(serviceId);
 		}
-	}, [serviceId])
+	}, [getServiceOption, serviceId]);
 
 	function changeQuantity(index: number, amount: number): void {
 		setServiceDetail((currentServiceDetails) =>

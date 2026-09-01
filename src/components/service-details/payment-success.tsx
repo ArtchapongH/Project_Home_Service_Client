@@ -2,8 +2,9 @@
 
 import React, { useContext, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
-import { ProtectedRoute } from "@/components/common/ProtectedRoute";
+
 import { PaymentContext } from "@/app/service-details/layout";
+import { ProtectedRoute } from "@/components/common/ProtectedRoute";
 import { saveLocalStoredOrder } from "@/services/customerOrderApi";
 import { formatThaiServiceDate, formatThaiServiceTime } from "@/utils/serviceSchedule";
 
@@ -21,9 +22,10 @@ export function PaymentSuccess({ orderListHref = "/customer-services" }: Payment
 
   const { serviceDetail, serviceFormData, totAmount, discount } = payment;
   const selectedServices = useMemo(
-    () => serviceDetail.filter((service) => service.quantity !== 0),
+    () => serviceDetail.filter((service) => Number(service.quantity) > 0),
     [serviceDetail],
   );
+
   const address = [
     serviceFormData.address,
     serviceFormData.subdistrict,
@@ -35,6 +37,7 @@ export function PaymentSuccess({ orderListHref = "/customer-services" }: Payment
 
   useEffect(() => {
     if (isSavedRef.current || selectedServices.length === 0) return;
+
     isSavedRef.current = true;
     saveLocalStoredOrder({
       id: `ord-${Date.now()}`,
@@ -60,12 +63,17 @@ export function PaymentSuccess({ orderListHref = "/customer-services" }: Payment
   return (
     <ProtectedRoute>
       <section className="flex min-h-[calc(100vh-72px)] items-center justify-center bg-[#F3F4F6] px-4 py-8 sm:py-12">
-        <div className="w-full max-w-[540px] rounded-[16px] border border-[#E2E8F0] bg-white p-6 shadow-[0_4px_24px_rgba(0,0,0,0.03)] transition-all sm:p-10">
+        <div className="w-full max-w-[540px] rounded-2xl border border-[#E2E8F0] bg-white p-6 shadow-[0_4px_24px_rgba(0,0,0,0.03)] transition-all sm:p-10">
           <div className="flex flex-col items-center">
             <div className="relative flex items-center justify-center">
               <div className="absolute size-14 rounded-full bg-[#00596C]/25 animate-success-ripple sm:size-16" />
               <div className="relative flex size-14 items-center justify-center rounded-full bg-[#00596C] text-white shadow-md animate-success-pop sm:size-16">
-                <svg className="h-7 w-7 sm:h-8 sm:w-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg
+                  className="h-7 w-7 sm:h-8 sm:w-8"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
                   <path
                     d="M5 13L9.5 17.5L19 7"
                     stroke="currentColor"
@@ -77,39 +85,11 @@ export function PaymentSuccess({ orderListHref = "/customer-services" }: Payment
                 </svg>
               </div>
             </div>
+
             <h1 className="mt-4 text-xl font-bold tracking-tight text-[#0F172A] animate-success-content sm:mt-5 sm:text-2xl">
               ชำระเงินเรียบร้อย !
             </h1>
           </div>
-
-export default function PaymentSuccess() {
-	const payment = React.useContext(PaymentContext);
-
-	if (!payment) {
-		throw new Error("PaymentSuccess must be rendered inside PaymentProvider");
-	}
-
-	const { serviceDetail, serviceFormData, totAmount } = payment;
-
-	const selectedServices = serviceDetail.filter((service) => service.quantity !== 0);
-	const address = [
-		serviceFormData.address,
-		serviceFormData.district,
-		serviceFormData.subdistrict,
-		serviceFormData.province,
-	]
-		.filter(Boolean)
-		.join(" ");
-
-	return (
-		<section className="min-h-screen bg-utility-bg px-2 pt-6 min-[801px]:flex min-[801px]:items-start min-[801px]:justify-center min-[801px]:px-6 min-[801px]:pt-7">
-			<div className="w-full rounded-[7px] border border-gray-200 bg-white px-2.5 py-6 shadow-[0_1px_3px_rgb(23_51_109/6%)] min-[801px]:w-87 min-[801px]:px-9.5 min-[801px]:py-7.5">
-				<div className="flex flex-col items-center">
-					<span className="flex size-11 items-center justify-center rounded-full bg-[#006f7e] text-white min-[801px]:size-12">
-						<CheckRoundedIcon className="text-[31px] min-[801px]:text-[34px]" />
-					</span>
-					<h1 className="mt-3 text-base font-semibold text-[#17396f] min-[801px]:text-xl">ชำระเงินเรียบร้อย !</h1>
-				</div>
 
           <div className="animate-success-content">
             <div className="mt-7 border-b border-[#E2E8F0] pb-4 sm:mt-8">
@@ -138,15 +118,15 @@ export default function PaymentSuccess() {
               <SummaryRow label="สถานที่" value={address || "-"} />
             </div>
 
-				<div className="mt-3 flex items-center justify-between text-xs">
-					<span className="text-gray-500">รวม</span>
-					<span className="font-semibold text-black">{totAmount.toFixed(2)} ฿</span>
-				</div>
+            <div className="mt-4 flex items-center justify-between text-sm sm:text-base">
+              <span className="text-[#64748B]">รวม</span>
+              <span className="text-lg font-bold text-[#0F172A] sm:text-xl">{totAmount.toFixed(2)} ฿</span>
+            </div>
 
             <div className="mt-6">
               <Link
                 href={orderListHref}
-                className="flex h-11 w-full cursor-pointer items-center justify-center rounded-[8px] bg-[#3366FF] text-sm font-medium text-white shadow-sm transition-all duration-200 ease-out hover:scale-[1.02] hover:bg-[#2554DB] hover:shadow-md active:scale-[0.98] sm:h-12 sm:text-base"
+                className="flex h-11 w-full items-center justify-center rounded-lg bg-[#3366FF] text-sm font-medium text-white shadow-sm transition-all duration-200 ease-out hover:scale-[1.02] hover:bg-[#2554DB] hover:shadow-md active:scale-[0.98] sm:h-12 sm:text-base"
               >
                 เช็ครายการซ่อม
               </Link>

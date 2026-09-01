@@ -9,7 +9,7 @@ import type { PublicService } from "@/types/public-service";
 
 const FALLBACK_IMAGE = "/images/landing/service-aircon.png";
 
-function formatPriceText(service: PublicService, locale: string, t: (key: string, values: Record<string, string>) => string): string {
+function formatPriceText(service: PublicService, locale: string, t: ReturnType<typeof useTranslations>): string {
   const formatNumber = (value: number) =>
     value.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
