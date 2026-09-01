@@ -2,9 +2,6 @@
 import React, { useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
-import CreditCardOutlinedIcon from "@mui/icons-material/CreditCardOutlined";
-import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
-import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import Image from "next/image";
 import serviceDetailBanner from "@/assets/images/service-detail-banner.png";
 import MobileFooterTwo from "./mobile-footer2";
@@ -17,6 +14,12 @@ import {
 	type AdminPlace,
 } from "@/utils/serviceLocation";
 import { normalizeClockTime } from "@/utils/serviceSchedule";
+
+
+import createIcon1 from "@/assets/icons/create_black_24dp 1.png";
+import createIcon2 from "@/assets/icons/create_black_24dp 2.png";
+import createIcon3 from "@/assets/icons/create_black_24dp 3.png";
+
 
 const ServiceLocationMap = dynamic(
 	() => import("./ServiceLocationMap").then((module) => module.ServiceLocationMap),
@@ -297,11 +300,12 @@ export default function HeroSectionTwo() {
 			</div>
 
 			<div className="relative z-10 -mt-14 mx-3 rounded-lg border border-gray-200 bg-white px-3 py-3 min-[801px]:mx-auto min-[801px]:w-[min(720px,calc(100%-48px))] min-[801px]:px-10 min-[801px]:py-5">
-				<div className="absolute left-[16.67%] right-[16.67%] top-6.25 h-px bg-gray-200" />
-				<div className="relative grid grid-cols-3">
-					<Step icon={<ReceiptLongOutlinedIcon className="text-[16px]" />} label="รายการ" />
-					<Step icon={<EditOutlinedIcon className="text-[16px]" />} label="กรอกข้อมูลบริการ" active />
-					<Step icon={<CreditCardOutlinedIcon className="text-[16px]" />} label="ชำระเงิน" />
+				<div className="absolute left-[calc(16.67%+14px)] right-[calc(16.67%+14px)] top-[26px] z-0 h-px bg-gray-200 min-[801px]:top-[34px]" />
+				<div className="absolute left-[calc(16.67%+14px)] top-[26px] z-0 h-px w-[calc(33.33%-28px)] bg-blue-500 min-[801px]:top-[34px]" />
+				<div className="relative z-10 grid grid-cols-3">
+					<Step icon={<Image className="brightness-0 invert" src={createIcon3} alt="" width={16} height={16} aria-hidden />} label="รายการ" completed />
+					<Step icon={<Image className="brightness-0 saturate-100 invert-[48%] sepia-[99%] saturate-[2547%] hue-rotate-[205deg] brightness-[99%] contrast-[91%]" src={createIcon1} alt="" width={16} height={16} aria-hidden />} label="กรอกข้อมูลบริการ" active />
+					<Step icon={<Image src={createIcon2} alt="" width={16} height={16} aria-hidden />} label="ชำระเงิน" />
 				</div>
 			</div>
 
@@ -482,10 +486,10 @@ function SubdistrictSelect({ onChange, placeholder, value, subdistricts, disable
 	);
 }
 
-function Step({ icon, label, active = false }: { icon: React.ReactNode; label: string; active?: boolean }) {
+function Step({ icon, label, active = false, completed = false }: { icon: React.ReactNode; label: string; active?: boolean; completed?: boolean }) {
 	return (
-		<div className={`flex flex-col items-center text-center ${active ? "text-blue-600" : "text-gray-500"}`}>
-			<span className={`flex size-7 items-center justify-center rounded-full border bg-white ${active ? "border-blue-500" : "border-gray-300"}`}>
+		<div className={`flex flex-col items-center text-center ${active || completed ? "text-blue-600" : "text-gray-500"}`}>
+			<span className={`flex size-7 items-center justify-center rounded-full border ${completed ? "border-blue-500 bg-blue-500" : active ? "border-blue-500 bg-white" : "border-gray-300 bg-white"}`}>
 				{icon}
 			</span>
 			<span className="mt-1 whitespace-nowrap text-xs font-medium">{label}</span>

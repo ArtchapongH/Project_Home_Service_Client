@@ -3,10 +3,7 @@
 import React, { useCallback, useEffect } from "react";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
-import CreditCardOutlinedIcon from "@mui/icons-material/CreditCardOutlined";
-import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import LocalOfferOutlinedIcon from "@mui/icons-material/LocalOfferOutlined";
-import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import RemoveRoundedIcon from "@mui/icons-material/RemoveRounded";
 import Image from "next/image";
 import serviceDetailBanner from "@/assets/images/service-detail-banner.png";
@@ -14,6 +11,9 @@ import MobileFooter from "./mobile-footer";
 import { PaymentContext } from "@/app/service-details/layout";
 import { ServiceReviewsSection } from "@/components/services/ServiceReviewsSection";
 import axios from "axios";
+import createIcon1 from "@/assets/icons/create_black_24dp 1.png";
+import createIcon2 from "@/assets/icons/create_black_24dp 2.png";
+import createIcon3 from "@/assets/icons/create_black_24dp 3.png";
 
 type ServiceOption = {
 	service_id?: string | number;
@@ -152,11 +152,11 @@ export default function HeroSection({ serviceId }: { serviceId?: string | number
 			</div>
 
 			<div className="relative z-10 -mt-11 mx-3 rounded-lg border border-gray-200 bg-white px-3 py-3 min-[801px]:mx-auto min-[801px]:w-[min(664px,calc(100%-48px))] min-[801px]:px-8 min-[801px]:py-5">
-				<div className="absolute left-[16.67%] right-[16.67%] top-6.25 h-px bg-gray-200" />
+				<div className="absolute left-[calc(16.67%+14px)] right-[calc(16.67%+14px)] top-[26px] h-px bg-gray-200 min-[801px]:top-[34px]" />
 				<div className="relative grid grid-cols-3">
-					<Step icon={<ReceiptLongOutlinedIcon className="text-[16px]" />} label="รายการ" active />
-					<Step icon={<EditOutlinedIcon className="text-[16px]" />} label="กรอกข้อมูลบริการ" />
-					<Step icon={<CreditCardOutlinedIcon className="text-[16px]" />} label="ชำระเงิน" />
+					<Step icon={<Image src={createIcon3} alt="" width={16} height={16} aria-hidden />} label="รายการ" active />
+					<Step icon={<Image src={createIcon1} alt="" width={16} height={16} aria-hidden />} label="กรอกข้อมูลบริการ" />
+					<Step icon={<Image src={createIcon2} alt="" width={16} height={16} aria-hidden />} label="ชำระเงิน" />
 				</div>
 			</div>
 
