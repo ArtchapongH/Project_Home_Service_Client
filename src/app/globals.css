@@ -1,6 +1,12 @@
 @import url("https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap");
 @import "tailwindcss";
 
+.service-location-map .leaflet-container {
+  z-index: 0;
+  height: 100%;
+  width: 100%;
+}
+
 @theme {
   --color-blue-100: #e9f0ff;
   --color-blue-500: #3978f6;

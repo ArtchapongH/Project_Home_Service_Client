@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
 import HistoryOutlinedIcon from "@mui/icons-material/HistoryOutlined";
 
 interface CustomerServicesSideNavProps {
-  activeMenu?: "profile" | "services" | "history";
+  activeMenu?: "profile" | "password" | "services" | "history";
 }
 
 export function CustomerServicesSideNav({
@@ -17,6 +18,8 @@ export function CustomerServicesSideNav({
 
   const isProfileActive =
     activeMenu === "profile" || pathname === "/profile";
+  const isPasswordActive =
+    activeMenu === "password" || pathname.startsWith("/profile/password");
   const isServicesActive =
     activeMenu === "services" ||
     pathname === "/customer-services" ||
@@ -54,6 +57,23 @@ export function CustomerServicesSideNav({
               }}
             />
             <span>ข้อมูลผู้ใช้งาน</span>
+          </Link>
+
+          <Link
+            href="/profile/password"
+            className={`flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition-colors ${
+              isPasswordActive
+                ? "bg-blue-50 text-[#3366FF] font-semibold"
+                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+            }`}
+          >
+            <LockOutlinedIcon
+              sx={{
+                fontSize: 20,
+                color: isPasswordActive ? "#3366FF" : "#64748B",
+              }}
+            />
+            <span>รีเซ็ตรหัสผ่าน</span>
           </Link>
 
           {/* รายการคำสั่งซ่อม */}

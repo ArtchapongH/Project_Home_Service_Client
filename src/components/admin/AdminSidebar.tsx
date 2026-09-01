@@ -95,7 +95,7 @@ const AdminSidebar = () => {
         <button
           type="button"
           onClick={handleLogout}
-          className="flex h-12 w-full items-center gap-3.5 px-6 text-left text-sm font-medium text-gray-300 transition-colors hover:bg-[#022B8A]/60 hover:text-white"
+          className="flex h-12 w-full cursor-pointer items-center gap-3.5 px-6 text-left text-sm font-medium text-gray-300 transition-colors hover:bg-[#022B8A]/60 hover:text-white"
         >
           <Image src={logoutIcon} alt="ออกจากระบบ" className="h-5 w-5 object-contain opacity-90" />
           <span>ออกจากระบบ</span>

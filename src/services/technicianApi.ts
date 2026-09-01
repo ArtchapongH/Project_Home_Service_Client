@@ -1,6 +1,7 @@
 import apiClient from "@/services/apiClient";
 import {
   acceptMockTechnicianRequest,
+  completeMockTechnicianJob,
   declineMockTechnicianRequest,
   getMockTechnicianJob,
   getMockTechnicianJobs,
@@ -8,6 +9,7 @@ import {
 } from "@/mocks/technicianRequests";
 import type {
   ApiListMeta,
+  TechnicianCompletionImageUploadResult,
   TechnicianJob,
   TechnicianListFilters,
   TechnicianLocationInput,
@@ -41,17 +43,21 @@ export async function updateTechnicianSettings(
 
 export async function updateTechnicianLocation(
   input: TechnicianLocationInput,
-): Promise<Pick<TechnicianProfile, "latitude" | "longitude" | "locationUpdatedAt">> {
+): Promise<Pick<TechnicianProfile, "latitude" | "longitude" | "locationUpdatedAt" | "address">> {
   if (isTechnicianMockEnabled) {
     return {
       latitude: input.latitude,
       longitude: input.longitude,
       locationUpdatedAt: new Date().toISOString(),
+      address: input.address ?? null,
     };
   }
 
+
   const response = await apiClient.patch<
-    ApiResponse<Pick<TechnicianProfile, "latitude" | "longitude" | "locationUpdatedAt">>
+    ApiResponse<
+      Pick<TechnicianProfile, "latitude" | "longitude" | "locationUpdatedAt" | "address">
+    >
   >("/api/technicians/me/location", input);
   return response.data.data;
 }
@@ -100,6 +106,51 @@ export async function getTechnicianJob(assignmentId: string): Promise<Technician
 
   const response = await apiClient.get<ApiResponse<TechnicianJob>>(
     `/api/technicians/me/jobs/${assignmentId}`,
+  );
+  return response.data.data;
+}
+
+export async function uploadTechnicianJobCompletionImages(
+  assignmentId: string,
+  images: File[],
+): Promise<TechnicianCompletionImageUploadResult> {
+  if (images.length < 3 || images.length > 5) {
+    throw new Error("กรุณาเลือกรูป 3–5 รูป");
+  }
+
+  if (isTechnicianMockEnabled) {
+    return {
+      assignmentId,
+      imageCount: images.length,
+      images: [],
+    };
+  }
+
+  const formData = new FormData();
+  images.forEach((image) => formData.append("images", image));
+  const response = await apiClient.post<
+    ApiResponse<TechnicianCompletionImageUploadResult>
+  >(
+    `/api/technicians/me/jobs/${assignmentId}/completion-images`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    },
+  );
+  return response.data.data;
+}
+
+export async function completeTechnicianJob(
+  assignmentId: string,
+): Promise<TechnicianJob> {
+  if (isTechnicianMockEnabled) {
+    return completeMockTechnicianJob(assignmentId);
+  }
+
+  const response = await apiClient.post<ApiResponse<TechnicianJob>>(
+    `/api/technicians/me/jobs/${assignmentId}/complete`,
   );
   return response.data.data;
 }
