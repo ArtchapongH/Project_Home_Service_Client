@@ -18,9 +18,7 @@ import {
 import { formatCurrency } from "@/utils/formatCurrency";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+import apiClient from "@/services/apiClient";
 
 interface MobileFooterThreeProps {
   promotion: {
@@ -115,27 +113,10 @@ export default function MobileFooterThree({
     router.push("/service-details/userinfo");
   }
 
-  async function readResponse(
-    response: Response,
-    task: string,
-  ): Promise<ApiResponse> {
-    const body = (await response.json().catch(() => ({}))) as ApiResponse;
-
-    if (!response.ok) {
-      const stage = typeof body.stage === "string" ? body.stage : task;
-      const message =
-        typeof body.message === "string"
-          ? body.message
-          : typeof body.error === "string"
-            ? body.error
-            : `Request failed with status ${response.status}`;
-      throw new Error(`[${stage}] ${message}`);
-    }
-
-    return body;
-  }
-
-  async function recordCheckout(paymentStatus: string): Promise<void> {
+  async function recordCheckout(
+    paymentStatus: string,
+    paymentIntentId?: string,
+  ): Promise<void> {
     // AuthContext is the source of truth. PaymentContext is updated in an
     // effect and may still contain null during the first checkout click.
     const checkoutUserId = user?.id ?? userId;
@@ -166,11 +147,7 @@ export default function MobileFooterThree({
       );
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/orders/checkout`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        userId: Number(checkoutUserId),
+    await apiClient.post("/api/orders/checkout", {
         serviceId: checkoutServiceId,
         totalAmount: totAmount,
         discount,
@@ -186,15 +163,13 @@ export default function MobileFooterThree({
         promotionCode: promotion?.promotion_code || "",
         paymentMethod,
         paymentStatus,
+        paymentIntentId,
         items: selectedServices.map((service) => ({
           optionId: Number(service.option_id),
           quantity: service.quantity,
           unitPrice: Number(service.price),
         })),
-      }),
     });
-
-    await readResponse(response, "checkout");
   }
 
   async function handleNext(): Promise<void> {
@@ -236,17 +211,9 @@ export default function MobileFooterThree({
     setPaymentError("");
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/payments/intent`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: Math.round(totAmount * 100) }),
+      const { data } = await apiClient.post<ApiResponse>("/api/payments/intent", {
+        amount: Math.round(totAmount * 100),
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "ไม่สามารถสร้างรายการชำระเงินได้");
-      }
 
       const paymentIntentId = data.paymentIntentId ?? data.paymentIntent?.id;
       const clientSecret = data.clientSecret ?? data.client_secret;
@@ -273,24 +240,16 @@ export default function MobileFooterThree({
         return;
       }
 
-      const statusResponse = await fetch(
-        `${API_BASE_URL}/api/payments/status/${encodeURIComponent(paymentIntentId)}`,
-        { method: "GET" },
+      const { data: statusData } = await apiClient.get<ApiResponse>(
+        `/api/payments/status/${encodeURIComponent(paymentIntentId)}`,
       );
-      const statusData = await statusResponse.json();
-
-      if (!statusResponse.ok) {
-        throw new Error(
-          statusData.error || "ไม่สามารถตรวจสอบสถานะการชำระเงินได้",
-        );
-      }
 
       const verifiedPaymentStatus =
         statusData.status ??
         statusData.paymentIntent?.status ??
         statusData.data?.status;
       if (verifiedPaymentStatus === "succeeded") {
-        await recordCheckout(verifiedPaymentStatus);
+        await recordCheckout(verifiedPaymentStatus, paymentIntentId);
         setIsThirdPageCompleted(true);
         router.push("/service-details/payment-success");
       } else {
