@@ -20,11 +20,15 @@ export function PaymentSuccess({ orderListHref = "/customer-services" }: Payment
     throw new Error("PaymentSuccess must be rendered inside PaymentProvider");
   }
 
-  const { serviceDetail, serviceFormData, totAmount, discount } = payment;
+  const { serviceDetail, serviceFormData, totAmount, discount, resetPayment } = payment;
   const selectedServices = useMemo(
     () => serviceDetail.filter((service) => Number(service.quantity) > 0),
     [serviceDetail],
   );
+
+  const handleGoToOrderList = () => {
+    resetPayment();
+  };
 
   const address = [
     serviceFormData.address,
@@ -125,6 +129,7 @@ export function PaymentSuccess({ orderListHref = "/customer-services" }: Payment
             <div className="mt-6">
               <Link
                 href={orderListHref}
+                onClick={handleGoToOrderList}
                 className="flex h-11 w-full items-center justify-center rounded-lg bg-[#3366FF] text-sm font-medium text-white shadow-sm transition-all duration-200 ease-out hover:scale-[1.02] hover:bg-[#2554DB] hover:shadow-md active:scale-[0.98] sm:h-12 sm:text-base"
               >
                 เช็ครายการซ่อม
