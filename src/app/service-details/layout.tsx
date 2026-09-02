@@ -5,6 +5,7 @@ import React, { createContext, useEffect, useState } from "react";
 
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
+import { ProtectedRoute } from "@/components/common/ProtectedRoute";
 
 const stripePromise = loadStripe(
   "pk_test_51U8I9tEcKQ4tElnOs6okgrxrdwBjLm1FIbeOt6xks4BzJ58YUH1OIOUlAsgJyUqUtNEzOHAYQSayXLV41hKrEoYO00YdOhLRrj"
@@ -48,6 +49,8 @@ type PaymentContextValue = {
     setDistrictList: React.Dispatch<React.SetStateAction<string>>;
     subdistrictList: string;
     setSubdistrictList: React.Dispatch<React.SetStateAction<string>>;
+
+    resetPayment: () => void;
 };
 
 export type PaymentMethod = "promptpay" | "card";
@@ -65,6 +68,26 @@ type ServiceDetail = {
 const serviceOptions: ServiceDetail[] = [];
 
 const paymentStorageKey = "home-service-payment";
+
+const initialServiceFormData: ServiceFormData = {
+    address: "",
+    subdistrict: "",
+    district: "",
+    province: "",
+    serviceDate: "",
+    serviceTime: "",
+    information: "",
+    latitude: null,
+    longitude: null,
+};
+
+const initialPaymentFormData: PaymentFormData = {
+    creditCardNumberComplete: false,
+    creditCardName: "",
+    creditCardExpiryComplete: false,
+    creditCardCVCComplete: false,
+    promotionCode: "",
+};
 
 type SavedPayment = {
     serviceId?: number;
@@ -169,31 +192,15 @@ export const PaymentContext = createContext<PaymentContextValue | undefined>(und
 
 export function PaymentProvider({ children }: { children: React.ReactNode }) {
     const [isHydrated, setIsHydrated] = useState(false);
-    const [userId, setUserId] = useState<string | number | null>("1");
+    const [userId, setUserId] = useState<string | number | null>("");
     const [serviceId, setServiceId] = useState(0);
     const [serviceTitle, setServiceTitle] = useState("");
     // ข้อมูล sevice datail มันจะต้องเป็น array ของ object ที่มี serviceDetail, pricePerUnit, quantity
     const [serviceDetail, setServiceDetail] = useState<ServiceDetail[]>(serviceOptions);
 
-    const [serviceFormData, setServiceFormData] = useState<ServiceFormData>({
-        address: "",
-        subdistrict: "",
-        district: "",
-        province: "",
-        serviceDate: "",
-        serviceTime: "",
-        information: "",
-        latitude: null,
-        longitude: null,
-    });
+    const [serviceFormData, setServiceFormData] = useState<ServiceFormData>(initialServiceFormData);
 
-    const [paymentFormData, setPaymentFormData] = useState<PaymentFormData>({
-        creditCardNumberComplete: false,
-        creditCardName: "",
-        creditCardExpiryComplete: false,
-        creditCardCVCComplete: false,
-        promotionCode: "",
-    });
+    const [paymentFormData, setPaymentFormData] = useState<PaymentFormData>(initialPaymentFormData);
 
     const [promotionCode, setPromotionCode] = useState("");
 
@@ -257,6 +264,32 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
         );
     }, [isHydrated, serviceId, serviceTitle, serviceDetail, serviceFormData, paymentFormData, totAmount]);
 
+    // clears everything filled across [id], userinfo and payment pages back to defaults
+    const resetPayment = () => {
+        setUserId("");
+        setServiceId(0);
+        setServiceTitle("");
+        setServiceDetail(serviceOptions);
+        setServiceFormData(initialServiceFormData);
+        setPaymentFormData(initialPaymentFormData);
+        setPromotionCode("");
+        setIsFirstPageCompleted(false);
+        setIsSecondPageCompleted(false);
+        setIsThirdPageCompleted(false);
+        setTotAmount(0);
+        setPaymentMethod("card");
+        setDiscount(0);
+        setDiscountType("");
+        setNewQuota(0);
+        setProvincesList("");
+        setDistrictList("");
+        setSubdistrictList("");
+
+        if (typeof window !== "undefined") {
+            window.sessionStorage.removeItem(paymentStorageKey);
+        }
+    };
+
     const value: PaymentContextValue = {
         userId,
         setUserId,
@@ -296,7 +329,9 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
         districtList,
         setDistrictList,
         subdistrictList,
-        setSubdistrictList
+        setSubdistrictList,
+
+        resetPayment,
     };
 
 
@@ -310,6 +345,10 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
 }
 
 export default function ServiceDetailsLayout({ children }: { children: React.ReactNode }) {
-    return <PaymentProvider>{children}</PaymentProvider>;
+    return (
+        <ProtectedRoute>
+            <PaymentProvider>{children}</PaymentProvider>
+        </ProtectedRoute>
+    );
 }
 
