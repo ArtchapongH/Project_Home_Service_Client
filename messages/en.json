@@ -24,6 +24,9 @@
     "openProfile": "Open profile",
     "notifications": "Notifications",
     "logout": "Log out",
+    "logoutShort": "Out",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
     "login": "Log in",
     "register": "Register"
   },
@@ -48,6 +51,8 @@
       "title": "Our most popular services",
       "viewAll": "View all services",
       "select": "Select service",
+      "loading": "Loading popular services...",
+      "empty": "No popular services are available yet",
       "items": {
         "cleaning": {
           "category": "General service",

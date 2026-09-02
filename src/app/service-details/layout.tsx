@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react-hooks/set-state-in-effect */
 
 import React, { createContext, useEffect, useState } from "react";
 
@@ -67,11 +68,21 @@ const paymentStorageKey = "home-service-payment";
 
 type SavedPayment = {
     serviceId?: number;
+    serviceTitle?: string;
     serviceDetail?: ServiceDetail[];
     serviceFormData?: ServiceFormData;
     paymentFormData?: PaymentFormData;
     totAmount?: number;
 };
+
+export function getServiceBreadcrumbName(
+    serviceTitle: string,
+    services: Array<{ service_name: string; quantity: number }>,
+): string {
+    if (serviceTitle.trim()) return serviceTitle.trim();
+    const selected = services.find((service) => service.quantity > 0);
+    return selected?.service_name || services[0]?.service_name || "บริการ";
+}
 
 
 function getSavedPayment(): SavedPayment | null {
@@ -93,14 +104,19 @@ function getSavedPayment(): SavedPayment | null {
     }
 }
 
-function hasRequiredServiceFormData(formData: ServiceFormData): boolean {
-    return Object.entries(formData)
-        .filter(([field]) => field !== "information")
-        .every(([, value]) => value.trim().length > 0);
+function isFilledText(value: unknown): boolean {
+    return typeof value === "string" && value.trim().length > 0;
 }
 
+function toCoordinate(value: unknown): number | null {
+    if (typeof value === "number" && Number.isFinite(value)) return value;
+    if (typeof value === "string" && value.trim() !== "" && Number.isFinite(Number(value))) {
+        return Number(value);
+    }
+    return null;
+}
 
-interface ServiceFormData {
+export interface ServiceFormData {
   address: string;
   subdistrict: string;
   district: string;
@@ -108,6 +124,35 @@ interface ServiceFormData {
   serviceDate: string;
   serviceTime: string;
   information: string;
+  latitude: number | null;
+  longitude: number | null;
+}
+
+export function hasRequiredServiceFormData(formData: ServiceFormData): boolean {
+    return (
+        isFilledText(formData.address) &&
+        isFilledText(formData.subdistrict) &&
+        isFilledText(formData.district) &&
+        isFilledText(formData.province) &&
+        isFilledText(formData.serviceDate) &&
+        isFilledText(formData.serviceTime) &&
+        formData.latitude != null &&
+        formData.longitude != null
+    );
+}
+
+function restoreServiceFormData(saved: Partial<ServiceFormData> | undefined): ServiceFormData {
+    return {
+        address: typeof saved?.address === "string" ? saved.address : "",
+        subdistrict: typeof saved?.subdistrict === "string" ? saved.subdistrict : "",
+        district: typeof saved?.district === "string" ? saved.district : "",
+        province: typeof saved?.province === "string" ? saved.province : "",
+        serviceDate: typeof saved?.serviceDate === "string" ? saved.serviceDate : "",
+        serviceTime: typeof saved?.serviceTime === "string" ? saved.serviceTime.trim().slice(0, 5) : "",
+        information: typeof saved?.information === "string" ? saved.information : "",
+        latitude: toCoordinate(saved?.latitude),
+        longitude: toCoordinate(saved?.longitude),
+    };
 }
 
 
@@ -138,6 +183,8 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
         serviceDate: "",
         serviceTime: "",
         information: "",
+        latitude: null,
+        longitude: null,
     });
 
     const [paymentFormData, setPaymentFormData] = useState<PaymentFormData>({
@@ -170,6 +217,10 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         const savedPayment = getSavedPayment();
 
+        if (savedPayment?.serviceTitle) {
+            setServiceTitle(savedPayment.serviceTitle);
+        }
+
         if (savedPayment?.serviceDetail) {
             setServiceDetail(savedPayment.serviceDetail);
         }
@@ -179,8 +230,9 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
         }
 
         if (savedPayment?.serviceFormData) {
-            setServiceFormData(savedPayment.serviceFormData);
-            setIsSecondPageCompleted(hasRequiredServiceFormData(savedPayment.serviceFormData));
+            const restoredForm = restoreServiceFormData(savedPayment.serviceFormData);
+            setServiceFormData(restoredForm);
+            setIsSecondPageCompleted(hasRequiredServiceFormData(restoredForm));
         }
 
         if (savedPayment?.paymentFormData) {
@@ -201,9 +253,9 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
 
         window.sessionStorage.setItem(
             paymentStorageKey,
-            JSON.stringify({ serviceId, serviceDetail, serviceFormData, paymentFormData, totAmount }),
+            JSON.stringify({ serviceId, serviceTitle, serviceDetail, serviceFormData, paymentFormData, totAmount }),
         );
-    }, [isHydrated, serviceId, serviceDetail, serviceFormData, paymentFormData, totAmount]);
+    }, [isHydrated, serviceId, serviceTitle, serviceDetail, serviceFormData, paymentFormData, totAmount]);
 
     const value: PaymentContextValue = {
         userId,

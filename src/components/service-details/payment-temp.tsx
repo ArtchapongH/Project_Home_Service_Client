@@ -21,7 +21,7 @@ function CheckoutForm() {
 
   const amount = 4999; // $49.99
 
-  async function handleSubmit(event) {
+  async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
 
     if (!stripe || !elements) {
@@ -77,7 +77,7 @@ function CheckoutForm() {
       );
 
       if (result.error) {
-        setError(result.error.message);
+        setError(result.error.message || "Payment error");
         return;
       }
 
@@ -88,8 +88,8 @@ function CheckoutForm() {
         setSuccess(true);
       }
 
-    } catch (err) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Error processing payment");
     } finally {
       setLoading(false);
     }

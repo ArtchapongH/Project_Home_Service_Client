@@ -162,6 +162,21 @@ export async function getMockTechnicianJob(
   return structuredClone(job);
 }
 
+export async function completeMockTechnicianJob(
+  assignmentId: string,
+): Promise<TechnicianJob> {
+  await waitForMock();
+  const job = acceptedJobs.find((item) => item.assignmentId === assignmentId);
+  if (!job) {
+    throw new TechnicianMockError("JOB_NOT_FOUND", "ไม่พบงานที่ต้องการ");
+  }
+
+  job.assignmentStatus = "COMPLETED";
+  job.orderStatus = "completed";
+  job.completedAt = new Date().toISOString();
+  return structuredClone(job);
+}
+
 export function resetTechnicianMockStore(): void {
   availableRequests = structuredClone(INITIAL_REQUESTS);
   acceptedJobs = [];

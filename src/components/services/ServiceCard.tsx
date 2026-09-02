@@ -19,60 +19,105 @@ import type { PublicService, PublicServiceSort } from "@/types/public-service";
 interface ServiceCardProps {
   service: PublicService;
   sortBy?: PublicServiceSort;
+  isPopular?: boolean;
   onCategoryClick?: (category: string) => void;
 }
 
-const getCategoryStyles = (category: string) => {
-  switch (category) {
-    case "บริการห้องครัว":
-      return {
-        bgcolor: "#F3EDFB",
-        color: "#8A4AF3",
-        border: "1px solid #E9D5FF",
-        "&:hover": {
-          bgcolor: "#E9D5FF",
-        },
-      };
-    case "บริการห้องน้ำ":
-      return {
-        bgcolor: "#E6FBF7",
-        color: "#00A982",
-        border: "1px solid #CCFBF1",
-        "&:hover": {
-          bgcolor: "#CCFBF1",
-        },
-      };
-    case "บริการทั่วไป":
-    default:
-      return {
-        bgcolor: "#EBF0FF",
-        color: "#3366FF",
-        border: "1px solid #DBEAFE",
-        "&:hover": {
-          bgcolor: "#DBEAFE",
-        },
-      };
+const KITCHEN_STYLE = {
+  bgcolor: "#F3EDFB",
+  color: "#8A4AF3",
+  border: "1px solid #E9D5FF",
+  "&:hover": {
+    bgcolor: "#E9D5FF",
+  },
+};
+
+const BATH_STYLE = {
+  bgcolor: "#E6FBF7",
+  color: "#00A982",
+  border: "1px solid #CCFBF1",
+  "&:hover": {
+    bgcolor: "#CCFBF1",
+  },
+};
+
+const GENERAL_STYLE = {
+  bgcolor: "#EBF0FF",
+  color: "#3366FF",
+  border: "1px solid #DBEAFE",
+  "&:hover": {
+    bgcolor: "#DBEAFE",
+  },
+};
+
+const CATEGORY_PALETTES = [GENERAL_STYLE, KITCHEN_STYLE, BATH_STYLE] as const;
+
+function matchesCategory(value: string, needles: string[]): boolean {
+  const normalized = value.trim().toLowerCase();
+  return needles.some((needle) => normalized === needle || normalized.includes(needle));
+}
+
+function hashCategoryId(categoryId: string): number {
+  const sum = [...categoryId].reduce((total, char) => total + char.charCodeAt(0), 0);
+  return sum % CATEGORY_PALETTES.length;
+}
+
+const getCategoryStyles = (category: string, categoryId?: string) => {
+  if (
+    matchesCategory(category, ["บริการห้องครัว", "kitchen"]) ||
+    categoryId === "2"
+  ) {
+    return KITCHEN_STYLE;
   }
+  if (
+    matchesCategory(category, ["บริการห้องน้ำ", "bathroom"]) ||
+    categoryId === "4"
+  ) {
+    return BATH_STYLE;
+  }
+  if (
+    matchesCategory(category, ["บริการทั่วไป", "general"]) ||
+    categoryId === "1"
+  ) {
+    return GENERAL_STYLE;
+  }
+  if (categoryId) {
+    return CATEGORY_PALETTES[hashCategoryId(categoryId)];
+  }
+  return GENERAL_STYLE;
 };
 
 /**
  * คำนวณสถิติและคะแนนสำหรับแสดงผลเชิงสังคม (Social Proof)
  */
-function getServiceMetrics(service: PublicService) {
+function getServiceMetrics(service: PublicService, isPopularOverride?: boolean) {
   const idNum = Number(service.id) || (service.name.charCodeAt(0) + service.name.length);
   const popularity = service.popularityScore ?? 0;
 
-  const rating = (4.8 + ((idNum * 3) % 3) * 0.1).toFixed(1);
-  const reviewCount = Math.max(25, Math.round(popularity * 2.5 + ((idNum * 13) % 30)));
-  const bookingsCount = Math.max(80, Math.round(popularity * 8 + ((idNum * 29) % 60)));
+  // ใช้อัตราคะแนนและจำนวนรีวิวจริงจาก Database หากมีข้อมูล
+  const hasReviewData = typeof service.reviewCount === "number";
+  const hasRealReviews = hasReviewData && service.reviewCount! > 0;
 
-  const isPopular = popularity >= 40 || bookingsCount >= 300;
+  const rating = hasRealReviews && typeof service.averageRating === "number"
+    ? service.averageRating.toFixed(1)
+    : hasReviewData && service.reviewCount === 0
+      ? "ยังไม่มีรีวิว"
+      : (4.8 + ((idNum * 3) % 3) * 0.1).toFixed(1);
+
+  const reviewCount = hasReviewData
+    ? service.reviewCount!
+    : Math.max(12, Math.round(popularity * 2.5 + ((idNum * 13) % 20)));
+
+  const bookingsCount = Math.max(15, Math.round(popularity * 3.8 + ((idNum * 17) % 35)));
+
+  const isPopular = typeof isPopularOverride === "boolean"
+    ? isPopularOverride
+    : Boolean(popularity >= 40);
   const isRecommended = Boolean(service.isFeatured);
 
   return {
     rating,
     reviewCount,
-    bookingsCount,
     isPopular,
     isRecommended,
   };
@@ -105,14 +150,15 @@ export function formatServicePrice(
   return { min: formatNumber(minPrice), isRange: false };
 }
 
-export function ServiceCard({ service, sortBy, onCategoryClick }: ServiceCardProps) {
+export function ServiceCard({ service, sortBy, isPopular: isPopularProp, onCategoryClick }: ServiceCardProps) {
   const t = useTranslations("Services");
   const locale = useLocale();
-  const categoryStyle = getCategoryStyles(service.category);
+  const categoryStyle = getCategoryStyles(service.category, service.categoryId);
   const formattedPrice = formatServicePrice(service.minPrice, service.maxPrice, locale);
   const imageSrc = service.imageUrl || "/images/landing/service-aircon.png";
   const serviceLink = `/service-details/${service.id}`;
-  const { rating, reviewCount, bookingsCount, isPopular, isRecommended } = getServiceMetrics(service);
+  const { rating, reviewCount, isPopular, isRecommended } = getServiceMetrics(service, isPopularProp);
+
 
   // ปรับ Badge ตามโหมดการเรียงลำดับที่ผู้ใช้เลือก (เพื่อไม่ให้ป้าย แนะนำ ติดมาในโหมดยอดนิยม)
   const activeBadgeType = (() => {
@@ -225,7 +271,7 @@ export function ServiceCard({ service, sortBy, onCategoryClick }: ServiceCardPro
           onClick={(e) => {
             e.stopPropagation();
             if (onCategoryClick) {
-              onCategoryClick(service.category);
+              onCategoryClick(service.categoryId);
             }
           }}
           sx={{
@@ -256,7 +302,7 @@ export function ServiceCard({ service, sortBy, onCategoryClick }: ServiceCardPro
           {service.name}
         </Typography>
 
-        {/* Rating & Bookings count */}
+        {/* Rating & Review count */}
         <Box
           sx={{
             display: "flex",
@@ -267,37 +313,22 @@ export function ServiceCard({ service, sortBy, onCategoryClick }: ServiceCardPro
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.35 }}>
-            <StarRoundedIcon sx={{ fontSize: 17, color: "#F59E0B" }} />
+            <StarRoundedIcon sx={{ fontSize: 18, color: (typeof reviewCount === "number" && reviewCount > 0) ? "#F59E0B" : "#94A3B8" }} />
             <Typography
               component="span"
               sx={{ fontWeight: 700, color: "#1E293B", fontSize: "0.8125rem" }}
             >
               {rating}
             </Typography>
-            <Typography
-              component="span"
-              sx={{ color: "#64748B", fontSize: "0.75rem" }}
-            >
-              ({reviewCount})
-            </Typography>
+            {typeof reviewCount === "number" && reviewCount > 0 && (
+              <Typography
+                component="span"
+                sx={{ color: "#64748B", fontSize: "0.75rem", ml: 0.25 }}
+              >
+                ({reviewCount})
+              </Typography>
+            )}
           </Box>
-
-          <Box
-            sx={{
-              width: 3,
-              height: 3,
-              borderRadius: "50%",
-              bgcolor: "#CBD5E1",
-              display: "inline-block",
-            }}
-          />
-
-          <Typography
-            component="span"
-            sx={{ color: "#64748B", fontSize: "0.75rem", fontWeight: 500 }}
-          >
-            {t("bookings", { count: bookingsCount.toLocaleString(locale) })}
-          </Typography>
         </Box>
 
         {/* Price Info */}

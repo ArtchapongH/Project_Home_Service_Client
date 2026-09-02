@@ -8,6 +8,8 @@ export interface TechnicianProfile {
   userId: string;
   email: string;
   fullName: string;
+  firstName?: string;
+  lastName?: string;
   first_name?: string;
   last_name?: string;
   phone: string | null;
@@ -26,6 +28,15 @@ export interface TechnicianJobItem {
   quantity: number;
   unitPrice: number;
   unit: string;
+}
+
+export interface TechnicianJobCompletionImage {
+  imageId: string;
+  objectPath: string;
+  sortOrder: number;
+  createdAt: string;
+  signedUrl: string | null;
+  expiresIn: number | null;
 }
 
 export type TechnicianJobStatus =
@@ -55,6 +66,13 @@ export interface TechnicianJob {
   customerName: string | null;
   customerPhone: string | null;
   items: TechnicianJobItem[];
+  completionImages?: TechnicianJobCompletionImage[];
+}
+
+export interface TechnicianCompletionImageUploadResult {
+  assignmentId: string;
+  imageCount: number;
+  images: TechnicianJobCompletionImage[];
 }
 
 export interface TechnicianListFilters {
@@ -68,6 +86,8 @@ export interface TechnicianListFilters {
 
 export interface TechnicianSettingsInput {
   fullName?: string;
+  firstName?: string;
+  lastName?: string;
   first_name?: string;
   last_name?: string;
   phone?: string | null;

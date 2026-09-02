@@ -2,13 +2,11 @@
 import React from "react";
 import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import CreditCardOutlinedIcon from "@mui/icons-material/CreditCardOutlined";
-import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import QrCode2RoundedIcon from "@mui/icons-material/QrCode2Rounded";
-import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import Image from "next/image";
 import serviceDetailBanner from "@/assets/images/service-detail-banner.png";
 import MobileFooterThree from "./mobile-footer3";
-import { PaymentContext } from "@/app/service-details/layout";
+import { getServiceBreadcrumbName, PaymentContext } from "@/app/service-details/layout";
 import { useAuth } from "@/contexts/AuthContext";
 
 import {
@@ -17,7 +15,13 @@ import {
 	CardCvcElement,
 } from "@stripe/react-stripe-js";
 
+import createIcon1 from "@/assets/icons/create_black_24dp 1.png";
+import createIcon2 from "@/assets/icons/create_black_24dp 2.png";
+import createIcon3 from "@/assets/icons/create_black_24dp 3.png";
+
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+const activeStepIconClass = "brightness-0 saturate-100 invert-[48%] sepia-[99%] saturate-[2547%] hue-rotate-[205deg] brightness-[99%] contrast-[91%]";
 
 interface PromotionResponse {
 	promotion_id: string;
@@ -38,7 +42,7 @@ export default function HeroSectionThree() {
 		throw new Error("HeroSection must be rendered inside PaymentProvider");
 	}
 
-	const { paymentFormData, setPaymentFormData, paymentMethod, setPaymentMethod, setDiscount, setDiscountType, setNewQuota, totAmount, setTotAmount, setUserId } = payment;
+	const { paymentFormData, setPaymentFormData, paymentMethod, setPaymentMethod, setDiscount, setDiscountType, setNewQuota, totAmount, setTotAmount, setUserId, serviceTitle, serviceDetail } = payment;
 
 	// Store userId from AuthContext
 	React.useEffect(() => {
@@ -125,16 +129,16 @@ export default function HeroSectionThree() {
 				<div className="absolute left-3 top-11 flex h-10 items-center rounded-[7px] bg-white px-3 text-sm shadow-sm min-[801px]:left-1/2 min-[801px]:top-10 min-[801px]:-translate-x-1/2">
 					<span className="text-gray-500">บริการของเรา</span>
 					<ChevronRightRoundedIcon className="mx-1 text-[17px] text-gray-500" />
-					<span className="font-semibold text-blue-600">ล้างแอร์</span>
+					<span className="font-semibold text-blue-600">{getServiceBreadcrumbName(serviceTitle, serviceDetail)}</span>
 				</div>
 			</div>
 
 			<div className="relative z-10 -mt-11 mx-3 rounded-lg border border-gray-200 bg-white px-3 py-3 min-[801px]:mx-auto min-[801px]:w-[min(672px,calc(100%-48px))] min-[801px]:px-10 min-[801px]:py-5">
-				<div className="absolute left-[16.67%] right-[16.67%] top-6.25 h-px bg-blue-500" />
+				<div className="absolute left-[calc(16.67%+14px)] right-[calc(16.67%+14px)] top-[26px] h-0.5 bg-blue-500 min-[801px]:top-[34px]" />
 				<div className="relative grid grid-cols-3">
-					<Step icon={<ReceiptLongOutlinedIcon className="text-[16px]" />} label="รายการ" active />
-					<Step icon={<EditOutlinedIcon className="text-[16px]" />} label="กรอกข้อมูลบริการ" active />
-					<Step icon={<CreditCardOutlinedIcon className="text-[16px]" />} label="ชำระเงิน" active />
+					<Step icon={<Image className="brightness-0 invert" src={createIcon3} alt="" width={16} height={16} aria-hidden />} label="รายการ" completed />
+					<Step icon={<Image className="brightness-0 invert" src={createIcon1} alt="" width={16} height={16} aria-hidden />} label="กรอกข้อมูลบริการ" completed />
+					<Step icon={<Image className={activeStepIconClass} src={createIcon2} alt="" width={16} height={16} aria-hidden />} label="ชำระเงิน" active />
 				</div>
 			</div>
 
@@ -153,7 +157,7 @@ export default function HeroSectionThree() {
 									<CardNumberElement
 										options={cardElementOptions}
 										className="w-full"
-										onChange={(event) => setPaymentFormData((currentForm) => ({ ...currentForm, creditCardNumberComplete: event.complete }))}
+										onChange={(event: { complete: boolean }) => setPaymentFormData((currentForm) => ({ ...currentForm, creditCardNumberComplete: event.complete }))}
 									/>
 								</div>
 							</Field>
@@ -165,7 +169,7 @@ export default function HeroSectionThree() {
 									<CardExpiryElement
 										options={cardElementOptions}
 										className="w-full"
-										onChange={(event) => setPaymentFormData((currentForm) => ({ ...currentForm, creditCardExpiryComplete: event.complete }))}
+										onChange={(event: { complete: boolean }) => setPaymentFormData((currentForm) => ({ ...currentForm, creditCardExpiryComplete: event.complete }))}
 									/>
 								</div>
 							</Field>
@@ -174,7 +178,7 @@ export default function HeroSectionThree() {
 									<CardCvcElement
 										options={cardElementOptions}
 										className="w-full"
-										onChange={(event) => setPaymentFormData((currentForm) => ({ ...currentForm, creditCardCVCComplete: event.complete }))}
+										onChange={(event: { complete: boolean }) => setPaymentFormData((currentForm) => ({ ...currentForm, creditCardCVCComplete: event.complete }))}
 									/>
 								</div>
 							</Field>
@@ -232,10 +236,10 @@ function PaymentOption({ icon, label, onClick, selected }: { icon: React.ReactNo
 	);
 }
 
-function Step({ icon, label, active = false }: { icon: React.ReactNode; label: string; active?: boolean }) {
+function Step({ icon, label, active = false, completed = false }: { icon: React.ReactNode; label: string; active?: boolean; completed?: boolean }) {
 	return (
-		<div className={`flex flex-col items-center text-center ${active ? "text-blue-600" : "text-gray-500"}`}>
-			<span className={`flex size-7 items-center justify-center rounded-full border bg-white ${active ? "border-blue-500" : "border-gray-300"}`}>{icon}</span>
+		<div className={`flex flex-col items-center text-center ${active || completed ? "text-blue-600" : "text-gray-500"}`}>
+			<span className={`flex size-7 items-center justify-center rounded-full border-2 ${completed ? "border-blue-500 bg-blue-500" : active ? "border-blue-500 bg-white" : "border-gray-300 bg-white"}`}>{icon}</span>
 			<span className="mt-1 whitespace-nowrap text-xs font-medium">{label}</span>
 		</div>
 	);

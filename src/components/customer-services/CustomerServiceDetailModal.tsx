@@ -254,8 +254,13 @@ export function CustomerServiceDetailModal({
           </Typography>
           <Box sx={{ p: 2, borderRadius: "12px", bgcolor: "#F8FAFC", border: "1px solid #F1F5F9" }}>
             <Typography variant="body2" sx={{ color: "#334155", lineHeight: 1.6 }}>
-              กรุงเทพมหานครและปริมณฑล (ที่อยู่ตามที่ระบุไว้ในโปรไฟล์)
+              {order.address || "กรุงเทพมหานครและปริมณฑล (ที่อยู่ตามที่ระบุไว้ในโปรไฟล์)"}
             </Typography>
+            {order.notes && (
+              <Typography variant="caption" sx={{ color: "#64748B", display: "block", mt: 0.5 }}>
+                ข้อมูลเพิ่มเติม: {order.notes}
+              </Typography>
+            )}
           </Box>
         </Box>
 
