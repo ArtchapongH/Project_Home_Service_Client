@@ -1,3 +1,4 @@
+import axios from "axios";
 import apiClient from "./apiClient";
 import { supabase } from "../lib/supabaseClient";
 import {
@@ -232,3 +233,71 @@ export const serviceApi = {
     await apiClient.patch(`${ADMIN_SERVICE_ENDPOINT}/reorder`, payload);
   },
 };
+
+function unwrapTranslationName(payload: unknown): string {
+  if (!payload || typeof payload !== "object") return "";
+  const record = payload as { data?: { name?: string }; name?: string };
+  return (record.data?.name ?? record.name ?? "").trim();
+}
+
+async function getTranslation(
+  path: string,
+  signal?: AbortSignal,
+): Promise<string> {
+  try {
+    const response = await apiClient.get<unknown>(path, { signal });
+    return unwrapTranslationName(response.data);
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.status === 404) {
+      return "";
+    }
+    throw error;
+  }
+}
+
+export async function getServiceTranslation(
+  serviceId: string,
+  locale: "en" = "en",
+  signal?: AbortSignal,
+): Promise<string> {
+  return getTranslation(
+    `${ADMIN_SERVICE_ENDPOINT}/${serviceId}/translations/${locale}`,
+    signal,
+  );
+}
+
+export async function upsertServiceTranslation(
+  serviceId: string,
+  name: string,
+  locale: "en" = "en",
+): Promise<void> {
+  const trimmed = name.trim();
+  if (!trimmed) return;
+  await apiClient.put(`${ADMIN_SERVICE_ENDPOINT}/${serviceId}/translations/${locale}`, {
+    name: trimmed,
+  });
+}
+
+export async function getServiceOptionTranslation(
+  optionId: string,
+  locale: "en" = "en",
+  signal?: AbortSignal,
+): Promise<string> {
+  return getTranslation(
+    `${ADMIN_SERVICE_ENDPOINT}/options/${optionId}/translations/${locale}`,
+    signal,
+  );
+}
+
+export async function upsertServiceOptionTranslation(
+  optionId: string,
+  name: string,
+  locale: "en" = "en",
+): Promise<void> {
+  const trimmed = name.trim();
+  if (!trimmed) return;
+  await apiClient.put(
+    `${ADMIN_SERVICE_ENDPOINT}/options/${optionId}/translations/${locale}`,
+    { name: trimmed },
+  );
+}

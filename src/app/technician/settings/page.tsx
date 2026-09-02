@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { TechnicianPageHeader } from "@/components/technician/shared/TechnicianPageHeader";
 import { LocationControl } from "@/components/technician/settings/LocationControl";
 import { useTechnician } from "@/contexts/TechnicianContext";
-import { getPublicServices } from "@/services/publicServiceApi";
+import { useLocale } from "next-intl";
+import { getPublicServices, isCanceledRequest } from "@/services/publicServiceApi";
 import { getTechnicianApiError, updateTechnicianSettings } from "@/services/technicianApi";
 import type { PublicService } from "@/types/public-service";
 import type { TechnicianProfile } from "@/types/technician";
@@ -28,6 +29,7 @@ function namePartsFromProfile(profile: TechnicianProfile) {
 }
 
 export default function TechnicianSettingsPage() {
+  const locale = useLocale();
   const { profile, setProfile } = useTechnician();
   const initializedProfileId = useRef<string | null>(null);
   const [services, setServices] = useState<PublicService[]>([]);
@@ -43,11 +45,16 @@ export default function TechnicianSettingsPage() {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
   useEffect(() => {
-    void getPublicServices({ limit: 100 }).then(setServices).catch(() => {
-      setIsError(true);
-      setMessage("โหลดรายการบริการไม่สำเร็จ");
-    });
-  }, []);
+    const controller = new AbortController();
+    void getPublicServices({ limit: 100, locale, signal: controller.signal })
+      .then(setServices)
+      .catch((reason) => {
+        if (isCanceledRequest(reason)) return;
+        setIsError(true);
+        setMessage("โหลดรายการบริการไม่สำเร็จ");
+      });
+    return () => controller.abort();
+  }, [locale]);
 
   useEffect(() => {
     if (!profile || initializedProfileId.current === profile.technicianId) return;

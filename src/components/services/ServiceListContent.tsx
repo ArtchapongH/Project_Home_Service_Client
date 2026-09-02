@@ -10,6 +10,7 @@ import {
   getApiErrorMessage,
   getPublicCategories,
   getPublicServices,
+  isCanceledRequest,
 } from "@/services/publicServiceApi";
 import type {
   PublicCategory,
@@ -36,20 +37,30 @@ export function ServiceListContent() {
 
   useEffect(() => {
     let active = true;
-    Promise.all([getPublicServices(), getPublicCategories()])
+    const controller = new AbortController();
+    setLoading(true);
+    setError("");
+    Promise.all([
+      getPublicServices({ locale, signal: controller.signal }),
+      getPublicCategories(locale, controller.signal),
+    ])
       .then(([serviceData, categoryData]) => {
         if (!active) return;
         setServices(serviceData);
         setCategories(categoryData);
       })
       .catch((reason) => {
-        if (active) setError(getApiErrorMessage(reason));
+        if (!active || isCanceledRequest(reason)) return;
+        setError(getApiErrorMessage(reason));
       })
       .finally(() => {
         if (active) setLoading(false);
       });
-    return () => { active = false; };
-  }, []);
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [locale]);
 
   const getPopularityWeight = (service: PublicService) => {
     const reviews = service.reviewCount ?? 0;
@@ -63,7 +74,7 @@ export function ServiceListContent() {
     .filter((service) => {
       const query = appliedSearchQuery.trim().toLowerCase();
       if (query && !service.name.toLowerCase().includes(query) && !service.category.toLowerCase().includes(query)) return false;
-      if (appliedCategory !== "all" && service.category !== appliedCategory) return false;
+      if (appliedCategory !== "all" && service.categoryId !== appliedCategory) return false;
       return service.minPrice >= appliedPriceRange[0] && service.minPrice <= appliedPriceRange[1];
     })
     .sort((a, b) => {
