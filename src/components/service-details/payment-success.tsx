@@ -4,7 +4,6 @@ import React, { useContext, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 
 import { PaymentContext } from "@/app/service-details/layout";
-import { ProtectedRoute } from "@/components/common/ProtectedRoute";
 import { saveLocalStoredOrder } from "@/services/customerOrderApi";
 import { formatCurrency } from "@/utils/formatCurrency";
 import { formatThaiServiceDate, formatThaiServiceTime } from "@/utils/serviceSchedule";
@@ -62,8 +61,7 @@ export function PaymentSuccess({ orderListHref = "/customer-services" }: Payment
   }, [address, discount, selectedServices, serviceFormData.serviceDate, serviceFormData.serviceTime, totAmount]);
 
   return (
-    <ProtectedRoute>
-      <section className="flex min-h-[calc(100vh-72px)] items-center justify-center bg-[#F3F4F6] px-4 py-8 sm:py-12">
+    <section className="flex min-h-[calc(100vh-72px)] items-center justify-center bg-[#F3F4F6] px-4 py-8 sm:py-12">
         <div className="w-full max-w-[540px] rounded-2xl border border-[#E2E8F0] bg-white p-6 shadow-[0_4px_24px_rgba(0,0,0,0.03)] transition-all sm:p-10">
           <div className="flex flex-col items-center">
             <div className="relative flex items-center justify-center">
@@ -135,7 +133,6 @@ export function PaymentSuccess({ orderListHref = "/customer-services" }: Payment
           </div>
         </div>
       </section>
-    </ProtectedRoute>
   );
 }
 

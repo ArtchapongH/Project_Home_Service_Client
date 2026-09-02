@@ -5,6 +5,7 @@ import React, { createContext, useEffect, useState } from "react";
 
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
+import { ProtectedRoute } from "@/components/common/ProtectedRoute";
 
 const stripePromise = loadStripe(
   "pk_test_51U8I9tEcKQ4tElnOs6okgrxrdwBjLm1FIbeOt6xks4BzJ58YUH1OIOUlAsgJyUqUtNEzOHAYQSayXLV41hKrEoYO00YdOhLRrj"
@@ -310,6 +311,10 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
 }
 
 export default function ServiceDetailsLayout({ children }: { children: React.ReactNode }) {
-    return <PaymentProvider>{children}</PaymentProvider>;
+    return (
+        <ProtectedRoute>
+            <PaymentProvider>{children}</PaymentProvider>
+        </ProtectedRoute>
+    );
 }
 
