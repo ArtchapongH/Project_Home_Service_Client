@@ -58,7 +58,7 @@ export function ServiceBanner({
   const t = useTranslations("Services");
   const categoryOptions = [
     { label: t("allCategories"), value: "all" },
-    ...categories.map((item) => ({ label: item.name, value: item.name })),
+    ...categories.map((item) => ({ label: item.name, value: item.id })),
   ];
   // Category Menu State
   const [categoryAnchorEl, setCategoryAnchorEl] = useState<null | HTMLElement>(null);

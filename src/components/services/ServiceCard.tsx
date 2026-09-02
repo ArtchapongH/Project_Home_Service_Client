@@ -23,37 +23,68 @@ interface ServiceCardProps {
   onCategoryClick?: (category: string) => void;
 }
 
-const getCategoryStyles = (category: string) => {
-  switch (category) {
-    case "บริการห้องครัว":
-      return {
-        bgcolor: "#F3EDFB",
-        color: "#8A4AF3",
-        border: "1px solid #E9D5FF",
-        "&:hover": {
-          bgcolor: "#E9D5FF",
-        },
-      };
-    case "บริการห้องน้ำ":
-      return {
-        bgcolor: "#E6FBF7",
-        color: "#00A982",
-        border: "1px solid #CCFBF1",
-        "&:hover": {
-          bgcolor: "#CCFBF1",
-        },
-      };
-    case "บริการทั่วไป":
-    default:
-      return {
-        bgcolor: "#EBF0FF",
-        color: "#3366FF",
-        border: "1px solid #DBEAFE",
-        "&:hover": {
-          bgcolor: "#DBEAFE",
-        },
-      };
+const KITCHEN_STYLE = {
+  bgcolor: "#F3EDFB",
+  color: "#8A4AF3",
+  border: "1px solid #E9D5FF",
+  "&:hover": {
+    bgcolor: "#E9D5FF",
+  },
+};
+
+const BATH_STYLE = {
+  bgcolor: "#E6FBF7",
+  color: "#00A982",
+  border: "1px solid #CCFBF1",
+  "&:hover": {
+    bgcolor: "#CCFBF1",
+  },
+};
+
+const GENERAL_STYLE = {
+  bgcolor: "#EBF0FF",
+  color: "#3366FF",
+  border: "1px solid #DBEAFE",
+  "&:hover": {
+    bgcolor: "#DBEAFE",
+  },
+};
+
+const CATEGORY_PALETTES = [GENERAL_STYLE, KITCHEN_STYLE, BATH_STYLE] as const;
+
+function matchesCategory(value: string, needles: string[]): boolean {
+  const normalized = value.trim().toLowerCase();
+  return needles.some((needle) => normalized === needle || normalized.includes(needle));
+}
+
+function hashCategoryId(categoryId: string): number {
+  const sum = [...categoryId].reduce((total, char) => total + char.charCodeAt(0), 0);
+  return sum % CATEGORY_PALETTES.length;
+}
+
+const getCategoryStyles = (category: string, categoryId?: string) => {
+  if (
+    matchesCategory(category, ["บริการห้องครัว", "kitchen"]) ||
+    categoryId === "2"
+  ) {
+    return KITCHEN_STYLE;
   }
+  if (
+    matchesCategory(category, ["บริการห้องน้ำ", "bathroom"]) ||
+    categoryId === "4"
+  ) {
+    return BATH_STYLE;
+  }
+  if (
+    matchesCategory(category, ["บริการทั่วไป", "general"]) ||
+    categoryId === "1"
+  ) {
+    return GENERAL_STYLE;
+  }
+  if (categoryId) {
+    return CATEGORY_PALETTES[hashCategoryId(categoryId)];
+  }
+  return GENERAL_STYLE;
 };
 
 /**
@@ -122,7 +153,7 @@ export function formatServicePrice(
 export function ServiceCard({ service, sortBy, isPopular: isPopularProp, onCategoryClick }: ServiceCardProps) {
   const t = useTranslations("Services");
   const locale = useLocale();
-  const categoryStyle = getCategoryStyles(service.category);
+  const categoryStyle = getCategoryStyles(service.category, service.categoryId);
   const formattedPrice = formatServicePrice(service.minPrice, service.maxPrice, locale);
   const imageSrc = service.imageUrl || "/images/landing/service-aircon.png";
   const serviceLink = `/service-details/${service.id}`;
@@ -240,7 +271,7 @@ export function ServiceCard({ service, sortBy, isPopular: isPopularProp, onCateg
           onClick={(e) => {
             e.stopPropagation();
             if (onCategoryClick) {
-              onCategoryClick(service.category);
+              onCategoryClick(service.categoryId);
             }
           }}
           sx={{

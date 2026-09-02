@@ -14,7 +14,7 @@ import {
   DEFAULT_CATEGORIES,
 } from "../../types/service";
 import { getCategories } from "../../lib/categoryApi";
-import { uploadServiceImage } from "../../services/serviceApi";
+import { uploadServiceImage, getServiceOptionTranslation, getServiceTranslation, upsertServiceOptionTranslation, upsertServiceTranslation } from "../../services/serviceApi";
 
 interface ServiceFormProps {
   initialData?: ServiceItem;
@@ -26,6 +26,7 @@ interface ServiceFormProps {
 interface ServiceOptionRow {
   id?: string;
   name: string;
+  nameEn: string;
   price: number | string;
   unit: string;
 }
@@ -45,6 +46,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
   const [loadingCategories, setLoadingCategories] = useState(false);
 
   const [name, setName] = useState<string>(initialData?.name || "");
+  const [nameEn, setNameEn] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | string>(
     initialData?.categoryId || initialData?.category_id || DEFAULT_CATEGORIES[0].category_id
   );
@@ -56,12 +58,13 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
       ? initialData.serviceOptions.map((sub) => ({
           id: String(sub.id || sub.option_id || ""),
           name: sub.name || sub.option_name || "",
+          nameEn: "",
           price: sub.price,
           unit: sub.unit,
         }))
       : [
-          { name: "", price: "", unit: "เครื่อง" },
-          { name: "", price: "", unit: "เครื่อง" },
+          { name: "", nameEn: "", price: "", unit: "เครื่อง" },
+          { name: "", nameEn: "", price: "", unit: "เครื่อง" },
         ]
   );
 
@@ -104,6 +107,47 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
     };
   }, [initialData]);
 
+  useEffect(() => {
+    if (mode !== "edit" || !initialData?.id) return;
+    const service = initialData;
+    let isMounted = true;
+    const controller = new AbortController();
+
+    async function loadTranslations() {
+      try {
+        const optionIds = (service.serviceOptions ?? [])
+          .map((sub) => String(sub.id || sub.option_id || ""))
+          .filter(Boolean);
+        const [serviceEn, ...optionEns] = await Promise.all([
+          getServiceTranslation(String(service.id), "en", controller.signal),
+          ...optionIds.map((optionId) =>
+            getServiceOptionTranslation(optionId, "en", controller.signal),
+          ),
+        ]);
+        if (!isMounted) return;
+        setNameEn(serviceEn);
+        const nameEnById = new Map(
+          optionIds.map((optionId, index) => [optionId, optionEns[index] ?? ""]),
+        );
+        setServiceOptions((prev) =>
+          prev.map((row) => ({
+            ...row,
+            nameEn: row.id ? (nameEnById.get(row.id) ?? row.nameEn) : row.nameEn,
+          })),
+        );
+      } catch (err) {
+        if (controller.signal.aborted) return;
+        console.warn("Failed to load English translations:", err);
+      }
+    }
+
+    void loadTranslations();
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
+  }, [mode, initialData]);
+
   const handleImageFileChange = async (file: File) => {
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) {
@@ -124,7 +168,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
   };
 
   const handleAddOption = () => {
-    setServiceOptions((prev) => [...prev, { name: "", price: "", unit: "เครื่อง" }]);
+    setServiceOptions((prev) => [...prev, { name: "", nameEn: "", price: "", unit: "เครื่อง" }]);
   };
 
   const handleRemoveOption = (index: number) => {
@@ -180,6 +224,17 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
         imageUrl,
         serviceOptions: formattedOptions,
       });
+
+      if (mode === "edit" && initialData?.id) {
+        await upsertServiceTranslation(String(initialData.id), nameEn);
+        await Promise.all(
+          serviceOptions
+            .filter((option) => option.id && option.nameEn.trim())
+            .map((option) =>
+              upsertServiceOptionTranslation(String(option.id), option.nameEn),
+            ),
+        );
+      }
     } catch (err: unknown) {
       console.error("Form submit error:", err);
       const errMsg =
@@ -270,6 +325,24 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                 {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name}</p>}
               </div>
             </div>
+
+            {mode === "edit" && (
+              <div className="flex items-center">
+                <label htmlFor="serviceNameEn" className="w-36 text-sm font-medium text-gray-700">
+                  ชื่อบริการ (EN)
+                </label>
+                <div className="flex-1 max-w-lg">
+                  <input
+                    id="serviceNameEn"
+                    type="text"
+                    value={nameEn}
+                    onChange={(e) => setNameEn(e.target.value)}
+                    placeholder="e.g. Air conditioner cleaning"
+                    className="w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-800 transition-colors focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+            )}
 
             <hr className="border-gray-100" />
 
@@ -407,13 +480,24 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                   <div className="flex items-center justify-center text-gray-300">
                     <Image src="/dragvertical.svg" alt="" width={24} height={32} className="block" />
                   </div>
-                  <input
-                    type="text"
-                    placeholder="เช่น 9,000 - 18,000 BTU, แบบติดผนัง"
-                    value={sub.name}
-                    onChange={(e) => handleOptionChange(index, "name", e.target.value)}
-                    className="flex-1 rounded-lg border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-800 transition-colors focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
+                  <div className="flex flex-1 flex-col gap-2">
+                    <input
+                      type="text"
+                      placeholder="เช่น 9,000 - 18,000 BTU, แบบติดผนัง"
+                      value={sub.name}
+                      onChange={(e) => handleOptionChange(index, "name", e.target.value)}
+                      className="w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-800 transition-colors focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    />
+                    {mode === "edit" && (
+                      <input
+                        type="text"
+                        placeholder="English name"
+                        value={sub.nameEn}
+                        onChange={(e) => handleOptionChange(index, "nameEn", e.target.value)}
+                        className="w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-800 transition-colors focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      />
+                    )}
+                  </div>
                   <input
                     type="text"
                     placeholder="เช่น เครื่อง, จุด"

@@ -4,7 +4,6 @@ import React, { useContext, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 
 import { PaymentContext } from "@/app/service-details/layout";
-import { ProtectedRoute } from "@/components/common/ProtectedRoute";
 import { saveLocalStoredOrder } from "@/services/customerOrderApi";
 import { formatCurrency } from "@/utils/formatCurrency";
 import { formatThaiServiceDate, formatThaiServiceTime } from "@/utils/serviceSchedule";
@@ -21,11 +20,15 @@ export function PaymentSuccess({ orderListHref = "/customer-services" }: Payment
     throw new Error("PaymentSuccess must be rendered inside PaymentProvider");
   }
 
-  const { serviceDetail, serviceFormData, totAmount, discount } = payment;
+  const { serviceDetail, serviceFormData, totAmount, discount, resetPayment } = payment;
   const selectedServices = useMemo(
     () => serviceDetail.filter((service) => Number(service.quantity) > 0),
     [serviceDetail],
   );
+
+  const handleGoToOrderList = () => {
+    resetPayment();
+  };
 
   const address = [
     serviceFormData.address,
@@ -62,8 +65,7 @@ export function PaymentSuccess({ orderListHref = "/customer-services" }: Payment
   }, [address, discount, selectedServices, serviceFormData.serviceDate, serviceFormData.serviceTime, totAmount]);
 
   return (
-    <ProtectedRoute>
-      <section className="flex min-h-[calc(100vh-72px)] items-center justify-center bg-[#F3F4F6] px-4 py-8 sm:py-12">
+    <section className="flex min-h-[calc(100vh-72px)] items-center justify-center bg-[#F3F4F6] px-4 py-8 sm:py-12">
         <div className="w-full max-w-[540px] rounded-2xl border border-[#E2E8F0] bg-white p-6 shadow-[0_4px_24px_rgba(0,0,0,0.03)] transition-all sm:p-10">
           <div className="flex flex-col items-center">
             <div className="relative flex items-center justify-center">
@@ -127,6 +129,7 @@ export function PaymentSuccess({ orderListHref = "/customer-services" }: Payment
             <div className="mt-6">
               <Link
                 href={orderListHref}
+                onClick={handleGoToOrderList}
                 className="flex h-11 w-full items-center justify-center rounded-lg bg-[#3366FF] text-sm font-medium text-white shadow-sm transition-all duration-200 ease-out hover:scale-[1.02] hover:bg-[#2554DB] hover:shadow-md active:scale-[0.98] sm:h-12 sm:text-base"
               >
                 เช็ครายการซ่อม
@@ -135,7 +138,6 @@ export function PaymentSuccess({ orderListHref = "/customer-services" }: Payment
           </div>
         </div>
       </section>
-    </ProtectedRoute>
   );
 }
 
