@@ -2,6 +2,7 @@
 
 import React, { useContext, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { PaymentContext } from "@/app/service-details/layout";
 import { saveLocalStoredOrder } from "@/services/customerOrderApi";
@@ -14,6 +15,7 @@ export interface PaymentSuccessProps {
 
 export function PaymentSuccess({ orderListHref = "/customer-services" }: PaymentSuccessProps) {
   const payment = useContext(PaymentContext);
+  const router = useRouter();
   const isSavedRef = useRef(false);
 
   if (!payment) {
@@ -26,8 +28,10 @@ export function PaymentSuccess({ orderListHref = "/customer-services" }: Payment
     [serviceDetail],
   );
 
-  const handleGoToOrderList = () => {
+  const handleGoToOrderList = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
     resetPayment();
+    router.push(orderListHref);
   };
 
   const address = [
@@ -66,7 +70,7 @@ export function PaymentSuccess({ orderListHref = "/customer-services" }: Payment
 
   return (
     <section className="flex min-h-[calc(100vh-72px)] items-center justify-center bg-[#F3F4F6] px-4 py-8 sm:py-12">
-        <div className="w-full max-w-[540px] rounded-2xl border border-[#E2E8F0] bg-white p-6 shadow-[0_4px_24px_rgba(0,0,0,0.03)] transition-all sm:p-10">
+        <div className="w-full max-w-135 rounded-2xl border border-[#E2E8F0] bg-white p-6 shadow-[0_4px_24px_rgba(0,0,0,0.03)] transition-all sm:p-10">
           <div className="flex flex-col items-center">
             <div className="relative flex items-center justify-center">
               <div className="absolute size-14 rounded-full bg-[#00596C]/25 animate-success-ripple sm:size-16" />
