@@ -109,20 +109,13 @@ export function TechnicianJobDetail({ assignmentId, history = false }: { assignm
   return (
     <>
       <header className="flex min-h-20 items-center gap-3 border-b border-gray-200 bg-white px-4 py-3 md:h-20 md:gap-4 md:px-8 md:py-0">
-        <Link href={backHref} aria-label="กลับ" className="inline-flex size-11 shrink-0 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 md:size-auto"><ArrowLeft /></Link>
-        <div className="min-w-0"><p className="text-xs text-gray-500">{history ? "ประวัติการซ่อม" : "บริการที่รับ"}</p><h1 className="wrap-break-word font-semibold">{job.serviceName}</h1></div>
-        {canComplete && (
-          <button
-            type="button"
-            onClick={() => {
-              setCompletionError(null);
-              setCompletionOpen(true);
-            }}
-            className="ml-auto shrink-0 cursor-pointer rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700"
-          >
-            ส่งมอบงาน
-          </button>
-        )}
+       <Link href={backHref} aria-label="กลับ" className="inline-flex size-11 shrink-0 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 md:size-auto">
+        <ArrowLeft />
+       </Link>
+       <div className="min-w-0">
+        <p className="text-xs text-gray-500">{history ? "ประวัติการซ่อม" : "บริการที่รับ"}</p>
+        <h1 className="wrap-break-word font-semibold">{job.serviceName}</h1>
+       </div>
       </header>
       <section className="p-4 md:p-8">
         {completionSuccess && (
@@ -143,7 +136,22 @@ export function TechnicianJobDetail({ assignmentId, history = false }: { assignm
             <dt className="text-gray-500">รหัสคำสั่งซื้อ</dt><dd className="break-all">{job.orderCode}</dd>
             <dt className="text-gray-500">ราคารวม</dt><dd>{formatBaht(job.totalPrice)}</dd>
             <dt className="text-gray-500">ผู้รับบริการ</dt><dd>{job.customerName || "ไม่ระบุ"}</dd>
-            <dt className="text-gray-500">เบอร์ติดต่อ</dt><dd>{job.customerPhone || "ไม่ระบุ"}</dd>
+            <dt className="text-gray-500">เบอร์ติดต่อ</dt>
+            <dd className="flex flex-wrap items-start justify-between gap-3">
+              <span>{job.customerPhone || "ไม่ระบุ"}</span>
+              {canComplete && (
+              <button
+                type="button"
+                onClick={() => {
+                  setCompletionError(null);
+                  setCompletionOpen(true);
+                }}
+                className="shrink-0 cursor-pointer rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700"
+              >
+                ส่งมอบงาน
+              </button>
+            )}
+          </dd>
           </dl>
           {history && (
             <div className="mt-8 border-t border-gray-100 pt-6">
