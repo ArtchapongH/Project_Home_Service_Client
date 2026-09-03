@@ -4,6 +4,7 @@ import { useRef, useState, type FormEvent } from "react";
 import PasswordVisibilityToggle from "@/components/login/PasswordVisibilityToggle";
 import { changeMyPassword } from "@/services/profile.service";
 import { getChangePasswordErrorMessage } from "@/utils/getAuthErrorMessage";
+import { MIN_PASSWORD_LENGTH } from "@/utils/password";
 
 const inputClass =
   "w-full rounded-lg border border-gray-300 py-2.5 pl-3 pr-11 text-sm text-gray-900 outline-none focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500";
@@ -73,7 +74,7 @@ export function ChangePasswordCard() {
     setErrorMessage("");
     setSuccessMessage("");
 
-    if (newPassword.length < 6) {
+    if (newPassword.length < MIN_PASSWORD_LENGTH) {
       setErrorMessage("รหัสผ่านใหม่ต้องมีความยาวอย่างน้อย 6 ตัวอักษร");
       return;
     }

@@ -7,6 +7,7 @@ import LoginSubmitButton from "./LoginSubmitButton";
 import LoginTextField from "./LoginTextField";
 import { resetPasswordWithRecovery } from "@/services/auth.service";
 import { getResetPasswordErrorMessage } from "@/utils/getAuthErrorMessage";
+import { MIN_PASSWORD_LENGTH } from "@/utils/password";
 import {
   clearRecoveryParamsFromUrl,
   getRecoverySessionFromUrl,
@@ -51,7 +52,7 @@ export default function ResetPasswordForm() {
       return;
     }
 
-    if (newPassword.length < 6) {
+    if (newPassword.length < MIN_PASSWORD_LENGTH) {
       setErrorMessage("รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร");
       return;
     }
