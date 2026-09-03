@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Checkbox from "@mui/material/Checkbox";
 import { useTranslations } from "next-intl";
 import { useAuth } from "@/contexts/AuthContext";
+import { MIN_PASSWORD_LENGTH } from "@/utils/password";
 import FacebookLoginButton from "./FacebookLoginButton";
 import LoginCard from "./LoginCard";
 import LoginSubmitButton from "./LoginSubmitButton";
@@ -43,7 +44,7 @@ export default function RegisterForm() {
       return;
     }
 
-    if (password.length < 6) {
+    if (password.length < MIN_PASSWORD_LENGTH) {
       setErrorMessage(t("errors.passwordLength"));
       return;
     }
