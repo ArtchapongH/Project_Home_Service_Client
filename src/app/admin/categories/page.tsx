@@ -8,6 +8,7 @@ import { Category } from '@/types/category';
 import Link from 'next/link';
 import Image from 'next/image';
 import { deleteCategory, getCategories } from '@/lib/categoryApi';
+import DragVerticalIcon from '@/components/admin/DragVerticalIcon';
 
 export default function CategoryPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -138,7 +139,7 @@ export default function CategoryPage() {
         <table className="w-full text-left text-sm text-gray-600">
           <thead className="border-b border-gray-200 bg-[#EFEFEF] text-gray-500">
             <tr>
-              <th className="w-32 px-6 py-4 text-center font-normal text-xs text-gray-500">ลำดับ</th>
+              <th className="w-28 pl-8 pr-4 py-4 text-left font-normal text-xs text-gray-500">ลำดับ</th>
               <th className="px-6 py-4 font-normal text-xs text-gray-500">ชื่อหมวดหมู่</th>
               <th className="px-6 py-4 font-normal text-xs text-gray-500">สร้างเมื่อ</th>
               <th className="px-6 py-4 font-normal text-xs text-gray-500">แก้ไขล่าสุด</th>
@@ -172,8 +173,8 @@ export default function CategoryPage() {
                   onDrop={() => handleDrop(row.id)}
                   className={`transition-colors hover:bg-gray-50/50 ${draggedCategoryId === row.id ? "opacity-50" : ""}`}
                 >
-                  <td className="px-6 py-5">
-                    <div className="relative flex items-center justify-center">
+                  <td className="w-28 pl-8 pr-4 py-5">
+                    <div className="flex items-center gap-4">
                       <button
                         type="button"
                         draggable
@@ -183,20 +184,15 @@ export default function CategoryPage() {
                           event.dataTransfer.setData("text/plain", String(row.id));
                         }}
                         onDragEnd={() => setDraggedCategoryId(null)}
-                        className="absolute -left-5 top-1/2 -translate-y-1/2 cursor-grab touch-none text-gray-300 active:cursor-grabbing"
+                        className="p-1 -m-1 cursor-grab active:cursor-grabbing text-[#C8CCDB] hover:text-gray-600 active:text-[#3366FF] transition-colors"
                         title="ลากเพื่อสลับลำดับ"
                         aria-label={`สลับลำดับ ${row.name}`}
                       >
-                        <Image
-                          src="/dragvertical.svg"
-                          alt=""
-                          width={24}
-                          height={32}
-                          draggable={false}
-                          className="block"
-                        />
+                        <DragVerticalIcon />
                       </button>
-                      <span className="font-normal text-gray-800">{index + 1}</span>
+                      <span className="font-normal text-gray-800 tabular-nums">
+                        {index + 1}
+                      </span>
                     </div>
                   </td>
                   <td className="px-6 py-5 font-medium text-gray-900">
