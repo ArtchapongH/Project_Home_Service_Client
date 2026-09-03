@@ -89,7 +89,7 @@ export default function LoginForm() {
           <div className="mt-2 flex justify-end">
             <Link
               href="/forgot-password"
-              className="text-xs text-blue-500 underline sm:text-sm"
+              className="text-xs text-blue-500 underline decoration-1 underline-offset-2 transition-colors hover:text-blue-700 hover:decoration-2 sm:text-sm"
             >
               ลืมรหัสผ่าน?
             </Link>
