@@ -26,6 +26,13 @@ export async function clearChatbotHistory(): Promise<{ conversationId: string }>
   return response.data;
 }
 
-export function getChatbotError(_error: unknown, fallback: string): string {
+export function getChatbotError(
+  error: unknown,
+  fallback: string,
+  rateLimited?: string,
+): string {
+  const data = (error as { response?: { data?: { message?: string; code?: string } } })?.response
+    ?.data;
+  if (data?.code === "CHAT_RATE_LIMITED") return rateLimited || data.message || fallback;
   return fallback;
 }

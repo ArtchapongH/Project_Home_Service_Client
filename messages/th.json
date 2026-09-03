@@ -158,6 +158,7 @@
     "clearConfirm": "ต้องการล้างประวัติ AI Chat ทั้งหมดหรือไม่?",
     "historyError": "โหลดประวัติ AI Chat ไม่สำเร็จ",
     "sendError": "AI Assistant ไม่พร้อมใช้งาน กรุณาลองใหม่",
+    "rateLimited": "ข้อความมากเกินไป กรุณารอสักครู่แล้วลองใหม่อีกครั้ง",
     "clearError": "ล้างประวัติไม่สำเร็จ",
     "humanLoadRoomsError": "โหลดห้องแชทไม่สำเร็จ",
     "humanConnectionError": "เชื่อมต่อแชทไม่สำเร็จ",

@@ -101,7 +101,7 @@ export function ChatbotPanel({
       setMessages((current) => [...current, localMessage("assistant", response.message)]);
     } catch (sendError) {
       if (!controller.signal.aborted) {
-        setError(getChatbotError(sendError, t("sendError")));
+        setError(getChatbotError(sendError, t("sendError"), t("rateLimited")));
         setFailedRequest({ content, requestId });
       }
     } finally {

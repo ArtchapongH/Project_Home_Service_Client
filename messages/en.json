@@ -158,6 +158,7 @@
     "clearConfirm": "Clear your entire AI chat history?",
     "historyError": "Could not load AI chat history",
     "sendError": "AI Assistant is unavailable. Please try again.",
+    "rateLimited": "Too many requests. Please wait a moment and try again.",
     "clearError": "Could not clear chat history",
     "humanLoadRoomsError": "Could not load chat rooms",
     "humanConnectionError": "Could not connect to chat",
