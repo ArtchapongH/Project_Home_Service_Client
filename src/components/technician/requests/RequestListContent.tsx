@@ -18,10 +18,16 @@ interface RequestListContentProps {
 function UnavailableState() {
   return (
     <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-gray-200 bg-white p-5 text-center md:min-h-72 md:p-8">
-      <Bell size={42} className="text-blue-500" aria-hidden="true" />
+      <Bell
+        size={48}
+        fill="currentColor"
+        strokeWidth={0}
+        className="text-[#3366FF]"
+        aria-hidden="true"
+      />
       <h2 className="mt-4 font-semibold">ต้องการรับแจ้งเตือนคำขอบริการหรือไม่?</h2>
       <p className="mt-2 text-sm text-gray-500">
-        เปิดสถานะพร้อมรับบริการเพื่อดูงานที่ตรงกับบริการของคุณ
+        เปิดสถานะพร้อมรับบริการเพื่อแสดงรายการและรับงานซ่อมในบริเวณตำแหน่งที่คุณอยู่
       </p>
       <Link
         href="/technician/settings"
