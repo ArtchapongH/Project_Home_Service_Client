@@ -3,13 +3,18 @@
 import { useState } from "react";
 
 interface UserAvatarProps {
+  displayName?: string | null;
   fullName?: string | null;
   email?: string | null;
   avatarUrl?: string | null;
+  className?: string;
 }
 
-function getInitials(fullName?: string | null, email?: string | null): string {
-  const nameParts = fullName?.trim().split(/\s+/).filter(Boolean) ?? [];
+function getInitials(
+  name?: string | null,
+  email?: string | null,
+): string {
+  const nameParts = name?.trim().split(/\s+/).filter(Boolean) ?? [];
   if (nameParts.length > 0) {
     return nameParts.slice(0, 2).map((part) => part[0]).join("").toUpperCase();
   }
@@ -17,9 +22,10 @@ function getInitials(fullName?: string | null, email?: string | null): string {
   return email?.trim().slice(0, 1).toUpperCase() || "U";
 }
 
-export function UserAvatar({ fullName, email, avatarUrl }: UserAvatarProps) {
+export function UserAvatar({ displayName, fullName, email, avatarUrl, className = "" }: UserAvatarProps) {
   const [imageFailed, setImageFailed] = useState(false);
-  const initials = getInitials(fullName, email);
+  const resolvedName = displayName || fullName;
+  const initials = getInitials(resolvedName, email);
 
   if (avatarUrl && !imageFailed) {
     return (
@@ -27,17 +33,17 @@ export function UserAvatar({ fullName, email, avatarUrl }: UserAvatarProps) {
       // eslint-disable-next-line @next/next/no-img-element
       <img
         src={avatarUrl}
-        alt={`รูปโปรไฟล์ของ ${fullName || email || "ผู้ใช้"}`}
+        alt={`รูปโปรไฟล์ของ ${resolvedName || email || "ผู้ใช้"}`}
         onError={() => setImageFailed(true)}
-        className="h-8 w-8 rounded-full border border-gray-200 object-cover"
+        className={`h-7 w-7 rounded-full border border-gray-200 object-cover min-[801px]:h-8 min-[801px]:w-8 ${className}`}
       />
     );
   }
 
   return (
     <span
-      aria-label={`อักษรย่อของ ${fullName || email || "ผู้ใช้"}`}
-      className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700"
+      aria-label={`อักษรย่อของ ${resolvedName || email || "ผู้ใช้"}`}
+      className={`inline-flex h-7 w-7 items-center justify-center rounded-full bg-blue-100 text-[10px] font-bold text-blue-700 min-[801px]:h-8 min-[801px]:w-8 min-[801px]:text-xs ${className}`}
     >
       {initials}
     </span>

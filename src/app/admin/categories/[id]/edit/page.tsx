@@ -9,7 +9,9 @@ import { Category } from '@/types/category';
 import {
   deleteCategory,
   getCategory,
+  getCategoryTranslation,
   updateCategory,
+  upsertCategoryTranslation,
 } from '@/lib/categoryApi';
 
 interface EditCategoryPageProps {
@@ -23,6 +25,7 @@ export default function EditCategoryPage({ params }: EditCategoryPageProps) {
   const categoryId = resolvedParams.id;
 
   const [categoryName, setCategoryName] = useState('');
+  const [categoryNameEn, setCategoryNameEn] = useState('');
   const [categoryData, setCategoryData] = useState<Category | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -39,9 +42,13 @@ export default function EditCategoryPage({ params }: EditCategoryPageProps) {
       try {
         setLoading(true);
         setErrorMessage('');
-        const data = await getCategory(categoryId, controller.signal);
+        const [data, nameEn] = await Promise.all([
+          getCategory(categoryId, controller.signal),
+          getCategoryTranslation(categoryId, 'en', controller.signal),
+        ]);
         setCategoryData(data);
         setCategoryName(data.name);
+        setCategoryNameEn(nameEn);
       } catch (error) {
         if (controller.signal.aborted) return;
         console.error('Failed to fetch category:', error);
@@ -72,6 +79,7 @@ export default function EditCategoryPage({ params }: EditCategoryPageProps) {
       setIsSubmitting(true);
       setErrorMessage('');
       await updateCategory(categoryId, categoryName.trim());
+      await upsertCategoryTranslation(categoryId, categoryNameEn);
       router.push('/admin/categories');
       router.refresh();
     } catch (error) {
@@ -173,6 +181,24 @@ export default function EditCategoryPage({ params }: EditCategoryPageProps) {
                 value={categoryName}
                 onChange={(e) => setCategoryName(e.target.value)}
                 required
+                className="w-96 rounded-lg border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-800 transition-colors focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+
+            <div className="mt-4 flex items-center py-2">
+              <label
+                htmlFor="categoryNameEn"
+                className="w-36 text-sm font-medium text-gray-700"
+              >
+                ชื่อหมวดหมู่ (EN)
+              </label>
+
+              <input
+                id="categoryNameEn"
+                type="text"
+                value={categoryNameEn}
+                onChange={(e) => setCategoryNameEn(e.target.value)}
+                placeholder="e.g. Kitchen services"
                 className="w-96 rounded-lg border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-800 transition-colors focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>

@@ -18,6 +18,7 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import ClearIcon from "@mui/icons-material/Clear";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import { useTranslations } from "next-intl";
 import type { PublicCategory, PublicServiceSort } from "@/types/public-service";
 
 interface ServiceBannerProps {
@@ -30,15 +31,15 @@ interface ServiceBannerProps {
   onPriceRangeChange: (value: [number, number]) => void;
   sortBy: PublicServiceSort;
   onSortByChange: (value: PublicServiceSort) => void;
-  onSearchSubmit: () => void;
+  onSearchSubmit: (queryOverride?: string) => void;
   onClearSearch: () => void;
 }
 
-const SORT_OPTIONS: { label: string; value: PublicServiceSort }[] = [
-  { label: "บริการแนะนำ", value: "recommended" },
-  { label: "บริการยอดนิยม", value: "popular" },
-  { label: "ตามตัวอักษร (Ascending)", value: "asc" },
-  { label: "ตามตัวอักษร (Descending)", value: "desc" },
+const SORT_VALUES: PublicServiceSort[] = [
+  "recommended",
+  "popular",
+  "asc",
+  "desc",
 ];
 
 export function ServiceBanner({
@@ -54,9 +55,10 @@ export function ServiceBanner({
   onSearchSubmit,
   onClearSearch,
 }: ServiceBannerProps) {
+  const t = useTranslations("Services");
   const categoryOptions = [
-    { label: "บริการทั้งหมด", value: "all" },
-    ...categories.map((item) => ({ label: item.name, value: item.name })),
+    { label: t("allCategories"), value: "all" },
+    ...categories.map((item) => ({ label: item.name, value: item.id })),
   ];
   // Category Menu State
   const [categoryAnchorEl, setCategoryAnchorEl] = useState<null | HTMLElement>(null);
@@ -77,10 +79,9 @@ export function ServiceBanner({
   };
 
   const currentCategoryLabel =
-    categoryOptions.find((c) => c.value === category)?.label || "บริการทั้งหมด";
+    categoryOptions.find((c) => c.value === category)?.label || t("allCategories");
 
-  const currentSortLabel =
-    SORT_OPTIONS.find((s) => s.value === sortBy)?.label || "บริการแนะนำ";
+  const currentSortLabel = t(`sort.${sortBy}`);
 
   return (
     <Box component="section" sx={{ width: "100%" }}>
@@ -102,7 +103,7 @@ export function ServiceBanner({
               fontSize: "0.875rem",
             }}
           >
-            Service List
+            {t("breadcrumb")}
           </Typography>
         </div>
       </Box>
@@ -122,7 +123,7 @@ export function ServiceBanner({
         {/* Background Image */}
         <Image
           src="/images/services/banner-bg.jpg"
-          alt="บริการของเรา"
+          alt={t("bannerAlt")}
           fill
           priority
           sizes="100vw"
@@ -160,7 +161,7 @@ export function ServiceBanner({
               letterSpacing: "-0.02em",
             }}
           >
-            บริการของเรา
+            {t("title")}
           </Typography>
           <Typography
             variant="body1"
@@ -170,10 +171,11 @@ export function ServiceBanner({
               maxWidth: 600,
               mx: "auto",
               lineHeight: 1.6,
-              whiteSpace: "pre-line",
             }}
           >
-            {"ซ่อมเครื่องใช้ไฟฟ้า ซ่อมแอร์ ทำความสะอาดบ้าน และอื่น ๆ อีกมากมาย\nโดยพนักงานแม่บ้าน และช่างมืออาชีพ"}
+            {t.rich("subtitle", {
+              newline: () => <br />,
+            })}
           </Typography>
         </Box>
       </Box>
@@ -233,7 +235,7 @@ export function ServiceBanner({
                 }}
               />
               <InputBase
-                placeholder="ค้นหาบริการ.."
+                placeholder={t("searchPlaceholder")}
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
                 onKeyDown={handleKeyDown}
@@ -252,7 +254,7 @@ export function ServiceBanner({
                 <IconButton
                   size="small"
                   onClick={onClearSearch}
-                  aria-label="ล้างคำค้นหา"
+                  aria-label={t("clearSearch")}
                   sx={{ p: 0.5, color: "#94A3B8", "&:hover": { color: "#475569" } }}
                 >
                   <ClearIcon sx={{ fontSize: 16 }} />
@@ -283,7 +285,7 @@ export function ServiceBanner({
                     mb: 0.25,
                   }}
                 >
-                  หมวดหมู่บริการ
+                  {t("categoryLabel")}
                 </Typography>
                 <Box
                   onClick={(e) => setCategoryAnchorEl(e.currentTarget)}
@@ -392,7 +394,7 @@ export function ServiceBanner({
                     mb: 0.25,
                   }}
                 >
-                  ราคา
+                  {t("priceLabel")}
                 </Typography>
                 <Box
                   onClick={(e) => setPriceAnchorEl(e.currentTarget)}
@@ -562,7 +564,7 @@ export function ServiceBanner({
                     mb: 0.25,
                   }}
                 >
-                  เรียงตาม
+                  {t("sortLabel")}
                 </Typography>
                 <Box
                   onClick={(e) => setSortAnchorEl(e.currentTarget)}
@@ -619,13 +621,13 @@ export function ServiceBanner({
                   },
                 }}
               >
-                {SORT_OPTIONS.map((opt) => {
-                  const isSelected = sortBy === opt.value;
+                {SORT_VALUES.map((value) => {
+                  const isSelected = sortBy === value;
                   return (
                     <MenuItem
-                      key={opt.value}
+                      key={value}
                       onClick={() => {
-                        onSortByChange(opt.value);
+                        onSortByChange(value);
                         setSortAnchorEl(null);
                       }}
                       sx={{
@@ -642,7 +644,7 @@ export function ServiceBanner({
                         },
                       }}
                     >
-                      {opt.label}
+                      {t(`sort.${value}`)}
                     </MenuItem>
                   );
                 })}
@@ -651,7 +653,7 @@ export function ServiceBanner({
               {/* Search Button */}
               <Button
                 variant="contained"
-                onClick={onSearchSubmit}
+                onClick={() => onSearchSubmit()}
                 sx={{
                   bgcolor: "#3366FF",
                   color: "#FFFFFF",
@@ -669,7 +671,7 @@ export function ServiceBanner({
                   },
                 }}
               >
-                ค้นหา
+                {t("search")}
               </Button>
             </Box>
           </Paper>

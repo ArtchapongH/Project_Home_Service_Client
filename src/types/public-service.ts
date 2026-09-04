@@ -14,11 +14,23 @@ export interface PublicService {
   isFeatured: boolean;
   displayOrder: number;
   popularityScore: number;
+  orderCount?: number;
+  averageRating?: number;
+  reviewCount?: number;
 }
 
 export interface PublicServiceOption {
   id: string;
   name: string;
+  price: number;
+  unit: string;
+}
+
+export interface PublicServiceOptionRow {
+  service_id: string;
+  service_name: string;
+  option_id: string;
+  option_name: string;
   price: number;
   unit: string;
 }

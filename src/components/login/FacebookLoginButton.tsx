@@ -2,7 +2,11 @@
 
 import Button from "@mui/material/Button";
 
-export default function FacebookLoginButton() {
+type FacebookLoginButtonProps = {
+  label: string;
+};
+
+export default function FacebookLoginButton({ label }: FacebookLoginButtonProps) {
   const handleFacebookLogin = () => {
     // Connect Facebook login later
   };
@@ -13,12 +17,7 @@ export default function FacebookLoginButton() {
       variant="outlined"
       onClick={handleFacebookLogin}
       startIcon={
-        <svg
-          viewBox="0 0 24 24"
-          width="20"
-          height="20"
-          aria-hidden="true"
-        >
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
           <rect width="24" height="24" rx="5" fill="#1877F2" />
           <path
             fill="#fff"
@@ -35,7 +34,7 @@ export default function FacebookLoginButton() {
         color: "#3b82f6",
       }}
     >
-      เข้าสู่ระบบด้วย Facebook
+      {label}
     </Button>
   );
 }

@@ -98,3 +98,40 @@ export async function updateCategory(id: string, name: string) {
 export async function deleteCategory(id: number | string) {
   await apiClient.delete(`${CATEGORY_ENDPOINT}/${id}`);
 }
+
+function unwrapTranslationName(payload: unknown): string {
+  if (!payload || typeof payload !== 'object') return '';
+  const record = payload as { data?: { name?: string }; name?: string };
+  return (record.data?.name ?? record.name ?? '').trim();
+}
+
+export async function getCategoryTranslation(
+  id: string,
+  locale: 'en' = 'en',
+  signal?: AbortSignal,
+): Promise<string> {
+  try {
+    const response = await apiClient.get<unknown>(
+      `${CATEGORY_ENDPOINT}/${id}/translations/${locale}`,
+      { signal },
+    );
+    return unwrapTranslationName(response.data);
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.status === 404) {
+      return '';
+    }
+    throw error;
+  }
+}
+
+export async function upsertCategoryTranslation(
+  id: string,
+  name: string,
+  locale: 'en' = 'en',
+): Promise<void> {
+  const trimmed = name.trim();
+  if (!trimmed) return;
+  await apiClient.put(`${CATEGORY_ENDPOINT}/${id}/translations/${locale}`, {
+    name: trimmed,
+  });
+}

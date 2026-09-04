@@ -6,25 +6,35 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import apiClient from "@/services/apiClient";
+import { getAuthErrorMessage } from "@/utils/getAuthErrorMessage";
+
 
 export interface User {
   id: string | number;
   email: string;
   fullName: string;
+  displayName?: string;
+  firstName?: string | null;
+  lastName?: string | null;
   phone?: string | null;
   address?: string | null;
   avatarUrl?: string | null;
-  role: "USER" | "ADMIN" | string;
+  role: "USER" | "ADMIN" | "TECHNICIAN" | string;
 }
 
 interface RegisterData {
-  fullName: string;
+  fullName?: string;
+  displayName?: string;
+  firstName?: string;
+  lastName?: string;
   phone?: string;
   email: string;
   password: string;
+  acceptedTerms?: boolean;
 }
 
 interface AuthResult {
@@ -40,6 +50,7 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  isTechnician: boolean;
   login: (email: string, password: string) => Promise<AuthResult>;
   register: (data: RegisterData) => Promise<AuthResult>;
   logout: () => Promise<void>;
@@ -48,11 +59,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-function getErrorMessage(error: unknown, fallback: string): string {
-  return typeof error === "object" && error !== null && "message" in error
-    ? String(error.message)
-    : fallback;
-}
 
 function getAccessToken(data: unknown): string | null {
   if (typeof data !== "object" || data === null || !("session" in data)) {
@@ -72,6 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const registerRequestRef = useRef<Promise<AuthResult> | null>(null);
 
   const clearSession = useCallback(() => {
     localStorage.removeItem("token");
@@ -114,10 +121,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string): Promise<AuthResult> => {
     try {
-      const response = await apiClient.post("/auth/login", { email, password });
+      const response = await apiClient.post("/api/auth/login", { email, password });
       const accessToken = getAccessToken(response.data?.data);
       if (!accessToken) {
-        return { success: false, error: "ไม่พบข้อมูล Token จากเซิร์ฟเวอร์" };
+        return {
+          success: false,
+          error: "ไม่สามารถเข้าสู่ระบบได้ กรุณาลองใหม่อีกครั้ง",
+        };
       }
 
       localStorage.setItem("token", accessToken);
@@ -125,41 +135,68 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const profile = await fetchCurrentUser();
 
       if (!profile) {
-        return { success: false, error: "ไม่สามารถโหลดข้อมูลผู้ใช้หลังเข้าสู่ระบบ" };
+        return {
+          success: false,
+          error: "เข้าสู่ระบบแล้ว แต่ยังโหลดข้อมูลผู้ใช้ไม่ได้ กรุณาลองใหม่อีกครั้ง",
+        };
       }
 
       return { success: true, user: profile };
     } catch (error: unknown) {
-      return { success: false, error: getErrorMessage(error, "อีเมลหรือรหัสผ่านไม่ถูกต้อง") };
+      return { success: false, error: getAuthErrorMessage(error, "login") };
     }
   };
 
   const register = async (data: RegisterData): Promise<AuthResult> => {
-    try {
-      const response = await apiClient.post("/auth/register", data);
-      const responseData = response.data?.data;
-      const accessToken = getAccessToken(responseData);
-      const registeredUser = responseData?.user as User | undefined;
-      const requiresEmailConfirmation = Boolean(responseData?.requiresEmailConfirmation);
+    if (registerRequestRef.current) {
+      return registerRequestRef.current;
+    }
 
-      if (!accessToken) {
-        return { success: true, user: registeredUser, requiresEmailConfirmation };
+    const request = (async (): Promise<AuthResult> => {
+      try {
+        const response = await apiClient.post("/api/auth/register", data);
+        const responseData = response.data?.data;
+        const accessToken = getAccessToken(responseData);
+        const registeredUser = responseData?.user as User | undefined;
+        const requiresEmailConfirmation = Boolean(
+          responseData?.requiresEmailConfirmation,
+        );
+
+        if (!accessToken) {
+          return {
+            success: true,
+            user: registeredUser,
+            requiresEmailConfirmation,
+          };
+        }
+
+        localStorage.setItem("token", accessToken);
+        setToken(accessToken);
+        const profile = await fetchCurrentUser();
+        return profile
+          ? { success: true, user: profile }
+          : {
+              success: false,
+              error:
+                "ลงทะเบียนแล้ว แต่ยังเข้าสู่ระบบไม่ได้ กรุณาลองเข้าสู่ระบบอีกครั้ง",
+            };
+      } catch (error: unknown) {
+        return { success: false, error: getAuthErrorMessage(error, "register") };
       }
+    })();
 
-      localStorage.setItem("token", accessToken);
-      setToken(accessToken);
-      const profile = await fetchCurrentUser();
-      return profile
-        ? { success: true, user: profile }
-        : { success: false, error: "ไม่สามารถโหลดข้อมูลผู้ใช้หลังลงทะเบียน" };
-    } catch (error: unknown) {
-      return { success: false, error: getErrorMessage(error, "เกิดข้อผิดพลาดในการลงทะเบียน") };
+    registerRequestRef.current = request;
+
+    try {
+      return await request;
+    } finally {
+      registerRequestRef.current = null;
     }
   };
 
   const logout = async () => {
     try {
-      await apiClient.post("/auth/logout");
+      await apiClient.post("/api/auth/logout");
     } catch {
       // The browser session is still cleared even when the server is unavailable.
     } finally {
@@ -168,7 +205,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const isAuthenticated = !!user;
-  const isAdmin = user?.role?.toUpperCase() === "ADMIN";
+  const userRole = user?.role?.toUpperCase() ?? "";
+  const isAdmin = userRole === "ADMIN";
+  const isTechnician = userRole === "TECHNICIAN";
 
   return (
     <AuthContext.Provider
@@ -178,6 +217,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         isAuthenticated,
         isAdmin,
+        isTechnician,
         login,
         register,
         logout,

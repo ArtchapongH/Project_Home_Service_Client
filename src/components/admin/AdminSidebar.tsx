@@ -39,7 +39,7 @@ const AdminSidebar = () => {
     {
       key: "promotion",
       label: "Promotion Code",
-      href: "/admin/promotion",
+      href: "/admin/promotions",
       icon: promotionIcon,
     },
   ];
@@ -47,7 +47,7 @@ const AdminSidebar = () => {
   const getActiveItem = (): ActiveKey | null => {
     if (pathname.startsWith("/admin/categories")) return "category";
     if (pathname.startsWith("/admin/services")) return "service";
-    if (pathname.startsWith("/admin/promotion")) return "promotion";
+    if (pathname.startsWith("/admin/promotions") || pathname.startsWith("/admin/promotion")) return "promotion";
     return null;
   };
 
@@ -95,7 +95,7 @@ const AdminSidebar = () => {
         <button
           type="button"
           onClick={handleLogout}
-          className="flex h-12 w-full items-center gap-3.5 px-6 text-left text-sm font-medium text-gray-300 transition-colors hover:bg-[#022B8A]/60 hover:text-white"
+          className="flex h-12 w-full cursor-pointer items-center gap-3.5 px-6 text-left text-sm font-medium text-gray-300 transition-colors hover:bg-[#022B8A]/60 hover:text-white"
         >
           <Image src={logoutIcon} alt="ออกจากระบบ" className="h-5 w-5 object-contain opacity-90" />
           <span>ออกจากระบบ</span>
