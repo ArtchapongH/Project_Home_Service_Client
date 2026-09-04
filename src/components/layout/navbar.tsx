@@ -61,14 +61,14 @@ export function Navbar() {
     "flex items-center gap-2 rounded-[7px] px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100";
 
   return (
-    <header className="relative z-10 h-14 bg-white shadow-[0_2px_14px_rgb(23_51_109/8%)] min-[801px]:h-[72px]">
-      <div className="relative mx-auto flex h-full w-[min(1140px,calc(100%-24px))] items-center justify-between gap-1 min-[801px]:w-[min(1140px,calc(100%-48px))] min-[801px]:gap-4">
+    <header className="relative z-10 h-14 bg-white shadow-[0_2px_14px_rgb(23_51_109/8%)] lg:h-[72px]">
+      <div className="relative mx-auto flex h-full w-[min(1140px,calc(100%-24px))] items-center justify-between gap-1 lg:w-[min(1140px,calc(100%-48px))] lg:gap-4">
         <div className="flex min-w-0 items-center gap-6 lg:gap-10">
           <Link href="/" className="relative z-10 shrink-0" aria-label={t("homeAria")}>
             <HomeServicesLogo />
           </Link>
           <nav
-            className="hidden items-center gap-6 text-sm font-semibold min-[801px]:flex"
+            className="hidden items-center gap-6 text-sm font-semibold lg:flex"
             aria-label={t("mainMenu")}
           >
             <Link href="/services" className="whitespace-nowrap hover:text-blue-600">
@@ -97,13 +97,13 @@ export function Navbar() {
 
         <Link
           href="/services"
-          className="absolute left-1/2 z-10 -translate-x-1/2 whitespace-nowrap text-sm font-semibold text-gray-800 min-[801px]:hidden"
+          className="absolute left-1/2 z-10 -translate-x-1/2 whitespace-nowrap text-sm font-semibold text-gray-800 lg:hidden"
         >
           {t("services")}
         </Link>
 
-        <div className="relative z-10 flex shrink-0 items-center gap-1 min-[801px]:gap-3">
-          <div className="hidden min-[801px]:block">
+        <div className="relative z-10 flex shrink-0 items-center gap-1 lg:gap-3">
+          <div className="hidden lg:block">
             <LanguageSwitcher />
           </div>
           {isAuthenticated ? (
@@ -113,7 +113,7 @@ export function Navbar() {
                 className="flex min-w-0 items-center gap-2 text-sm font-medium text-gray-800 hover:text-blue-600"
                 aria-label={t("openProfile")}
               >
-                <span className="hidden max-w-32 truncate font-semibold text-gray-700 hover:text-blue-600 min-[801px]:inline sm:max-w-48">
+                <span className="hidden max-w-32 truncate font-semibold text-gray-700 hover:text-blue-600 lg:inline sm:max-w-48">
                   {user?.displayName || user?.fullName || user?.email}
                 </span>
                 <UserAvatar
@@ -125,15 +125,15 @@ export function Navbar() {
               </Link>
               <Link
                 href="/notifications"
-                className="flex size-8 cursor-pointer items-center justify-center rounded-full bg-[#eef1f7] text-gray-600 transition hover:bg-blue-100 hover:text-blue-600 min-[801px]:size-9"
+                className="flex size-8 cursor-pointer items-center justify-center rounded-full bg-[#eef1f7] text-gray-600 transition hover:bg-blue-100 hover:text-blue-600 lg:size-9"
                 aria-label={t("notifications")}
               >
-                <NotificationsNoneRoundedIcon className="text-[18px] min-[801px]:text-[20px]" />
+                <NotificationsNoneRoundedIcon className="text-[18px] lg:text-[20px]" />
               </Link>
               <button
                 type="button"
                 onClick={handleLogout}
-                className="hidden min-h-[42px] cursor-pointer items-center justify-center rounded-[7px] border border-gray-300 px-[18px] py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 min-[801px]:inline-flex"
+                className="hidden min-h-[42px] cursor-pointer items-center justify-center rounded-[7px] border border-gray-300 px-[18px] py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 lg:inline-flex"
               >
                 {t("logout")}
               </button>
@@ -142,11 +142,11 @@ export function Navbar() {
             <>
               <Link
                 href="/login"
-                className="inline-flex min-h-9 items-center justify-center rounded-[7px] border border-blue-500 px-3 py-1.5 text-sm font-medium text-blue-600 min-[801px]:hidden"
+                className="inline-flex min-h-9 items-center justify-center rounded-[7px] border border-blue-500 px-3 py-1.5 text-sm font-medium text-blue-600 lg:hidden"
               >
                 {t("login")}
               </Link>
-              <div className="hidden items-center gap-2 min-[801px]:flex">
+              <div className="hidden items-center gap-2 lg:flex">
                 <Link
                   href="/login"
                   className="inline-flex min-h-[42px] items-center justify-center rounded-[7px] border border-blue-500 px-[22px] py-2.5 text-sm font-medium text-blue-600 transition hover:-translate-y-px hover:bg-blue-100"
@@ -163,7 +163,7 @@ export function Navbar() {
             </>
           )}
 
-          <div className="relative min-[801px]:hidden" ref={menuRef}>
+          <div className="relative lg:hidden" ref={menuRef}>
             <button
               type="button"
               className="flex size-8 cursor-pointer items-center justify-center rounded-[7px] border border-gray-300 text-gray-700"
