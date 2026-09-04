@@ -62,9 +62,9 @@ export function Navbar() {
 
   return (
     <header className="relative z-10 h-14 bg-white shadow-[0_2px_14px_rgb(23_51_109/8%)] min-[801px]:h-[72px]">
-      <div className="mx-auto flex h-full w-[min(1140px,calc(100%-24px))] items-center justify-between gap-1 min-[801px]:w-[min(1140px,calc(100%-48px))] min-[801px]:gap-4">
+      <div className="relative mx-auto flex h-full w-[min(1140px,calc(100%-24px))] items-center justify-between gap-1 min-[801px]:w-[min(1140px,calc(100%-48px))] min-[801px]:gap-4">
         <div className="flex min-w-0 items-center gap-6 lg:gap-10">
-          <Link href="/" className="shrink-0" aria-label={t("homeAria")}>
+          <Link href="/" className="relative z-10 shrink-0" aria-label={t("homeAria")}>
             <HomeServicesLogo />
           </Link>
           <nav
@@ -95,8 +95,17 @@ export function Navbar() {
           </nav>
         </div>
 
-        <div className="flex shrink-0 items-center gap-1 min-[801px]:gap-3">
-          <LanguageSwitcher />
+        <Link
+          href="/services"
+          className="absolute left-1/2 z-10 -translate-x-1/2 whitespace-nowrap text-sm font-semibold text-gray-800 min-[801px]:hidden"
+        >
+          {t("services")}
+        </Link>
+
+        <div className="relative z-10 flex shrink-0 items-center gap-1 min-[801px]:gap-3">
+          <div className="hidden min-[801px]:block">
+            <LanguageSwitcher />
+          </div>
           {isAuthenticated ? (
             <>
               <Link
@@ -130,20 +139,28 @@ export function Navbar() {
               </button>
             </>
           ) : (
-            <div className="hidden items-center gap-2 min-[801px]:flex">
+            <>
               <Link
                 href="/login"
-                className="inline-flex min-h-[42px] items-center justify-center rounded-[7px] border border-blue-500 px-[22px] py-2.5 text-sm font-medium text-blue-600 transition hover:-translate-y-px hover:bg-blue-100"
+                className="inline-flex min-h-9 items-center justify-center rounded-[7px] border border-blue-500 px-3 py-1.5 text-sm font-medium text-blue-600 min-[801px]:hidden"
               >
                 {t("login")}
               </Link>
-              <Link
-                href="/register"
-                className="inline-flex min-h-[42px] items-center justify-center rounded-[7px] border border-transparent bg-blue-500 px-[22px] py-2.5 text-sm font-medium text-white transition hover:-translate-y-px hover:bg-blue-700"
-              >
-                {t("register")}
-              </Link>
-            </div>
+              <div className="hidden items-center gap-2 min-[801px]:flex">
+                <Link
+                  href="/login"
+                  className="inline-flex min-h-[42px] items-center justify-center rounded-[7px] border border-blue-500 px-[22px] py-2.5 text-sm font-medium text-blue-600 transition hover:-translate-y-px hover:bg-blue-100"
+                >
+                  {t("login")}
+                </Link>
+                <Link
+                  href="/register"
+                  className="inline-flex min-h-[42px] items-center justify-center rounded-[7px] border border-transparent bg-blue-500 px-[22px] py-2.5 text-sm font-medium text-white transition hover:-translate-y-px hover:bg-blue-700"
+                >
+                  {t("register")}
+                </Link>
+              </div>
+            </>
           )}
 
           <div className="relative min-[801px]:hidden" ref={menuRef}>

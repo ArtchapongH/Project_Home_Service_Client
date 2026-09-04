@@ -65,6 +65,7 @@ export interface TechnicianJob {
   categoryName: string;
   customerName: string | null;
   customerPhone: string | null;
+  notes?: string | null;
   items: TechnicianJobItem[];
   completionImages?: TechnicianJobCompletionImage[];
 }

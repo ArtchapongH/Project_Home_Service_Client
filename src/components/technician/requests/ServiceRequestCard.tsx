@@ -1,6 +1,6 @@
 import type { TechnicianJob } from "@/types/technician";
 import { DirectionsLink } from "@/components/technician/shared/DirectionsLink";
-import { formatBaht, formatThaiDateTime } from "@/utils/technician";
+import { formatBaht, formatJobItemSummary, formatThaiDateTime, getCustomerNotes } from "@/utils/technician";
 
 interface ServiceRequestCardProps {
   job: TechnicianJob;
@@ -9,21 +9,14 @@ interface ServiceRequestCardProps {
   onDecline: () => void;
 }
 
-function getItemSummary(job: TechnicianJob): string {
-  if (job.items.length === 0) return job.serviceName;
-
-  return job.items
-    .map((item) => `${item.optionName} ${item.quantity} ${item.unit}`)
-    .join(", ");
-}
-
 export function ServiceRequestCard({
   job,
   disabled,
   onAccept,
   onDecline,
 }: ServiceRequestCardProps) {
-  const itemSummary = getItemSummary(job);
+  const itemSummary = formatJobItemSummary(job);
+  const customerNotes = getCustomerNotes(job.notes);
 
   return (
     <article className="min-w-0 rounded-lg border border-gray-200 bg-white p-4 shadow-sm md:p-5">
@@ -40,7 +33,10 @@ export function ServiceRequestCard({
       </div>
       <dl className="mt-4 grid grid-cols-[88px_minmax(0,1fr)] gap-x-3 gap-y-3 text-lg sm:grid-cols-[120px_1fr] sm:gap-y-2">
         <dt className="text-gray-500">รายการ</dt>
-        <dd>{itemSummary}</dd>
+        <dd className="min-w-0 break-words">
+          <p>{itemSummary}</p>
+          {customerNotes ? <p className="mt-1 text-base text-gray-700">{customerNotes}</p> : null}
+        </dd>
         <dt className="text-gray-500">ราคารวม</dt>
         <dd>{formatBaht(job.totalPrice)}</dd>
         <dt className="text-gray-500">สถานที่</dt>
