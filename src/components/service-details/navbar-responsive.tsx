@@ -2,7 +2,6 @@
 
 import React from "react";
 import Link from "next/link";
-import NotificationsNoneRoundedIcon from "@mui/icons-material/NotificationsNoneRounded";
 import { HomeServicesLogo } from "../layout/home-services-logo";
 import { UserAvatar } from "../layout/UserAvatar";
 import { useAuth } from "@/contexts/AuthContext";
@@ -38,14 +37,6 @@ export default function NavbarResponsive() {
               email={user?.email}
               avatarUrl={user?.avatarUrl}
             />
-          </Link>
-
-          <Link
-            href="/notifications"
-            className="flex size-9 items-center justify-center rounded-full bg-[#eef1f7] text-gray-600 transition hover:bg-blue-100 hover:text-blue-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 min-[801px]:size-10"
-            aria-label="การแจ้งเตือน"
-          >
-            <NotificationsNoneRoundedIcon className="text-[20px] min-[801px]:text-[22px]" />
           </Link>
         </div>
       </div>

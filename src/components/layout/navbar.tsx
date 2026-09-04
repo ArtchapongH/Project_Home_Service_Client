@@ -11,7 +11,6 @@ import { UserAvatar } from "./UserAvatar";
 
 import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
-import NotificationsNoneRoundedIcon from "@mui/icons-material/NotificationsNoneRounded";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 
 export function Navbar() {
@@ -122,13 +121,6 @@ export function Navbar() {
                   email={user?.email}
                   avatarUrl={user?.avatarUrl}
                 />
-              </Link>
-              <Link
-                href="/notifications"
-                className="flex size-8 cursor-pointer items-center justify-center rounded-full bg-[#eef1f7] text-gray-600 transition hover:bg-blue-100 hover:text-blue-600 lg:size-9"
-                aria-label={t("notifications")}
-              >
-                <NotificationsNoneRoundedIcon className="text-[18px] lg:text-[20px]" />
               </Link>
               <button
                 type="button"
