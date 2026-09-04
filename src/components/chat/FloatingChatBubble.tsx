@@ -19,17 +19,18 @@ export function FloatingChatBubble() {
   const [mode, setMode] = useState<ChatMode>("menu");
   const panelRef = useRef<HTMLDivElement | null>(null);
   const launcherRef = useRef<HTMLButtonElement | null>(null);
-  const activeMode = isAuthenticated ? mode : "ai";
+  const staffMode = isAdmin || isTechnician;
+  const activeMode = staffMode ? "human" : isAuthenticated ? mode : "ai";
 
   useEffect(() => {
     if (isOpen) panelRef.current?.focus();
   }, [activeMode, isOpen]);
 
-  const hiddenRoute = /\/(login|register|admin|technician)(\/|$)/.test(pathname);
-  if (isLoading || hiddenRoute || isAdmin || isTechnician) return null;
+  const hiddenRoute = /\/(login|register)(\/|$)/.test(pathname);
+  if (isLoading || hiddenRoute) return null;
 
   function toggleChat() {
-    if (!isOpen) setMode(isAuthenticated ? "menu" : "ai");
+    if (!isOpen) setMode(staffMode ? "human" : isAuthenticated ? "menu" : "ai");
     setIsOpen((current) => !current);
   }
 
@@ -61,15 +62,17 @@ export function FloatingChatBubble() {
           border: "1px solid #dce5f5",
         }}
       >
-        <ChatbotPanel
-          key={isAuthenticated && user ? `user-${user.id}` : "guest"}
-          authenticated={isAuthenticated && Boolean(user)}
-          visible={activeMode === "ai"}
-          onBack={() => setMode("menu")}
-          onClose={closeChat}
-        />
+        {!staffMode && (
+          <ChatbotPanel
+            key={isAuthenticated && user ? `user-${user.id}` : "guest"}
+            authenticated={isAuthenticated && Boolean(user)}
+            visible={activeMode === "ai"}
+            onBack={() => setMode("menu")}
+            onClose={closeChat}
+          />
+        )}
 
-        {activeMode === "menu" && (
+        {!staffMode && activeMode === "menu" && (
           <Box sx={{ display: "flex", height: "100%", flexDirection: "column", bgcolor: "#f7f9fe" }}>
             <Box sx={{ display: "flex", alignItems: "center", minHeight: 68, px: 2, color: "white", background: "linear-gradient(135deg, #123a82 0%, #2d63f6 100%)" }}>
               <Box sx={{ flex: 1 }}><Typography sx={{ fontWeight: 700 }}>{t("menuTitle")}</Typography><Typography variant="caption" sx={{ color: "rgba(255,255,255,.8)" }}>{t("menuSubtitle")}</Typography></Box>
@@ -84,7 +87,12 @@ export function FloatingChatBubble() {
         )}
 
         {isOpen && activeMode === "human" && user && token && (
-          <HumanChatPanel user={user} token={token} onBack={() => setMode("menu")} onClose={closeChat} />
+          <HumanChatPanel
+            user={user}
+            token={token}
+            onBack={staffMode ? closeChat : () => setMode("menu")}
+            onClose={closeChat}
+          />
         )}
       </Paper>
 
