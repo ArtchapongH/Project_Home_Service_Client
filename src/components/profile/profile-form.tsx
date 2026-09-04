@@ -69,14 +69,14 @@ export function ProfileForm() {
     setMessage("");
 
     try {
-      const result = await updateMyProfile({
+      await updateMyProfile({
         fullName: form.fullName,
         email: form.email,
         phone: form.phone,
         avatarUrl: form.avatarUrl,
       });
       setStatus("ready");
-      setMessage(result.message || "บันทึกโปรไฟล์สำเร็จ");
+      setMessage("บันทึกโปรไฟล์สำเร็จ");
     } catch (error: unknown) {
       setStatus("error");
       setMessage(
