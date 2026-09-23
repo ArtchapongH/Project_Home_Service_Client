@@ -50,6 +50,7 @@ export default function MobileFooterThree({
   const [summaryExpanded, setSummaryExpanded] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentError, setPaymentError] = useState("");
+  const idempotencyKeyRef = React.useRef<string | null>(null);
   const router = useRouter();
   const stripe = useStripe();
   const elements = useElements();
@@ -147,6 +148,7 @@ export default function MobileFooterThree({
       );
     }
 
+    const idempotencyKey = getIdempotencyKey();
     await apiClient.post("/api/orders/checkout", {
         serviceId: checkoutServiceId,
         totalAmount: totAmount,
@@ -169,7 +171,14 @@ export default function MobileFooterThree({
           quantity: service.quantity,
           unitPrice: Number(service.price),
         })),
+    }, {
+      headers: { "Idempotency-Key": idempotencyKey },
     });
+  }
+
+  function getIdempotencyKey(): string {
+    idempotencyKeyRef.current ??= crypto.randomUUID();
+    return idempotencyKeyRef.current;
   }
 
   async function handleNext(): Promise<void> {
@@ -211,9 +220,11 @@ export default function MobileFooterThree({
     setPaymentError("");
 
     try {
-      const { data } = await apiClient.post<ApiResponse>("/api/payments/intent", {
-        amount: Math.round(totAmount * 100),
-      });
+      const { data } = await apiClient.post<ApiResponse>(
+        "/api/payments/intent",
+        { amount: Math.round(totAmount * 100) },
+        { headers: { "Idempotency-Key": getIdempotencyKey() } },
+      );
 
       const paymentIntentId = data.paymentIntentId ?? data.paymentIntent?.id;
       const clientSecret = data.clientSecret ?? data.client_secret;
