@@ -153,6 +153,8 @@
     "placeholder": "Try asking: How much is air-con cleaning?",
     "send": "Send message",
     "thinking": "Finding an answer...",
+    "recommendedServices": "Recommended services",
+    "serviceUnavailable": "No longer available",
     "retry": "Retry",
     "clear": "Clear history",
     "clearConfirm": "Clear your entire AI chat history?",

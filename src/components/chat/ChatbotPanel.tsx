@@ -4,13 +4,14 @@ import { type FormEvent, useEffect, useRef, useState } from "react";
 import { ArrowLeft, Bot, RotateCcw, Send, Trash2, X } from "lucide-react";
 import { Box, Button, CircularProgress, IconButton, Typography } from "@mui/material";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import {
   clearChatbotHistory,
   getChatbotError,
   getChatbotHistory,
   sendChatbotMessage,
 } from "@/services/chatbotApi";
-import type { ChatbotMessage } from "@/types/chatbot";
+import type { ChatbotMessage, ChatbotServiceLink } from "@/types/chatbot";
 
 interface ChatbotPanelProps {
   authenticated: boolean;
@@ -19,11 +20,12 @@ interface ChatbotPanelProps {
   onClose: () => void;
 }
 
-function localMessage(role: ChatbotMessage["role"], content: string): ChatbotMessage {
+function localMessage(role: ChatbotMessage["role"], content: string, serviceLinks: ChatbotServiceLink[] = []): ChatbotMessage {
   return {
     id: `local-${role}-${Date.now()}-${Math.random()}`,
     role,
     content,
+    serviceLinks,
     createdAt: new Date().toISOString(),
   };
 }
@@ -98,7 +100,7 @@ export function ChatbotPanel({
         controller.signal,
       );
       setConversationId(response.conversationId);
-      setMessages((current) => [...current, localMessage("assistant", response.message)]);
+      setMessages((current) => [...current, localMessage("assistant", response.message, response.serviceLinks)]);
     } catch (sendError) {
       if (!controller.signal.aborted) {
         setError(getChatbotError(sendError, t("sendError"), t("rateLimited")));
@@ -177,6 +179,24 @@ export function ChatbotPanel({
               <Box key={message.id} sx={{ display: "flex", justifyContent: mine ? "flex-end" : "flex-start", mb: 1.5 }}>
                 <Box sx={{ maxWidth: "84%", px: 1.5, py: 1, borderRadius: mine ? "16px 16px 4px 16px" : "16px 16px 16px 4px", bgcolor: mine ? "#2d63f6" : "white", color: mine ? "white" : "#263248", boxShadow: mine ? "none" : "0 2px 10px rgba(27,55,100,.08)", overflowWrap: "anywhere" }}>
                   <Typography sx={{ fontSize: 14, whiteSpace: "pre-wrap" }}>{message.content}</Typography>
+                  {!mine && Boolean(message.serviceLinks?.length) && (
+                    <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, mt: 1.25, pt: 1, borderTop: "1px solid #e6ebf3" }}>
+                      <Typography sx={{ fontSize: 12, fontWeight: 700, color: "#667085" }}>{t("recommendedServices")}</Typography>
+                      {message.serviceLinks?.map((service) => {
+                        const href = `/service-details/${service.id}`;
+                        const valid = /^\d+$/.test(service.id) && service.href === href;
+                        return service.available && valid ? (
+                          <Link key={service.id} href={href} style={{ color: "#2d63f6", fontSize: 13, textDecoration: "underline" }}>
+                            {service.name}
+                          </Link>
+                        ) : (
+                          <Typography key={service.id} component="span" sx={{ fontSize: 13, color: "#8791a3" }}>
+                            {service.name} — {t("serviceUnavailable")}
+                          </Typography>
+                        );
+                      })}
+                    </Box>
+                  )}
                 </Box>
               </Box>
             );
