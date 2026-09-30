@@ -6,12 +6,13 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import houseIcon from "@/assets/icons/house 1.png";
+import dashboardIcon from "@/assets/icons/dashboard_icon2.png";
 import categoryIcon from "@/assets/icons/category.png";
 import serviceIcon from "@/assets/icons/service.png";
 import promotionIcon from "@/assets/icons/promotion.png";
 import logoutIcon from "@/assets/icons/logout.png";
 
-type ActiveKey = "category" | "service" | "promotion" | "logout";
+type ActiveKey =  "category" | "service" | "promotion" | "dashboard" | "logout";
 
 const AdminSidebar = () => {
   const { logout } = useAuth();
@@ -42,13 +43,21 @@ const AdminSidebar = () => {
       href: "/admin/promotions",
       icon: promotionIcon,
     },
+    {
+      key: "dashboard",
+      label: "Dashboard",
+      href: "/admin/sales-dashboard",
+      icon: dashboardIcon,
+    },
   ];
 
   const getActiveItem = (): ActiveKey | null => {
     if (pathname.startsWith("/admin/categories")) return "category";
     if (pathname.startsWith("/admin/services")) return "service";
     if (pathname.startsWith("/admin/promotions") || pathname.startsWith("/admin/promotion")) return "promotion";
+    if (pathname.startsWith("/admin/sales-dashboard")) return "dashboard";
     return null;
+    
   };
 
   const currentActive = getActiveItem();
