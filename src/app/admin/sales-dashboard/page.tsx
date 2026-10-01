@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import Image from "next/image";
+// import Image from "next/image";
 import { BarChart } from "@mui/x-charts/BarChart";
 import { LineChart } from "@mui/x-charts/LineChart";
 import { DollarSign, ShoppingCart, Calendar } from "lucide-react";
-import adminAvatar from "@/assets/images/admin-dashboard-picture.png";
+// import adminAvatar from "@/assets/images/admin-dashboard-picture.png";
 import {
   fetchDashboardTotalSales,
   fetchDashboardTotalOrders,
@@ -249,13 +249,13 @@ export default function SalesDashboardPage() {
   return (
     <div className="min-h-screen w-full bg-[#F3F4F6] px-8 py-6">
       {/* Header */}
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+      <div className="mb-6 flex flex-col items-start gap-4 lg:flex-row lg:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
           <p className="mt-1 text-sm text-gray-500">Overview of your sales and orders</p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex w-full flex-wrap items-center justify-end gap-3 lg:w-auto">
           <div className="flex h-13 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 shadow-sm">
             <Calendar className="h-4 w-4 text-gray-400" />
             <div className="flex flex-col">
@@ -282,6 +282,7 @@ export default function SalesDashboardPage() {
               />
             </div>
           </div>
+          {/*
           <button
             type="button"
             className="flex h-13 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50"
@@ -289,6 +290,7 @@ export default function SalesDashboardPage() {
             <Image src={adminAvatar} alt="Admin" className="h-8 w-8 rounded-full object-cover" />
             Admin
           </button>
+          */}
         </div>
       </div>
 
