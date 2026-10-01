@@ -7,6 +7,32 @@ export function formatThaiDateTime(value: string | null): string {
   }).format(new Date(value));
 }
 
+export function formatJobItemSummary(job: {
+  serviceName: string;
+  items: Array<{ optionName: string; quantity: number; unit: string }>;
+}): string {
+  if (job.items.length === 0) return job.serviceName;
+
+  const details = job.items
+    .map((item) => {
+      const option = item.optionName.trim();
+      const quantity = `${item.quantity} ${item.unit}`.trim();
+      if (!option) return quantity;
+      return option.includes(quantity) ? option : `${option} ${quantity}`;
+    })
+    .join(", ");
+
+  return details.toLowerCase().includes(job.serviceName.toLowerCase())
+    ? details
+    : `${job.serviceName} ${details}`;
+}
+
+export function getCustomerNotes(value?: string | null): string | null {
+  const notes = value?.trim();
+  if (!notes || notes === "-" || notes === "ไม่มี") return null;
+  return notes;
+}
+
 export function formatBaht(value: number | null): string {
   return new Intl.NumberFormat("th-TH", {
     style: "currency",

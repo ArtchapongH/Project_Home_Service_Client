@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Bell, ClipboardList, History, LogOut, Menu, Settings, Wrench, X } from "lucide-react";
+import { Bell, ClipboardList, History, Home, LogOut, Menu, Settings, Wrench, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTechnician } from "@/contexts/TechnicianContext";
 
@@ -80,8 +80,9 @@ export function TechnicianSidebar() {
       </aside>
 
       <header className="fixed inset-x-0 top-0 z-30 flex h-16 items-center justify-between bg-[#062968] px-4 text-white shadow-sm md:hidden">
-        <Link href="/" aria-label="HomeServices" className="inline-flex h-9 items-center gap-2 rounded-md bg-white px-3 text-xs font-semibold text-blue-600">
-          <Wrench size={16} /> HomeServices
+        <Link href="/" aria-label="HomeServices" className="inline-flex h-9 items-center gap-1.5 rounded-full bg-[#E8EEFF] px-3 text-sm font-medium text-[#336df2]">
+          <Home size={16} aria-hidden="true" />
+          HomeServices
         </Link>
         <span className="mx-3 truncate text-sm font-medium">{activeItem?.label ?? "ช่างบริการ"}</span>
         <button type="button" aria-label="เปิดเมนู" aria-expanded={open} aria-controls="technician-mobile-menu" onClick={() => setOpen(true)} className="inline-flex size-11 shrink-0 items-center justify-center rounded-lg hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
@@ -92,11 +93,8 @@ export function TechnicianSidebar() {
       {open && (
         <div className="fixed inset-0 z-50 md:hidden">
           <button type="button" aria-label="ปิดเมนู" onClick={() => setOpen(false)} className="absolute inset-0 bg-black/45" />
-          <aside id="technician-mobile-menu" role="dialog" aria-modal="true" aria-label="เมนูช่างบริการ" className="relative flex h-full w-[min(82vw,320px)] flex-col bg-[#062968] py-4 text-white shadow-xl">
-            <div className="flex items-center justify-between px-4">
-              <Link href="/" onClick={() => setOpen(false)} className="flex h-10 items-center gap-2 rounded-lg bg-white px-4 font-semibold text-blue-600">
-                <Wrench size={18} /> HomeServices
-              </Link>
+          <aside id="technician-mobile-menu" role="dialog" aria-modal="true" aria-label="เมนูช่างบริการ" className="absolute right-0 top-0 flex h-full w-[min(70vw,320px)] flex-col bg-[#062968] py-4 text-white shadow-xl">
+            <div className="flex items-center px-4">
               <button ref={closeButtonRef} type="button" aria-label="ปิดเมนู" onClick={() => setOpen(false)} className="inline-flex size-11 items-center justify-center rounded-lg hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
                 <X size={24} />
               </button>

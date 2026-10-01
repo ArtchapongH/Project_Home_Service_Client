@@ -1,9 +1,31 @@
 import { describe, expect, it } from "vitest";
 import {
+  formatJobItemSummary,
   getDirectionsUrl,
   getDistanceKm,
   isJobWithinRadius,
 } from "@/utils/technician";
+
+describe("formatJobItemSummary", () => {
+  it("combines the service name with the options the customer selected", () => {
+    expect(
+      formatJobItemSummary({
+        serviceName: "ล้างแอร์",
+        items: [
+          {
+            optionName: "9,000 - 18,000 BTU, ติดผนัง",
+            quantity: 2,
+            unit: "เครื่อง",
+          },
+        ],
+      }),
+    ).toBe("ล้างแอร์ 9,000 - 18,000 BTU, ติดผนัง 2 เครื่อง");
+  });
+
+  it("falls back to the service name when there are no items", () => {
+    expect(formatJobItemSummary({ serviceName: "ล้างแอร์", items: [] })).toBe("ล้างแอร์");
+  });
+});
 
 describe("getDirectionsUrl", () => {
   it("prefers coordinates when available", () => {

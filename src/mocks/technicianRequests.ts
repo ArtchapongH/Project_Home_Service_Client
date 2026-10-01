@@ -90,7 +90,11 @@ export async function getMockTechnicianRequests(
   filters: TechnicianListFilters = {},
 ): Promise<{ data: TechnicianJob[]; meta: ApiListMeta }> {
   await waitForMock();
-  const data = filterJobs(availableRequests, filters);
+  const data = filterJobs(availableRequests, filters).sort((left, right) => {
+    const leftTime = left.scheduledAt ? new Date(left.scheduledAt).getTime() : 0;
+    const rightTime = right.scheduledAt ? new Date(right.scheduledAt).getTime() : 0;
+    return rightTime - leftTime || Number(right.orderId) - Number(left.orderId);
+  });
   return {
     data: structuredClone(data),
     meta: { total: data.length, isAvailable: true },

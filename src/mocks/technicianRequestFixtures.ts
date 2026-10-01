@@ -27,6 +27,7 @@ export const INITIAL_REQUESTS: TechnicianJob[] = [
         unit: "เครื่อง",
       },
     ],
+    notes: "ฝาบนหมุนแล้วมีเสียงดัง",
   },
   {
     orderId: "102",

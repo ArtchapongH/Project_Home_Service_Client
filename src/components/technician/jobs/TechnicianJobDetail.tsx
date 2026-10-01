@@ -16,7 +16,7 @@ import type {
   TechnicianJob,
   TechnicianJobCompletionImage,
 } from "@/types/technician";
-import { formatBaht, formatThaiDateTime } from "@/utils/technician";
+import { formatBaht, formatJobItemSummary, formatThaiDateTime, getCustomerNotes } from "@/utils/technician";
 
 export function TechnicianJobDetail({ assignmentId, history = false }: { assignmentId: string; history?: boolean }) {
   const [job, setJob] = useState<TechnicianJob | null>(null);
@@ -97,7 +97,8 @@ export function TechnicianJobDetail({ assignmentId, history = false }: { assignm
 
   if (error) return <div className="p-4 text-sm text-red-600 md:p-8">{error}</div>;
   if (!job) return <div className="p-4 text-sm text-gray-500 md:p-8">กำลังโหลดรายละเอียด...</div>;
-  const itemText = job.items.length ? job.items.map((item) => `${item.optionName} ${item.quantity} ${item.unit}`).join(", ") : job.serviceName;
+  const itemText = formatJobItemSummary(job);
+  const customerNotes = getCustomerNotes(job.notes);
   const completionImages =
     job.completionImages?.filter(
       (
@@ -130,7 +131,11 @@ export function TechnicianJobDetail({ assignmentId, history = false }: { assignm
           <h2 className="text-lg font-semibold">{job.serviceName}</h2>
           <dl className="mt-6 grid gap-x-8 gap-y-2 text-sm md:grid-cols-[180px_minmax(0,1fr)] md:gap-y-5">
             <dt className="text-gray-500">หมวดหมู่</dt><dd><span className="rounded-full bg-blue-50 px-3 py-1 text-xs text-blue-600">{job.categoryName}</span></dd>
-            <dt className="mt-2 text-gray-500 first:mt-0 md:mt-0">รายการ</dt><dd className="wrap-break-word">{itemText}</dd>
+            <dt className="mt-2 text-gray-500 first:mt-0 md:mt-0">รายการ</dt>
+            <dd className="wrap-break-word">
+              <p>{itemText}</p>
+              {customerNotes ? <p className="mt-1 text-gray-700">{customerNotes}</p> : null}
+            </dd>
             <dt className="text-gray-500">วันเวลานัดหมาย</dt><dd>{formatThaiDateTime(job.scheduledAt)}</dd>
             <dt className="text-gray-500">สถานที่</dt><dd className="wrap-break-word">{job.address || "ยังไม่ระบุ"}<div className="mt-1"><DirectionsLink latitude={job.serviceLatitude} longitude={job.serviceLongitude} address={job.address} /></div></dd>
             <dt className="text-gray-500">รหัสคำสั่งซื้อ</dt><dd className="break-all">{job.orderCode}</dd>

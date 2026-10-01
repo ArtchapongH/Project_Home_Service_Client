@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useContext, useEffect, useMemo, useRef } from "react";
+import React, { useContext, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { PaymentContext } from "@/app/service-details/layout";
-import { saveLocalStoredOrder } from "@/services/customerOrderApi";
 import { formatCurrency } from "@/utils/formatCurrency";
 import { formatThaiServiceDate, formatThaiServiceTime } from "@/utils/serviceSchedule";
 
@@ -16,13 +15,12 @@ export interface PaymentSuccessProps {
 export function PaymentSuccess({ orderListHref = "/customer-services" }: PaymentSuccessProps) {
   const payment = useContext(PaymentContext);
   const router = useRouter();
-  const isSavedRef = useRef(false);
 
   if (!payment) {
     throw new Error("PaymentSuccess must be rendered inside PaymentProvider");
   }
 
-  const { serviceDetail, serviceFormData, totAmount, discount, resetPayment } = payment;
+  const { serviceDetail, serviceFormData, totAmount, resetPayment } = payment;
   const selectedServices = useMemo(
     () => serviceDetail.filter((service) => Number(service.quantity) > 0),
     [serviceDetail],
@@ -42,31 +40,6 @@ export function PaymentSuccess({ orderListHref = "/customer-services" }: Payment
   ]
     .filter(Boolean)
     .join(" ");
-
-  useEffect(() => {
-    if (isSavedRef.current || selectedServices.length === 0) return;
-
-    isSavedRef.current = true;
-    saveLocalStoredOrder({
-      id: `ord-${Date.now()}`,
-      orderCode: `AD${Math.floor(10000000 + Math.random() * 90000000)}`,
-      status: "pending",
-      statusText: "รอดำเนินการ",
-      scheduledDate: formatThaiServiceDate(serviceFormData.serviceDate),
-      scheduledTime: formatThaiServiceTime(serviceFormData.serviceTime),
-      address,
-      totalPrice: totAmount,
-      discount,
-      items: selectedServices.map((service, index) => ({
-        id: `item-${service.option_id || index}`,
-        name: service.option_name,
-        quantity: service.quantity,
-        unit: service.unit,
-        price: Number(service.price) || 0,
-      })),
-      createdAt: new Date().toISOString(),
-    });
-  }, [address, discount, selectedServices, serviceFormData.serviceDate, serviceFormData.serviceTime, totAmount]);
 
   return (
     <section className="flex min-h-[calc(100vh-72px)] items-center justify-center bg-[#F3F4F6] px-4 py-8 sm:py-12">
