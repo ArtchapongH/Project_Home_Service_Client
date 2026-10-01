@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import houseIcon from "@/assets/icons/house 1.png";
-import dashboardIcon from "@/assets/icons/dashboard_icon2.png";
+import dashboardIcon from "@/assets/icons/dashboard_icon3.png";
 import categoryIcon from "@/assets/icons/category.png";
 import serviceIcon from "@/assets/icons/service.png";
 import promotionIcon from "@/assets/icons/promotion.png";
@@ -93,7 +93,11 @@ const AdminSidebar = () => {
                   : "text-gray-300 hover:bg-[#022B8A]/60 hover:text-white"
               }`}
             >
-              <Image src={item.icon} alt={item.label} className="h-5 w-5 object-contain opacity-90" />
+              <Image
+                src={item.icon}
+                alt={item.label}
+                className={`${item.key === "dashboard" ? "h-6 w-6" : "h-5 w-5"} object-contain opacity-90`}
+              />
               <span>{item.label}</span>
             </Link>
           );
