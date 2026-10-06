@@ -1,10 +1,12 @@
 "use client";
 
 import { MapPin } from "lucide-react";
+import { formatThaiDateTime } from "@/utils/technician";
 
 interface CurrentLocationBannerProps {
   address: string | null;
   hasCoordinates: boolean;
+  locationUpdatedAt: string | null;
   loading: boolean;
   message: string | null;
   onRefresh: () => void;
@@ -13,6 +15,7 @@ interface CurrentLocationBannerProps {
 export function CurrentLocationBanner({
   address,
   hasCoordinates,
+  locationUpdatedAt,
   loading,
   message,
   onRefresh,
@@ -27,8 +30,13 @@ export function CurrentLocationBanner({
         <div>
           <h2 className="text-sm font-semibold text-blue-700">ตำแหน่งที่อยู่ปัจจุบัน</h2>
           <p className="mt-0.5 text-sm text-blue-700">
-            {address?.trim() || (hasCoordinates ? "อัปเดตพิกัดแล้ว" : "ยังไม่มีที่อยู่ในบัญชี กรุณาบันทึกที่หน้าตั้งค่า")}
+            {hasCoordinates ? address?.trim() || "มีพิกัดที่บันทึกไว้" : "ยังไม่มีพิกัด กรุณากดรีเฟรชเพื่อรับตำแหน่งปัจจุบัน"}
           </p>
+          {hasCoordinates ? (
+            <p className="mt-1 text-xs text-blue-800">
+              ตำแหน่งที่บันทึกไว้ · อัปเดตล่าสุด {formatThaiDateTime(locationUpdatedAt)}
+            </p>
+          ) : null}
         </div>
       </div>
       <button

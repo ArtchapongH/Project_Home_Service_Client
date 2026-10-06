@@ -1,5 +1,8 @@
 "use client";
 
+import { useState } from "react";
+import type { TechnicianJob } from "@/types/technician";
+import { RequestMapDialog } from "@/components/technician/requests/RequestMapDialog";
 import { AcceptRequestDialog } from "@/components/technician/requests/AcceptRequestDialog";
 import { CurrentLocationBanner } from "@/components/technician/requests/CurrentLocationBanner";
 import { RequestFilters } from "@/components/technician/requests/RequestFilters";
@@ -9,6 +12,7 @@ import { useTechnicianRequests } from "@/hooks/useTechnicianRequests";
 import { formatThaiDateTime } from "@/utils/technician";
 
 export default function TechnicianRequestsPage() {
+  const [mapJob, setMapJob] = useState<TechnicianJob | null>(null);
   const {
     profile,
     requests,
@@ -52,6 +56,7 @@ export default function TechnicianRequestsPage() {
           <CurrentLocationBanner
             address={profile?.address ?? null}
             hasCoordinates={hasCoordinates}
+            locationUpdatedAt={profile?.locationUpdatedAt ?? null}
             loading={isUpdatingLocation}
             message={locationMessage}
             onRefresh={() => void refreshLocation()}
@@ -84,8 +89,11 @@ export default function TechnicianRequestsPage() {
           activeRequestId={activeRequestId}
           onAccept={selectRequestToAccept}
           onDecline={(request) => void declineRequest(request)}
+          onViewMap={setMapJob}
         />
       </section>
+
+      <RequestMapDialog job={mapJob} profile={profile} onClose={() => setMapJob(null)} />
 
       <AcceptRequestDialog
         open={Boolean(selectedRequest)}

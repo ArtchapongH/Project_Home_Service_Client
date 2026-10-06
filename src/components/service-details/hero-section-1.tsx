@@ -9,7 +9,7 @@ import Image from "next/image";
 import { useLocale } from "next-intl";
 import serviceDetailBanner from "@/assets/images/service-detail-banner.png";
 import MobileFooter from "./mobile-footer";
-import { PaymentContext } from "@/app/service-details/layout";
+import { PaymentContext } from "@/contexts/PaymentContext";
 import { ServiceReviewsSection } from "@/components/services/ServiceReviewsSection";
 import {
   getPublicServiceOptions,

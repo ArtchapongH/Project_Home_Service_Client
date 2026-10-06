@@ -4,7 +4,7 @@ import React, { useContext, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { PaymentContext } from "@/app/service-details/layout";
+import { PaymentContext } from "@/contexts/PaymentContext";
 import { formatCurrency } from "@/utils/formatCurrency";
 import { formatThaiServiceDate, formatThaiServiceTime } from "@/utils/serviceSchedule";
 
