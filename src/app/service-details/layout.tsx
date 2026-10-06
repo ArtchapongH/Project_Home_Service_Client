@@ -8,7 +8,7 @@ import { Elements } from "@stripe/react-stripe-js";
 import { ProtectedRoute } from "@/components/common/ProtectedRoute";
 
 const stripePromise = loadStripe(
-  "pk_test_51U8I9tEcKQ4tElnOs6okgrxrdwBjLm1FIbeOt6xks4BzJ58YUH1OIOUlAsgJyUqUtNEzOHAYQSayXLV41hKrEoYO00YdOhLRrj"
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? ""
 );
 
 type PaymentContextValue = {

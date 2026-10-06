@@ -3,6 +3,8 @@ import React from "react";
 import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import CreditCardOutlinedIcon from "@mui/icons-material/CreditCardOutlined";
 import QrCode2RoundedIcon from "@mui/icons-material/QrCode2Rounded";
+import Alert from "@mui/material/Alert";
+import Snackbar from "@mui/material/Snackbar";
 import Image from "next/image";
 import serviceDetailBanner from "@/assets/images/service-detail-banner.png";
 import MobileFooterThree from "./mobile-footer3";
@@ -37,6 +39,10 @@ export default function HeroSectionThree() {
 	const { user } = useAuth();
 
 	const [promotion, setPromotion] = React.useState<PromotionResponse | null>(null);
+	const [promotionToast, setPromotionToast] = React.useState<{
+		message: string;
+		severity: "success" | "error";
+	} | null>(null);
 
 	if (!payment) {
 		throw new Error("HeroSection must be rendered inside PaymentProvider");
@@ -76,11 +82,11 @@ export default function HeroSectionThree() {
 				const errorMessage = errorData.message || `Request failed with status ${response.status}`;
 				
 				if (response.status === 404) {
-					alert("ไม่พบโค้ดส่วนลดนี้ กรุณาตรวจสอบอีกครั้ง");
+					setPromotionToast({ message: "ไม่พบโค้ดส่วนลดนี้ กรุณาตรวจสอบอีกครั้ง", severity: "error" });
 				} else if (response.status === 400) {
-					alert("โค้ดส่วนลดนี้ถูกใช้งานหมดแล้ว");
+					setPromotionToast({ message: "โค้ดส่วนลดนี้ถูกใช้งานหมดแล้ว", severity: "error" });
 				} else {
-					alert(`เกิดข้อผิดพลาด: ${errorMessage}`);
+					setPromotionToast({ message: `เกิดข้อผิดพลาด: ${errorMessage}`, severity: "error" });
 				}
 				console.error("Failed to apply promotion code:", errorMessage);
 				return;
@@ -110,10 +116,10 @@ export default function HeroSectionThree() {
 			const newTotAmount = totAmount - discountAmount;
 			setTotAmount(newTotAmount);
 			
-			alert("ใช้โค้ดส่วนลดสำเร็จ!");
+			setPromotionToast({ message: "ใช้โค้ดส่วนลดสำเร็จ!", severity: "success" });
 		} catch (error) {
 			console.error("Failed to apply promotion code:", error);
-			alert("เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์");
+			setPromotionToast({ message: "เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์", severity: "error" });
 		}
 	}
 
@@ -196,6 +202,20 @@ export default function HeroSectionThree() {
 
 				<MobileFooterThree promotion={promotion}/>
 			</div>
+			<Snackbar
+				open={promotionToast !== null}
+				autoHideDuration={4000}
+				anchorOrigin={{ vertical: "top", horizontal: "center" }}
+				onClose={() => setPromotionToast(null)}
+			>
+				<Alert
+					severity={promotionToast?.severity ?? "success"}
+					variant="filled"
+					onClose={() => setPromotionToast(null)}
+				>
+					{promotionToast?.message}
+				</Alert>
+			</Snackbar>
 		</section>
 	);
 }
