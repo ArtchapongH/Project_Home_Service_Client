@@ -1,15 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTechnician } from "@/contexts/TechnicianContext";
 import {
   acceptTechnicianRequest,
   declineTechnicianRequest,
   getTechnicianApiError,
-  getTechnicianProfile,
   getTechnicianRequests,
+  updateTechnicianLocation,
 } from "@/services/technicianApi";
 import type { TechnicianJob, TechnicianProfile } from "@/types/technician";
+import { hasValidCoordinates, readBrowserLocation, reverseGeocodeAddress } from "@/utils/technicianLocation";
 
 const SEARCH_DEBOUNCE_MS = 250;
 
@@ -47,10 +48,28 @@ export function useTechnicianRequests(): UseTechnicianRequestsResult {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isUpdatingLocation, setIsUpdatingLocation] = useState(false);
   const [locationMessage, setLocationMessage] = useState<string | null>(null);
+  const [locationRevision, setLocationRevision] = useState(0);
+  const requestGeneration = useRef(0);
+  const locationInFlight = useRef(false);
+  const attemptedInitialLocation = useRef(false);
+  const profileRef = useRef(profile);
+  const mounted = useRef(false);
+
+  useEffect(() => {
+    profileRef.current = profile;
+  }, [profile]);
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      requestGeneration.current += 1;
+    };
+  }, []);
 
   const technicianLatitude = profile?.latitude ?? null;
   const technicianLongitude = profile?.longitude ?? null;
-  const hasCoordinates = technicianLatitude !== null && technicianLongitude !== null;
+  const hasCoordinates = hasValidCoordinates(technicianLatitude, technicianLongitude);
 
   const clearRequests = useCallback(() => {
     setRequests([]);
@@ -59,7 +78,8 @@ export function useTechnicianRequests(): UseTechnicianRequestsResult {
   }, [setRequestCount]);
 
   const loadRequests = useCallback(async () => {
-    if (!profile?.isAvailable || technicianLatitude === null || technicianLongitude === null) {
+    const generation = ++requestGeneration.current;
+    if (!profile?.isAvailable || !hasCoordinates || technicianLatitude === null || technicianLongitude === null) {
       clearRequests();
       return;
     }
@@ -75,15 +95,18 @@ export function useTechnicianRequests(): UseTechnicianRequestsResult {
         longitude: technicianLongitude,
       });
 
+      if (!mounted.current || generation !== requestGeneration.current) return;
       setRequests(result.data);
       setRequestCount(result.meta.total);
     } catch (requestError) {
+      if (!mounted.current || generation !== requestGeneration.current) return;
       setErrorMessage(getTechnicianApiError(requestError).message);
     } finally {
-      setIsLoadingRequests(false);
+      if (mounted.current && generation === requestGeneration.current) setIsLoadingRequests(false);
     }
   }, [
     clearRequests,
+    hasCoordinates,
     profile?.isAvailable,
     searchText,
     selectedServiceId,
@@ -91,34 +114,62 @@ export function useTechnicianRequests(): UseTechnicianRequestsResult {
     technicianLatitude,
     technicianLongitude,
   ]);
+  const loadRequestsRef = useRef(loadRequests);
+  useEffect(() => {
+    loadRequestsRef.current = loadRequests;
+  }, [loadRequests]);
 
   // หน่วงการค้นหาเล็กน้อย เพื่อไม่ยิง API ทุกครั้งที่พิมพ์หนึ่งตัวอักษร
   useEffect(() => {
     const timeoutId = window.setTimeout(() => void loadRequests(), SEARCH_DEBOUNCE_MS);
-    return () => window.clearTimeout(timeoutId);
-  }, [loadRequests]);
+    return () => {
+      window.clearTimeout(timeoutId);
+      requestGeneration.current += 1;
+    };
+  }, [loadRequests, locationRevision]);
 
   const refreshLocation = useCallback(async () => {
+    const currentProfile = profileRef.current;
+    if (!currentProfile || locationInFlight.current) return;
+    locationInFlight.current = true;
     setIsUpdatingLocation(true);
     setLocationMessage(null);
 
     try {
-      const nextProfile = await getTechnicianProfile();
-      setProfile(nextProfile);
-
-      const hasSavedCoordinates =
-        nextProfile.latitude !== null && nextProfile.longitude !== null;
-      setLocationMessage(
-        hasSavedCoordinates
-          ? "อัปเดตตำแหน่งจากบัญชีแล้ว"
-          : "ยังไม่มีพิกัดในระบบ กรุณากดรับพิกัดที่หน้าตั้งค่าบัญชีผู้ใช้",
-      );
+      const coordinates = await readBrowserLocation();
+      const address = await reverseGeocodeAddress(coordinates.latitude, coordinates.longitude);
+      if (!mounted.current || profileRef.current?.technicianId !== currentProfile.technicianId) return;
+      const location = await updateTechnicianLocation({ ...coordinates, address });
+      const latestProfile = profileRef.current;
+      if (!mounted.current || latestProfile?.technicianId !== currentProfile.technicianId) return;
+      if (!hasValidCoordinates(location.latitude, location.longitude)) {
+        throw new Error("ข้อมูลพิกัดที่บันทึกไม่ถูกต้อง กรุณาลองใหม่");
+      }
+      requestGeneration.current += 1;
+      setRequests([]);
+      setRequestCount(0);
+      setIsLoadingRequests(true);
+      setProfile({ ...latestProfile, ...location, address: location.address ?? address });
+      setLocationRevision((revision) => revision + 1);
+      setLocationMessage("บันทึกพิกัดและที่อยู่ปัจจุบันแล้ว");
     } catch (locationError) {
-      setLocationMessage(getTechnicianApiError(locationError).message);
+      if (!mounted.current) return;
+      const saved = profileRef.current;
+      const fallback = hasValidCoordinates(saved?.latitude, saved?.longitude)
+        ? "กำลังใช้ตำแหน่งที่บันทึกไว้"
+        : "ยังไม่มีพิกัด กรุณากดรีเฟรชเพื่อลองใหม่";
+      setLocationMessage(`${getTechnicianApiError(locationError).message} — ${fallback}`);
     } finally {
-      setIsUpdatingLocation(false);
+      locationInFlight.current = false;
+      if (mounted.current) setIsUpdatingLocation(false);
     }
-  }, [setProfile]);
+  }, [setProfile, setRequestCount]);
+
+  useEffect(() => {
+    if (!profile?.isAvailable || attemptedInitialLocation.current) return;
+    attemptedInitialLocation.current = true;
+    void refreshLocation();
+  }, [profile?.isAvailable, refreshLocation]);
 
   const selectRequestToAccept = (request: TechnicianJob): void => {
     setSelectedRequest(request);
@@ -139,7 +190,7 @@ export function useTechnicianRequests(): UseTechnicianRequestsResult {
       await acceptTechnicianRequest(selectedRequest.orderId);
       setSelectedRequest(null);
       setSuccessMessage(`รับงาน ${selectedRequest.orderCode} เรียบร้อยแล้ว`);
-      await loadRequests();
+      await loadRequestsRef.current();
     } catch (requestError) {
       const apiError = getTechnicianApiError(requestError);
       const message =
@@ -148,7 +199,7 @@ export function useTechnicianRequests(): UseTechnicianRequestsResult {
           : apiError.message;
 
       setSelectedRequest(null);
-      await loadRequests();
+      await loadRequestsRef.current();
       setErrorMessage(message);
     } finally {
       setActiveRequestId(null);
@@ -163,7 +214,7 @@ export function useTechnicianRequests(): UseTechnicianRequestsResult {
     try {
       await declineTechnicianRequest(request.orderId);
       setSuccessMessage(`ปฏิเสธงาน ${request.orderCode} เรียบร้อยแล้ว`);
-      await loadRequests();
+      await loadRequestsRef.current();
     } catch (requestError) {
       setErrorMessage(getTechnicianApiError(requestError).message);
     } finally {

@@ -1,4 +1,5 @@
 import { act, renderHook } from "@testing-library/react";
+import { StrictMode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useTechnicianRequests } from "@/hooks/useTechnicianRequests";
 import { INITIAL_REQUESTS } from "@/mocks/technicianRequestFixtures";
@@ -8,7 +9,9 @@ const mocks = vi.hoisted(() => ({
   acceptRequest: vi.fn(),
   declineRequest: vi.fn(),
   getRequests: vi.fn(),
-  getProfile: vi.fn(),
+  readLocation: vi.fn(),
+  reverseGeocode: vi.fn(),
+  updateLocation: vi.fn(),
   setProfile: vi.fn(),
   setRequestCount: vi.fn(),
   context: {
@@ -28,11 +31,17 @@ vi.mock("@/services/technicianApi", () => ({
   acceptTechnicianRequest: mocks.acceptRequest,
   declineTechnicianRequest: mocks.declineRequest,
   getTechnicianRequests: mocks.getRequests,
-  getTechnicianProfile: mocks.getProfile,
+  updateTechnicianLocation: mocks.updateLocation,
   getTechnicianApiError: (error: unknown) =>
     typeof error === "object" && error !== null
       ? error
       : { message: "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง" },
+}));
+
+vi.mock("@/utils/technicianLocation", async (importOriginal) => ({
+  ...await importOriginal<typeof import("@/utils/technicianLocation")>(),
+  readBrowserLocation: mocks.readLocation,
+  reverseGeocodeAddress: mocks.reverseGeocode,
 }));
 
 const availableProfile: TechnicianProfile = {
@@ -63,12 +72,15 @@ async function runDebounce(): Promise<void> {
 describe("useTechnicianRequests", () => {
   beforeEach(() => {
     vi.useFakeTimers();
-    vi.clearAllMocks();
+    vi.resetAllMocks();
     mocks.context.profile = availableProfile;
     mocks.getRequests.mockResolvedValue({ data: [request], meta: { total: 1 } });
     mocks.acceptRequest.mockResolvedValue(request);
     mocks.declineRequest.mockResolvedValue(undefined);
-    mocks.getProfile.mockResolvedValue(availableProfile);
+    mocks.readLocation.mockRejectedValue(new Error("ไม่ได้รับอนุญาตให้เข้าถึงตำแหน่ง"));
+    mocks.reverseGeocode.mockResolvedValue("ที่อยู่จาก GPS");
+    mocks.updateLocation.mockImplementation(async (input) => ({ ...input, locationUpdatedAt: "2026-10-06T04:00:00Z" }));
+    mocks.setProfile.mockImplementation((profile) => { mocks.context.profile = profile; });
   });
 
   afterEach(() => {
@@ -82,6 +94,7 @@ describe("useTechnicianRequests", () => {
     await runDebounce();
 
     expect(mocks.getRequests).not.toHaveBeenCalled();
+    expect(mocks.readLocation).not.toHaveBeenCalled();
     expect(mocks.setRequestCount).toHaveBeenCalledWith(0);
   });
 
@@ -130,32 +143,107 @@ describe("useTechnicianRequests", () => {
     });
   });
 
-  it("does not read browser location when coordinates are missing", async () => {
+  it("reads GPS even without saved coordinates and explains a failed attempt", async () => {
     mocks.context.profile = { ...availableProfile, latitude: null, longitude: null };
 
-    renderHook(() => useTechnicianRequests());
-    await runDebounce();
-
-    expect(mocks.getProfile).not.toHaveBeenCalled();
-    expect(mocks.getRequests).not.toHaveBeenCalled();
-  });
-
-  it("reloads the saved profile from the API when refresh is pressed", async () => {
-    const refreshedProfile = {
-      ...availableProfile,
-      address: "เชียงใหม่",
-      latitude: 18.7964,
-      longitude: 98.9673,
-    };
-    mocks.getProfile.mockResolvedValue(refreshedProfile);
     const { result } = renderHook(() => useTechnicianRequests());
     await runDebounce();
 
-    await act(async () => result.current.refreshLocation());
+    expect(mocks.readLocation).toHaveBeenCalledTimes(1);
+    expect(mocks.getRequests).not.toHaveBeenCalled();
+    expect(result.current.locationMessage).toContain("ยังไม่มีพิกัด กรุณากดรีเฟรช");
+  });
 
-    expect(mocks.getProfile).toHaveBeenCalledTimes(1);
-    expect(mocks.setProfile).toHaveBeenCalledWith(refreshedProfile);
-    expect(result.current.locationMessage).toBe("อัปเดตตำแหน่งจากบัญชีแล้ว");
+  it("saves fresh GPS and its address together, then queries with the new coordinates", async () => {
+    const { result } = renderHook(() => useTechnicianRequests());
+    await runDebounce();
+    mocks.readLocation.mockResolvedValue({ latitude: 13.81, longitude: 100.55 });
+
+    await act(async () => result.current.refreshLocation());
+    await runDebounce();
+
+    expect(mocks.updateLocation).toHaveBeenCalledWith({ latitude: 13.81, longitude: 100.55, address: "ที่อยู่จาก GPS" });
+    expect(result.current.profile).toMatchObject({ latitude: 13.81, longitude: 100.55, address: "ที่อยู่จาก GPS", locationUpdatedAt: "2026-10-06T04:00:00Z" });
+    expect(mocks.getRequests).toHaveBeenLastCalledWith(expect.objectContaining({ latitude: 13.81, longitude: 100.55 }));
+    expect(result.current.locationMessage).toBe("บันทึกพิกัดและที่อยู่ปัจจุบันแล้ว");
+    expect(mocks.readLocation).toHaveBeenCalledTimes(2);
+  });
+
+  it("reads GPS once after the profile becomes ready, including Strict Mode", async () => {
+    mocks.context.profile = null;
+    mocks.readLocation.mockResolvedValue({ latitude: 13.81, longitude: 100.55 });
+    const { result, rerender } = renderHook(() => useTechnicianRequests(), { wrapper: StrictMode });
+    expect(mocks.readLocation).not.toHaveBeenCalled();
+    mocks.context.profile = availableProfile;
+    rerender();
+    await runDebounce();
+    rerender();
+    await runDebounce();
+    expect(mocks.readLocation).toHaveBeenCalledTimes(1);
+    expect(mocks.updateLocation).toHaveBeenCalledTimes(1);
+    expect(result.current.profile?.latitude).toBe(13.81);
+  });
+
+  it("reloads requests even if fresh GPS returns the same coordinates", async () => {
+    mocks.readLocation.mockResolvedValue({ latitude: availableProfile.latitude, longitude: availableProfile.longitude });
+    const { result } = renderHook(() => useTechnicianRequests());
+    await runDebounce();
+    mocks.getRequests.mockClear();
+    await act(async () => result.current.refreshLocation());
+    await runDebounce();
+    expect(mocks.getRequests).toHaveBeenCalledTimes(1);
+    expect(result.current.isLoadingRequests).toBe(false);
+  });
+
+  it("discards a response from the old location after GPS refresh", async () => {
+    let resolveOld!: (value: { data: typeof request[]; meta: { total: number } }) => void;
+    mocks.getRequests.mockReturnValueOnce(new Promise((resolve) => { resolveOld = resolve; }));
+    const { result } = renderHook(() => useTechnicianRequests());
+    await runDebounce();
+    mocks.readLocation.mockResolvedValue({ latitude: 13.81, longitude: 100.55 });
+    const newRequest = { ...request, orderId: "new-location-job" };
+    mocks.getRequests.mockResolvedValue({ data: [newRequest], meta: { total: 1 } });
+    await act(async () => result.current.refreshLocation());
+    await runDebounce();
+    await act(async () => resolveOld({ data: [request], meta: { total: 99 } }));
+    expect(result.current.requests).toEqual([newRequest]);
+    expect(mocks.setRequestCount).toHaveBeenLastCalledWith(1);
+  });
+
+  it("keeps the saved location and address if saving GPS fails", async () => {
+    mocks.readLocation.mockResolvedValue({ latitude: 13.81, longitude: 100.55 });
+    mocks.updateLocation.mockRejectedValue(new Error("บันทึกพิกัดไม่สำเร็จ"));
+    const { result } = renderHook(() => useTechnicianRequests());
+    await runDebounce();
+    expect(mocks.setProfile).not.toHaveBeenCalled();
+    expect(result.current.profile).toEqual(availableProfile);
+    expect(result.current.locationMessage).toContain("กำลังใช้ตำแหน่งที่บันทึกไว้");
+    expect(result.current.isUpdatingLocation).toBe(false);
+  });
+
+  it("uses the latest location when an acceptance finishes after GPS refresh", async () => {
+    let resolveAccept!: (value: typeof request) => void;
+    mocks.acceptRequest.mockReturnValue(new Promise((resolve) => { resolveAccept = resolve; }));
+    const { result } = renderHook(() => useTechnicianRequests());
+    await runDebounce();
+    act(() => result.current.selectRequestToAccept(request));
+    let acceptance!: Promise<void>;
+    act(() => { acceptance = result.current.confirmAcceptRequest(); });
+    mocks.readLocation.mockResolvedValue({ latitude: 13.81, longitude: 100.55 });
+    await act(async () => result.current.refreshLocation());
+    await runDebounce();
+    mocks.getRequests.mockClear();
+    await act(async () => { resolveAccept(request); await acceptance; });
+    expect(mocks.getRequests).toHaveBeenCalledWith(expect.objectContaining({ latitude: 13.81, longitude: 100.55 }));
+  });
+
+  it("does not save GPS after the requests page unmounts", async () => {
+    let resolveLocation!: (value: { latitude: number; longitude: number }) => void;
+    mocks.readLocation.mockReturnValue(new Promise((resolve) => { resolveLocation = resolve; }));
+    const { unmount } = renderHook(() => useTechnicianRequests());
+    unmount();
+    await act(async () => resolveLocation({ latitude: 13.81, longitude: 100.55 }));
+    expect(mocks.updateLocation).not.toHaveBeenCalled();
   });
 
   it("accepts the selected request, closes the dialog, and refreshes the list", async () => {
@@ -205,7 +293,7 @@ describe("useTechnicianRequests", () => {
 
   it("shows API and location errors and restores loading states", async () => {
     mocks.getRequests.mockRejectedValue({ message: "โหลดรายการไม่สำเร็จ" });
-    mocks.getProfile.mockRejectedValue({ message: "โหลดโปรไฟล์ไม่สำเร็จ" });
+    mocks.readLocation.mockRejectedValue(new Error("ใช้เวลาค้นหาตำแหน่งนานเกินไป"));
     const { result } = renderHook(() => useTechnicianRequests());
 
     await runDebounce();
@@ -213,7 +301,8 @@ describe("useTechnicianRequests", () => {
     expect(result.current.isLoadingRequests).toBe(false);
 
     await act(async () => result.current.refreshLocation());
-    expect(result.current.locationMessage).toBe("โหลดโปรไฟล์ไม่สำเร็จ");
+    expect(result.current.locationMessage).toContain("ใช้เวลาค้นหาตำแหน่งนานเกินไป");
+    expect(result.current.locationMessage).toContain("กำลังใช้ตำแหน่งที่บันทึกไว้");
     expect(result.current.isUpdatingLocation).toBe(false);
   });
 });

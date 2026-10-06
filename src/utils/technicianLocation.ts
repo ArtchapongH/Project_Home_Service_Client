@@ -2,6 +2,14 @@ import type { TechnicianLocationInput } from "@/types/technician";
 
 const ADDRESS_MAX_LENGTH = 500;
 
+export function hasValidCoordinates(
+  latitude: number | null | undefined,
+  longitude: number | null | undefined,
+): boolean {
+  return typeof latitude === "number" && Number.isFinite(latitude) && Math.abs(latitude) <= 90
+    && typeof longitude === "number" && Number.isFinite(longitude) && Math.abs(longitude) <= 180;
+}
+
 function getGeolocationErrorMessage(error: GeolocationPositionError): string {
   if (error.code === error.PERMISSION_DENIED) {
     return "ไม่ได้รับอนุญาตให้เข้าถึงตำแหน่ง กรุณาเปิดสิทธิ์ Location ใน Browser";
@@ -44,6 +52,7 @@ export async function reverseGeocodeAddress(
     const response = await fetch(
       `https://nominatim.openstreetmap.org/reverse?${params.toString()}`,
       {
+        signal: AbortSignal.timeout(10_000),
         headers: {
           Accept: "application/json",
         },
@@ -75,13 +84,17 @@ export function readBrowserLocation(): Promise<TechnicianLocationInput> {
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        if (!hasValidCoordinates(position.coords.latitude, position.coords.longitude)) {
+          reject(new Error("พิกัดที่ได้รับไม่ถูกต้อง กรุณาลองใหม่"));
+          return;
+        }
         resolve({
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
         });
       },
       (error) => reject(new Error(getGeolocationErrorMessage(error))),
-      { enableHighAccuracy: true, timeout: 10_000, maximumAge: 60_000 },
+      { enableHighAccuracy: true, timeout: 10_000, maximumAge: 0 },
     );
   });
 }

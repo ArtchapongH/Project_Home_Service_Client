@@ -4,7 +4,7 @@ import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
 import KeyboardArrowUpRoundedIcon from "@mui/icons-material/KeyboardArrowUpRounded";
 import { useRouter } from "next/navigation";
-import { PaymentContext } from "@/app/service-details/layout";
+import { PaymentContext } from "@/contexts/PaymentContext";
 import { formatCurrency } from "@/utils/formatCurrency";
 
 export default function MobileFooter() {

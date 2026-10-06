@@ -8,7 +8,7 @@ import Snackbar from "@mui/material/Snackbar";
 import Image from "next/image";
 import serviceDetailBanner from "@/assets/images/service-detail-banner.png";
 import MobileFooterThree from "./mobile-footer3";
-import { getServiceBreadcrumbName, PaymentContext } from "@/app/service-details/layout";
+import { getServiceBreadcrumbName, PaymentContext } from "@/contexts/PaymentContext";
 import { useAuth } from "@/contexts/AuthContext";
 
 import {
