@@ -30,4 +30,17 @@ describe("UserAvatar", () => {
 
     expect(screen.getByLabelText("อักษรย่อของ Dev Master")).toHaveTextContent("DM");
   });
+
+  it("tries the new avatar after the previous image failed", () => {
+    const { rerender } = render(
+      <UserAvatar fullName="Somchai Jaidee" avatarUrl="https://example.com/old.jpg" />,
+    );
+    fireEvent.error(screen.getByRole("img"));
+    expect(screen.getByLabelText("อักษรย่อของ Somchai Jaidee")).toBeInTheDocument();
+
+    rerender(<UserAvatar fullName="Somchai Jaidee" avatarUrl="https://example.com/new.jpg" />);
+    expect(screen.getByRole("img")).toHaveAttribute("src", "https://example.com/new.jpg");
+    fireEvent.load(screen.getByRole("img"));
+    expect(screen.queryByLabelText("อักษรย่อของ Somchai Jaidee")).not.toBeInTheDocument();
+  });
 });
