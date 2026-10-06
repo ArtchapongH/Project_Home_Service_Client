@@ -16,6 +16,7 @@ function renderContent(
     activeRequestId: null,
     onAccept: vi.fn(),
     onDecline: vi.fn(),
+    onViewMap: vi.fn(),
     ...overrides,
   };
 
@@ -31,7 +32,7 @@ describe("RequestListContent", () => {
 
   it("asks for location when coordinates are missing", () => {
     renderContent({ hasCoordinates: false });
-    expect(screen.getByText(/กดรับพิกัดที่หน้าตั้งค่าบัญชีผู้ใช้/)).toBeInTheDocument();
+    expect(screen.getByText(/กดรีเฟรชเพื่อรับตำแหน่งปัจจุบัน/)).toBeInTheDocument();
   });
 
   it("shows loading and empty states", () => {
@@ -44,6 +45,7 @@ describe("RequestListContent", () => {
         activeRequestId={null}
         onAccept={vi.fn()}
         onDecline={vi.fn()}
+        onViewMap={vi.fn()}
       />,
     );
     expect(screen.getByText("กำลังโหลดคำขอบริการ...")).toBeInTheDocument();
@@ -57,6 +59,7 @@ describe("RequestListContent", () => {
         activeRequestId={null}
         onAccept={vi.fn()}
         onDecline={vi.fn()}
+        onViewMap={vi.fn()}
       />,
     );
     expect(screen.getByText("ยังไม่มีคำขอบริการในรัศมี 4 กิโลเมตร")).toBeInTheDocument();
@@ -78,5 +81,12 @@ describe("RequestListContent", () => {
 
     expect(props.onAccept).toHaveBeenCalledWith(request);
     expect(props.onDecline).toHaveBeenCalledWith(request);
+  });
+
+  it("opens the selected job map without a Google Maps link", () => {
+    const props = renderContent();
+    fireEvent.click(screen.getByRole("button", { name: "ดูแผนที่" }));
+    expect(props.onViewMap).toHaveBeenCalledWith(request);
+    expect(screen.queryByRole("link", { name: "ดูแผนที่" })).not.toBeInTheDocument();
   });
 });

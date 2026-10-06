@@ -10,7 +10,7 @@ import {
   useElements,
   useStripe,
 } from "@stripe/react-stripe-js";
-import { PaymentContext } from "@/app/service-details/layout";
+import { PaymentContext } from "@/contexts/PaymentContext";
 import {
   formatThaiServiceDate,
   formatThaiServiceTime,

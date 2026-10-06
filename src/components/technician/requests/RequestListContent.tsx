@@ -13,6 +13,7 @@ interface RequestListContentProps {
   activeRequestId: string | null;
   onAccept: (request: TechnicianJob) => void;
   onDecline: (request: TechnicianJob) => void;
+  onViewMap: (request: TechnicianJob) => void;
 }
 
 function UnavailableState() {
@@ -55,13 +56,14 @@ export function RequestListContent({
   activeRequestId,
   onAccept,
   onDecline,
+  onViewMap,
 }: RequestListContentProps) {
   if (!isAvailable) return <UnavailableState />;
 
   if (!hasCoordinates) {
     return (
       <InformationState>
-        ยังไม่มีพิกัดในระบบ กรุณากดรับพิกัดที่หน้าตั้งค่าบัญชีผู้ใช้
+        ยังไม่มีพิกัดในระบบ กรุณากดรีเฟรชเพื่อรับตำแหน่งปัจจุบัน
       </InformationState>
     );
   }
@@ -87,6 +89,7 @@ export function RequestListContent({
           disabled={activeRequestId === request.orderId}
           onAccept={() => onAccept(request)}
           onDecline={() => onDecline(request)}
+          onViewMap={() => onViewMap(request)}
         />
       ))}
     </div>

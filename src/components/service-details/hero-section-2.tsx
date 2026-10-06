@@ -5,7 +5,7 @@ import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import Image from "next/image";
 import serviceDetailBanner from "@/assets/images/service-detail-banner.png";
 import MobileFooterTwo from "./mobile-footer2";
-import { getServiceBreadcrumbName, hasRequiredServiceFormData, PaymentContext, type ServiceFormData } from "@/app/service-details/layout";
+import { getServiceBreadcrumbName, hasRequiredServiceFormData, PaymentContext, type ServiceFormData } from "@/contexts/PaymentContext";
 import apiClient from "@/services/apiClient";
 import {
 	matchPlaceName,
@@ -70,7 +70,9 @@ export default function HeroSectionTwo() {
 	const mapFillLockRef = useRef(false);
 	const provincesRef = useRef<Province[]>([]);
 
-	provincesRef.current = provinces;
+	useEffect(() => {
+		provincesRef.current = provinces;
+	}, [provinces]);
 
 	function writeForm(updater: (current: ServiceFormData) => ServiceFormData): void {
 		setServiceFormData((currentForm) => {
