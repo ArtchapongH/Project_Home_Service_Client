@@ -1,5 +1,6 @@
 import type { TechnicianJob } from "@/types/technician";
-import { DirectionsLink } from "@/components/technician/shared/DirectionsLink";
+import { MapPin } from "lucide-react";
+import { hasValidCoordinates } from "@/utils/technicianLocation";
 import { formatBaht, formatJobItemSummary, formatThaiDateTime, getCustomerNotes } from "@/utils/technician";
 
 interface ServiceRequestCardProps {
@@ -7,6 +8,7 @@ interface ServiceRequestCardProps {
   disabled: boolean;
   onAccept: () => void;
   onDecline: () => void;
+  onViewMap: () => void;
 }
 
 export function ServiceRequestCard({
@@ -14,6 +16,7 @@ export function ServiceRequestCard({
   disabled,
   onAccept,
   onDecline,
+  onViewMap,
 }: ServiceRequestCardProps) {
   const itemSummary = formatJobItemSummary(job);
   const customerNotes = getCustomerNotes(job.notes);
@@ -42,11 +45,12 @@ export function ServiceRequestCard({
         <dt className="text-gray-500">สถานที่</dt>
         <dd className="min-w-0 break-words">
           <p>{job.address || "ยังไม่ระบุ"}</p>
-          <DirectionsLink
-            latitude={job.serviceLatitude}
-            longitude={job.serviceLongitude}
-            address={job.address}
-          />
+          <button type="button" onClick={onViewMap} className="inline-flex min-h-8 items-center gap-1 text-xs font-medium text-blue-600 hover:underline">
+            <MapPin size={14} aria-hidden="true" /> ดูแผนที่
+          </button>
+          {!hasValidCoordinates(job.serviceLatitude, job.serviceLongitude) ? (
+            <p className="text-xs text-gray-500">ไม่มีพิกัดสถานที่ให้บริการ</p>
+          ) : null}
         </dd>
       </dl>
       <div className="mt-4 flex justify-end gap-3">
