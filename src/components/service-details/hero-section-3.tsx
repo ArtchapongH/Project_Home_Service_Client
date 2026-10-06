@@ -211,6 +211,7 @@ export default function HeroSectionThree() {
 				<Alert
 					severity={promotionToast?.severity ?? "success"}
 					variant="filled"
+					sx={promotionToast?.severity === "success" ? { bgcolor: "#3979F7" } : undefined}
 					onClose={() => setPromotionToast(null)}
 				>
 					{promotionToast?.message}
