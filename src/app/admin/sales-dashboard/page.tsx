@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 // import Image from "next/image";
 import { BarChart } from "@mui/x-charts/BarChart";
 import { LineChart } from "@mui/x-charts/LineChart";
-import { DollarSign, ShoppingCart, Calendar } from "lucide-react";
+import { DollarSign, ShoppingCart, Calendar, FileOutput } from "lucide-react";
 // import adminAvatar from "@/assets/images/admin-dashboard-picture.png";
 import {
   fetchDashboardTotalSales,
@@ -83,6 +83,35 @@ const formatDayLabel = (value: string | Date) => {
 
   return Number.isNaN(date.getTime()) ? String(value) : dayLabelFormatter.format(date);
 };
+
+const escapeCsvCell = (value: string | number) => {
+  const text = String(value);
+  return /[",\n\r]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+};
+
+const downloadCsv = (filename: string, headers: string[], rows: (string | number)[][]) => {
+  const csv = [headers, ...rows].map((row) => row.map(escapeCsvCell).join(",")).join("\r\n");
+  const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+};
+
+function ExportCsvButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50"
+    >
+      <FileOutput className="h-4 w-4" />
+      Export CSV
+    </button>
+  );
+}
 
 const shiftDateRange = (start: string, end: string) => {
   const startMs = new Date(`${start}T00:00:00`).getTime();
@@ -330,7 +359,18 @@ export default function SalesDashboardPage() {
       {/* Charts: Top 5 Total Sales by Service Category and Total Sales by Day */}
       <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
         <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <h2 className="mb-2 text-sm font-semibold text-gray-800">Top 5 Total Sales by Service Category</h2>
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <h2 className="text-sm font-semibold text-gray-800">Top 5 Total Sales by Service Category</h2>
+            <ExportCsvButton
+              onClick={() =>
+                downloadCsv(
+                  `top-sales-by-service_${startDate}_${endDate}.csv`,
+                  ["Service", "Total Sales"],
+                  topSalesByService.map((row) => [row.serviceName, row.totalSales])
+                )
+              }
+            />
+          </div>
           <BarChart
             height={300}
             layout="horizontal"
@@ -349,7 +389,18 @@ export default function SalesDashboardPage() {
         </div>
 
         <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <h2 className="mb-2 text-sm font-semibold text-gray-800">Total Sales by Day</h2>
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <h2 className="text-sm font-semibold text-gray-800">Total Sales by Day</h2>
+            <ExportCsvButton
+              onClick={() =>
+                downloadCsv(
+                  `sales-by-day_${startDate}_${endDate}.csv`,
+                  ["Date", "Total Sales"],
+                  salesByDay.map((row) => [String(row.date).slice(0, 10), row.totalSales])
+                )
+              }
+            />
+          </div>
           <LineChart
             height={300}
             dataset={salesByDay}
@@ -370,10 +421,24 @@ export default function SalesDashboardPage() {
 
       {/* Table */}
       <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
-        <div className="border-b border-gray-100 p-5">
+        <div className="flex items-center justify-between gap-2 border-b border-gray-100 p-5">
           <h2 className="text-sm font-semibold text-gray-800">
             Total Sales and Orders by Service Subcategory
           </h2>
+          <ExportCsvButton
+            onClick={() =>
+              downloadCsv(
+                `sales-by-service-subcategory_${startDate}_${endDate}.csv`,
+                ["Service", "Service Subcategory", "Total Sales", "Total Orders"],
+                salesByServiceSubcategory.map((row) => [
+                  row.serviceName,
+                  row.optionName,
+                  row.totalSales,
+                  row.totalOrders,
+                ])
+              )
+            }
+          />
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
